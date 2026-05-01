@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  HOST
+  ADMIN
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  rejected
+  cancelled
+  completed
+}
+
+enum PlanType {
+  basic
+  standard
+  premium
+}
+
+enum PolicyStatus {
+  inactive
+  active
+  expired
+  claimed
+}
+
+enum TransactionType {
+  payment
+  deposit_hold
+  refund
+  payout
+}
+
+enum TransactionStatus {
+  pending
+  succeeded
+  authorized
+  failed
+  released
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum CarListingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Profile {
+  id                 String             @id @default(cuid())
+  email              String?            @unique
+  fullName           String
+  phone              String?
+  idNumber           String?            @unique
+  country            String             @default("GE")
+  passwordHash       String?
+  role               UserRole           @default(USER)
+  bio                String?
+  isVerified              Boolean            @default(false)
+  verificationStatus      VerificationStatus @default(UNVERIFIED)
+  driverLicenseFront      String?
+  driverLicenseBack       String?
+  selfieUrl               String?
+  hostVerified                     Boolean            @default(false)
+  hostVerificationStatus           VerificationStatus @default(UNVERIFIED)
+  idCardFront                      String?
+  idCardBack                       String?
+  hostSelfieUrl                    String?
+  lang                             String             @default("en")
+  verificationRejectionComment     String?
+  hostVerificationRejectionComment String?
+  rating                           Float              @default(5)
+  cars               Car[]
+  bookings           Booking[]          @relation("GuestBookings")
+  createdAt          DateTime           @default(now())
+}
+
+model Car {
+  id                String    @id @default(cuid())
+  ownerId           String
+  owner             Profile   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  brand             String
+  model             String
+  year              Int
+  plateNumber       String
+  dailyPrice        Int
+  location          String
+  carType           String    @default("Economy")
+  transmission      String    @default("Automatic")
+  features          String[]
+  imageUrls         String[]
+  description       String?
+  techPassportFront    String?
+  techPassportBack     String?
+  isActive             Boolean   @default(true)
+  color                String    @default("")
+  seats                Int       @default(5)
+  doors                Int       @default(4)
+  fuelType             String    @default("Petrol")
+  airportTbilisiState  String    @default("none")
+  airportTbilisiPrice  Int       @default(0)
+  airportKutaisiState  String    @default("none")
+  airportKutaisiPrice  Int       @default(0)
+  airportBatumiState   String    @default("none")
+  airportBatumiPrice   Int       @default(0)
+  cityDeliveryEnabled  Boolean   @default(false)
+  cityDeliveryCity     String    @default("")
+  cityDeliveryPrice    Int       @default(0)
+  returnPolicy            String           @default("same")
+  minDays                 Int              @default(1)
+  advanceNotice           Int              @default(2)
+  listingStatus           CarListingStatus @default(APPROVED)
+  listingRejectionComment String?
+  createdAt               DateTime         @default(now())
+}
+
+model Booking {
+  id               String            @id @default(cuid())
+  carId            String?
+  carBrand         String            @default("")
+  carModel         String            @default("")
+  carYear          Int               @default(0)
+  guestId          String
+  guest            Profile           @relation("GuestBookings", fields: [guestId], references: [id], onDelete: Cascade)
+  startDate        DateTime
+  endDate          DateTime
+  totalPrice       Int
+  deliveryType     String            @default("none")
+  deliveryCost     Int               @default(0)
+  deliveryAddress  String?
+  status           BookingStatus     @default(pending)
+  insurancePolicy  InsurancePolicy?
+  transactions     Transaction[]
+  conditionReports ConditionReport[]
+  createdAt        DateTime          @default(now())
+}
+
+model InsurancePolicy {
+  id               String       @id @default(cuid())
+  bookingId        String       @unique
+  booking          Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  planType         PlanType
+  deductibleAmount Int
+  status           PolicyStatus @default(inactive)
+  createdAt        DateTime     @default(now())
+}
+
+model Transaction {
+  id         String            @id @default(cuid())
+  bookingId  String
+  booking    Booking           @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  providerId String
+  amount     Int
+  type       TransactionType
+  status     TransactionStatus @default(pending)
+  createdAt  DateTime          @default(now())
+}
+
+model ConditionReport {
+  id        String   @id @default(cuid())
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  phase     String
+  photoUrls String[]
+  notes     String?
+  createdAt DateTime @default(now())
+}
+model AdminEmail {
+  id          String                 @id @default(cuid())
+  from        String
+  to          String
+  cc          String?
+  bcc         String?
+  subject     String
+  body        String
+  status      AdminEmailStatus       @default(sent)
+  resendId    String?
+  attachments AdminEmailAttachment[]
+  createdAt   DateTime               @default(now())
+}
+
+model AdminEmailAttachment {
+  id           String     @id @default(cuid())
+  emailId      String
+  email        AdminEmail @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  fileName     String
+  fileUrl      String
+  fileType     String?
+  fileSize     Int?
+  cloudinaryId String?
+  createdAt    DateTime   @default(now())
+}
+
+enum AdminEmailStatus {
+  sent
+  failed
+}

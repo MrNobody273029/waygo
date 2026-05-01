@@ -1,0 +1,264 @@
+'use client';
+import { useMemo, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { calculateBooking, DEPOSIT_GEL, type InsurancePlan } from '@/lib/constants';
+import { daysBetween, gel } from '@/lib/utils';
+import { InsurancePicker } from './insurance-picker';
+import { useLang } from '@/components/lang-provider';
+import { KYCModal } from '@/components/kyc-modal';
+import { VerificationPendingPopup } from '@/components/verification-pending-popup';
+import type { AirportState } from '@/lib/sample-data';
+
+type DeliveryOption = { id: string; label: string; cost: number; icon: string };
+
+export function BookingWidget({ car }: { car: any }) {
+  const { t } = useLang();
+  const { data: session } = useSession();
+  const today = new Date().toISOString().split('T')[0];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const [start, setStart] = useState(today);
+  const [end, setEnd] = useState(tomorrow);
+  const [plan, setPlan] = useState<InsurancePlan>('standard');
+  const [loading, setLoading] = useState(false);
+  const [showKYC, setShowKYC] = useState(false);
+  const [showPending, setShowPending] = useState(false);
+  const [rejectionComment, setRejectionComment] = useState<string | null>(null);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [deliveryId, setDeliveryId] = useState('none');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryOpen, setDeliveryOpen] = useState(false);
+
+  // Build delivery options from car data
+  const deliveryOptions: DeliveryOption[] = useMemo(() => {
+    const opts: DeliveryOption[] = [
+      { id: 'none', label: t.booking.deliveryPickup, cost: 0, icon: 'home' },
+    ];
+    const ad = car.airportDelivery;
+    if (ad) {
+      const addAirport = (key: 'tbilisi' | 'kutaisi' | 'batumi', label: string) => {
+        const a = ad[key] as { state: AirportState; price: number } | undefined;
+        if (a && a.state !== 'none') {
+          opts.push({
+            id: `airport_${key}`,
+            label,
+            cost: a.state === 'free' ? 0 : a.price,
+            icon: 'flight_takeoff',
+          });
+        }
+      };
+      addAirport('tbilisi', t.booking.deliveryAirportTbs);
+      addAirport('kutaisi', t.booking.deliveryAirportKut);
+      addAirport('batumi', t.booking.deliveryAirportBat);
+    }
+    if (car.cityDelivery?.enabled) {
+      opts.push({
+        id: 'city',
+        label: `${t.booking.deliveryCityLabel} — ${car.cityDelivery.city}`,
+        cost: car.cityDelivery.price,
+        icon: 'location_city',
+      });
+    }
+    return opts;
+  }, [car, t]);
+
+  const selectedDelivery = deliveryOptions.find(o => o.id === deliveryId) ?? deliveryOptions[0];
+
+  const days = daysBetween(start, end);
+  const totals = useMemo(() => calculateBooking(car.dailyPrice, days, plan), [car.dailyPrice, days, plan]);
+  const grandTotal = totals.total + selectedDelivery.cost;
+
+  async function book() {
+    if (!session) { setShowLoginPrompt(true); return; }
+    const isVerified = (session?.user as any)?.isVerified as boolean | undefined;
+    const verificationStatus = (session?.user as any)?.verificationStatus as string | undefined;
+    if (!isVerified) {
+      if (verificationStatus === 'SUBMITTED') { setShowPending(true); return; }
+      if (verificationStatus === 'REJECTED') {
+        const data = await fetch('/api/profile/verification').then(r => r.json()).catch(() => ({}));
+        setRejectionComment(data.verificationRejectionComment ?? null);
+      }
+      setShowKYC(true);
+      return;
+    }
+    if (deliveryId === 'city' && !deliveryAddress.trim()) {
+      document.getElementById('delivery-address-input')?.focus();
+      return;
+    }
+    setLoading(true);
+    const res = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        carId: car.id,
+        startDate: start,
+        endDate: end,
+        insurancePlan: plan,
+        deliveryType: deliveryId,
+        deliveryCost: selectedDelivery.cost,
+        deliveryAddress: deliveryId === 'city' ? deliveryAddress : undefined,
+      }),
+    });
+    const data = await res.json();
+    setLoading(false);
+    window.location.href = `/checkout/${data.bookingId ?? 'demo'}`;
+  }
+
+  return (
+    <>
+      <KYCModal open={showKYC} onClose={() => setShowKYC(false)} onSuccess={() => setShowKYC(false)} verificationType="guest" rejectionComment={rejectionComment} />
+      <VerificationPendingPopup open={showPending} onClose={() => setShowPending(false)} />
+
+      {showLoginPrompt && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowLoginPrompt(false)} />
+          <div className="relative z-10 w-full max-w-sm rounded-3xl bg-white shadow-2xl p-8 flex flex-col items-center text-center gap-5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-fixed/30">
+              <span className="material-symbols-outlined text-primary text-[32px]">lock</span>
+            </div>
+            <div>
+              <h2 className="text-h2 font-black text-on-background mb-2">{t.booking.loginRequired}</h2>
+              <p className="text-secondary text-body-md">{t.booking.loginRequiredSub}</p>
+            </div>
+            <div className="flex flex-col gap-2.5 w-full">
+              <a href="/login" className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-primary-container text-white font-bold text-label-bold hover:bg-primary transition-all active:scale-95">
+                <span className="material-symbols-outlined text-[18px]">login</span>
+                {t.booking.loginBtn}
+              </a>
+              <a href="/register" className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-outline-variant font-semibold text-label-bold text-on-background hover:bg-surface-container-low transition-all">
+                <span className="material-symbols-outlined text-[18px]">person_add</span>
+                {t.booking.registerBtn}
+              </a>
+            </div>
+            <button onClick={() => setShowLoginPrompt(false)} className="text-label-sm text-secondary hover:text-on-background transition cursor-pointer">{t.kyc.doLater}</button>
+          </div>
+        </div>
+      )}
+
+      <aside id="booking" className="lg:sticky top-24 rounded-2xl border bg-white shadow-card-hover p-6">
+        <div className="mb-5">
+          <span className="text-h1 font-bold text-primary">{gel(car.dailyPrice)}</span>
+          <span className="text-secondary text-label-sm"> {t.booking.perDay}</span>
+        </div>
+
+        {/* Dates */}
+        <div className="grid grid-cols-2 gap-3 mb-5">
+          <div className="rounded-xl border px-3 py-2.5">
+            <p className="text-label-sm text-slate-400 uppercase tracking-wider mb-1">{t.booking.pickup}</p>
+            <input type="date" value={start} min={today} onChange={e => setStart(e.target.value)}
+              className="w-full border-none p-0 focus:ring-0 font-bold text-label-bold bg-transparent text-on-background" />
+          </div>
+          <div className="rounded-xl border px-3 py-2.5">
+            <p className="text-label-sm text-slate-400 uppercase tracking-wider mb-1">{t.booking.dropoff}</p>
+            <input type="date" value={end} min={start} onChange={e => setEnd(e.target.value)}
+              className="w-full border-none p-0 focus:ring-0 font-bold text-label-bold bg-transparent text-on-background" />
+          </div>
+        </div>
+
+        {/* Delivery selector */}
+        <div className="mb-5">
+          <h4 className="font-bold text-label-bold text-on-background mb-2">{t.booking.deliveryTitle}</h4>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setDeliveryOpen(v => !v)}
+              className="w-full flex items-center justify-between rounded-xl border border-outline-variant px-3.5 py-3 text-label-bold font-semibold text-on-background hover:border-primary/50 transition-all cursor-pointer"
+            >
+              <span className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[18px]">{selectedDelivery.icon}</span>
+                <span>{selectedDelivery.label}</span>
+              </span>
+              <span className="flex items-center gap-2 shrink-0">
+                {selectedDelivery.cost === 0
+                  ? <span className="text-[11px] font-black text-tertiary bg-tertiary-fixed/40 px-2 py-0.5 rounded-full">{t.booking.deliveryFree}</span>
+                  : <span className="text-[12px] font-bold text-slate-600">+{gel(selectedDelivery.cost)}</span>
+                }
+                <span className={`material-symbols-outlined text-[16px] text-slate-400 transition-transform ${deliveryOpen ? 'rotate-180' : ''}`}>expand_more</span>
+              </span>
+            </button>
+
+            {deliveryOpen && (
+              <div className="absolute left-0 right-0 top-full mt-1 z-20 rounded-xl border border-outline-variant bg-white shadow-card-hover overflow-hidden">
+                {deliveryOptions.map(opt => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => { setDeliveryId(opt.id); setDeliveryOpen(false); }}
+                    className={`w-full flex items-center justify-between px-4 py-3 text-label-bold font-semibold transition-colors cursor-pointer ${
+                      opt.id === deliveryId ? 'bg-primary-fixed/30 text-primary' : 'text-on-background hover:bg-surface-container-low'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <span className="material-symbols-outlined text-[17px]">{opt.icon}</span>
+                      {opt.label}
+                    </span>
+                    <span className="shrink-0">
+                      {opt.cost === 0
+                        ? <span className="text-[11px] font-black text-tertiary bg-tertiary-fixed/40 px-2 py-0.5 rounded-full">{t.booking.deliveryFree}</span>
+                        : <span className="text-[12px] font-bold text-slate-500">+{gel(opt.cost)}</span>
+                      }
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* City delivery address input */}
+          {deliveryId === 'city' && (
+            <div className="mt-2">
+              <input
+                id="delivery-address-input"
+                type="text"
+                value={deliveryAddress}
+                onChange={e => setDeliveryAddress(e.target.value)}
+                placeholder={t.booking.deliveryAddressPlaceholder}
+                className="w-full rounded-xl border border-outline-variant px-3.5 py-3 text-label-bold font-semibold text-on-background outline-none focus:border-primary focus:ring-2 focus:ring-primary-fixed placeholder:text-slate-400 transition"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Insurance */}
+        <h4 className="font-bold text-label-bold text-on-background mb-3">{t.booking.protectionPlan}</h4>
+        <InsurancePicker plan={plan} setPlan={setPlan} days={days} />
+
+        {/* Price breakdown */}
+        <div className="mt-5 space-y-2 border-t border-slate-100 pt-4 text-label-bold">
+          <Row l={`${gel(car.dailyPrice)} × ${days} ${days !== 1 ? t.booking.days : t.booking.day}`} r={gel(totals.base)} />
+          <Row l={t.booking.protection} r={gel(totals.insurance)} />
+          <Row l={t.booking.platformFee} r={gel(totals.platformFee)} />
+          {selectedDelivery.cost > 0 && (
+            <Row l={t.booking.deliveryCost} r={gel(selectedDelivery.cost)} />
+          )}
+          <Row l={t.booking.depositHold} r={gel(DEPOSIT_GEL)} muted />
+          <div className="flex justify-between pt-3 border-t border-slate-100 text-h3 font-bold">
+            <span>{t.booking.totalNow}</span>
+            <span className="text-primary">{gel(grandTotal)}</span>
+          </div>
+        </div>
+
+        <button
+          onClick={book}
+          disabled={loading}
+          className="mt-5 w-full py-4 bg-primary-container text-white rounded-xl font-bold text-label-bold hover:bg-primary transition-colors active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+        >
+          {loading ? (
+            <><span className="material-symbols-outlined animate-spin text-[18px]">autorenew</span>{t.booking.processing}</>
+          ) : (
+            <><span className="material-symbols-outlined text-[18px]">lock</span>{t.booking.reserveBtn} — {gel(grandTotal)}</>
+          )}
+        </button>
+        <p className="mt-3 text-center text-label-sm text-secondary">{t.booking.depositNote}</p>
+      </aside>
+    </>
+  );
+}
+
+function Row({ l, r, muted }: { l: string; r: string; muted?: boolean }) {
+  return (
+    <div className="flex justify-between">
+      <span className="text-secondary">{l}</span>
+      <span className={muted ? 'text-slate-400' : 'font-semibold text-on-background'}>{r}</span>
+    </div>
+  );
+}

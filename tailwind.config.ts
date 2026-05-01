@@ -1,0 +1,78 @@
+import type { Config } from 'tailwindcss';
+
+const config: Config = {
+  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}', './lib/**/*.{ts,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        // AutoShare / Material Design 3 palette
+        primary: '#004ac6',
+        'primary-container': '#2563eb',
+        'on-primary': '#ffffff',
+        'on-primary-container': '#eeefff',
+        'primary-fixed': '#dbe1ff',
+        'primary-fixed-dim': '#b4c5ff',
+        'on-primary-fixed': '#00174b',
+        'on-primary-fixed-variant': '#003ea8',
+        'inverse-primary': '#b4c5ff',
+        secondary: '#565e74',
+        'secondary-container': '#dae2fd',
+        'on-secondary': '#ffffff',
+        'on-secondary-container': '#5c647a',
+        tertiary: '#006242',
+        'tertiary-container': '#007d55',
+        'on-tertiary': '#ffffff',
+        'on-tertiary-container': '#bdffdb',
+        'tertiary-fixed': '#6ffbbe',
+        'tertiary-fixed-dim': '#4edea3',
+        'on-tertiary-fixed': '#002113',
+        'on-tertiary-fixed-variant': '#005236',
+        error: '#ba1a1a',
+        'error-container': '#ffdad6',
+        'on-error': '#ffffff',
+        background: '#f8f9ff',
+        'on-background': '#0b1c30',
+        surface: '#f8f9ff',
+        'on-surface': '#0b1c30',
+        'surface-variant': '#d3e4fe',
+        'on-surface-variant': '#434655',
+        'surface-dim': '#cbdbf5',
+        'surface-bright': '#f8f9ff',
+        'surface-container': '#e5eeff',
+        'surface-container-low': '#eff4ff',
+        'surface-container-lowest': '#ffffff',
+        'surface-container-high': '#dce9ff',
+        'surface-container-highest': '#d3e4fe',
+        outline: '#737686',
+        'outline-variant': '#c3c6d7',
+        'inverse-surface': '#213145',
+        'inverse-on-surface': '#eaf1ff',
+        // Legacy brand colors (kept for backward compat)
+        brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#2563eb', 600: '#1d4ed8', 700: '#1e40af' },
+      },
+      fontFamily: {
+        sans: ['var(--font-manrope)', 'system-ui', 'sans-serif'],
+        manrope: ['var(--font-manrope)', 'sans-serif'],
+      },
+      fontSize: {
+        display: ['48px', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
+        'body-md': ['16px', { lineHeight: '1.6' }],
+        'body-lg': ['18px', { lineHeight: '1.6' }],
+        h1: ['32px', { lineHeight: '1.25', letterSpacing: '-0.01em' }],
+        h2: ['24px', { lineHeight: '1.3' }],
+        h3: ['20px', { lineHeight: '1.4' }],
+        'label-bold': ['14px', { lineHeight: '1.4' }],
+        'label-sm': ['12px', { lineHeight: '1.4' }],
+      },
+      boxShadow: {
+        soft: '0 18px 60px rgba(15,23,42,.08)',
+        card: '0 4px 12px rgba(15,23,42,.05)',
+        'card-hover': '0 12px 24px rgba(15,23,42,.08)',
+        'top': '0 -4px 12px rgba(15,23,42,.05)',
+      },
+    },
+  },
+  plugins: [],
+};
+
+export default config;
