@@ -9,6 +9,7 @@ export default async function BookingDetailPage({ params }: { params: { id: stri
   if (!session) redirect('/login');
 
   const profileId = (session.user as any).id;
+  const guestEmail = (session.user as any).email as string ?? '';
 
   const booking = await prisma.booking.findUnique({
     where: { id: params.id },
@@ -21,6 +22,7 @@ export default async function BookingDetailPage({ params }: { params: { id: stri
       startDate: true,
       endDate: true,
       totalPrice: true,
+      platformFeeGel: true,
       deliveryType: true,
       deliveryCost: true,
       deliveryAddress: true,
@@ -40,6 +42,7 @@ export default async function BookingDetailPage({ params }: { params: { id: stri
 
   return (
     <BookingDetailContent
+      guestEmail={guestEmail}
       booking={{
         id: booking.id,
         carBrand: booking.carBrand,
@@ -48,6 +51,7 @@ export default async function BookingDetailPage({ params }: { params: { id: stri
         startDate: booking.startDate.toISOString(),
         endDate: booking.endDate.toISOString(),
         totalPrice: booking.totalPrice,
+        platformFeeGel: booking.platformFeeGel,
         deliveryType: booking.deliveryType,
         deliveryCost: booking.deliveryCost,
         deliveryAddress: booking.deliveryAddress ?? null,

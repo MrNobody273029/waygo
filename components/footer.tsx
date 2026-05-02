@@ -51,6 +51,11 @@ export function Footer() {
               {[t.footer.p1, t.footer.p2, t.footer.p3, t.footer.p4].map(p => (
                 <li key={p} className="hover:text-primary cursor-pointer transition-colors">{p}</li>
               ))}
+              <li>
+                <Link href="/cancellation-policy" className="hover:text-primary transition-colors">
+                  {t.bookingDetail.cancelPolicyLink}
+                </Link>
+              </li>
             </ul>
           </div>
 

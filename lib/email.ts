@@ -150,7 +150,7 @@ const GS = {
     dtypes: { none: '', airport_tbilisi: 'თბილისის აეროპორტი', airport_kutaisi: 'ქუთაისის აეროპორტი', airport_batumi: 'ბათუმის აეროპორტი', city: 'ქალაქში მიტანა' } as Record<string,string>,
     lBase: (n: number, p: number) => `ბაზისური ქირა (${n} დღე × ${p} ₾)`,
     lIns: (pl: string, dp: number, n: number) => dp > 0 ? `${pl} დაზღვევა (${dp} ₾/დღ × ${n})` : `${pl} დაზღვევა (ჩართულია)`,
-    lFee: 'სერვის საკომისიო (12%)', lDeliveryCost: 'მიტანა',
+    lFee: 'სერვის საკომისიო (5%)', lDeliveryCost: 'მიტანა',
     lTotal: 'სულ გადასახდელი', lDeposit: 'უსაფრთხოების დეპოზიტი',
     lDepositNote: '(ბლოკირება · ბრუნდება მანქანის დაბრუნების შემდეგ)',
     plans: { basic: 'ბაზისური', standard: 'სტანდარტული', premium: 'პრემიუმი' } as Record<string,string>,
@@ -188,7 +188,7 @@ const GS = {
     dtypes: { none: '', airport_tbilisi: 'Аэропорт Тбилиси', airport_kutaisi: 'Аэропорт Кутаиси', airport_batumi: 'Аэропорт Батуми', city: 'Доставка по городу' } as Record<string,string>,
     lBase: (n: number, p: number) => `Базовая аренда (${n} дн. × ${p} ₾)`,
     lIns: (pl: string, dp: number, n: number) => dp > 0 ? `${pl} страховка (${dp} ₾/дн. × ${n})` : `${pl} страховка (включена)`,
-    lFee: 'Комиссия сервиса (12%)', lDeliveryCost: 'Доставка',
+    lFee: 'Комиссия сервиса (5%)', lDeliveryCost: 'Доставка',
     lTotal: 'Итого к оплате', lDeposit: 'Залог (блокировка)',
     lDepositNote: 'Возвращается после возврата автомобиля',
     plans: { basic: 'Базовый', standard: 'Стандартный', premium: 'Премиум' } as Record<string,string>,
@@ -226,7 +226,7 @@ const GS = {
     dtypes: { none: '', airport_tbilisi: 'Tbilisi Airport', airport_kutaisi: 'Kutaisi Airport', airport_batumi: 'Batumi Airport', city: 'City Delivery' } as Record<string,string>,
     lBase: (n: number, p: number) => `Base Rent (${n} ${n === 1 ? 'day' : 'days'} × ${p} ₾)`,
     lIns: (pl: string, dp: number, n: number) => dp > 0 ? `${pl} Insurance (${dp} ₾/day × ${n})` : `${pl} Insurance (Included)`,
-    lFee: 'Service Fee (12%)', lDeliveryCost: 'Delivery',
+    lFee: 'Service Fee (5%)', lDeliveryCost: 'Delivery',
     lTotal: 'Total Payable', lDeposit: 'Security Deposit (Hold)',
     lDepositNote: 'Released after vehicle return',
     plans: { basic: 'Basic', standard: 'Standard', premium: 'Premium' } as Record<string,string>,
@@ -625,6 +625,294 @@ export function bookingRejectedEmail(data: BookingRejectedEmailData): { html: st
 // Keep for backward compat (used by admin verifications flow)
 export function bookingConfirmationEmail(data: BookingEmailData): { html: string; subject: string } {
   return bookingSubmittedEmail(data);
+}
+
+// ─── 7. OTP EMAIL (verify email + password reset) ─────────────
+
+interface OtpEmailData {
+  toName: string;
+  toEmail: string;
+  otp: string;
+  type: 'verify_email' | 'reset_password';
+  lang?: string;
+}
+
+const OTP_STRINGS = {
+  verify_email: {
+    ka: {
+      subject: 'WAYGO — ელ-ფოსტის ვერიფიკაცია',
+      badge: 'ელ-ფოსტის ვერიფიკაცია',
+      greeting: (n: string) => `გამარჯობა, ${n}!`,
+      intro: 'WAYGO-ში სარეგისტრაციოდ გთხოვთ დაადასტუროთ ელ-ფოსტის მისამართი. ქვემოთ მოცემული 6-ნიშნა კოდი შეიყვანეთ ვერიფიკაციის ველში.',
+      codeLabel: 'ვერიფიკაციის კოდი',
+      expiry: 'კოდი მოქმედებს 10 წუთი. ნუ გაუზიარებ მას არავის.',
+      footer: 'თუ ეს მოთხოვნა შენ არ გაგზავნე, უბრალოდ გამოუშვი ეს შეტყობინება.',
+      copy: `© ${new Date().getFullYear()} WAYGO Georgia`,
+    },
+    en: {
+      subject: 'WAYGO — Verify your email address',
+      badge: 'Email Verification',
+      greeting: (n: string) => `Hello, ${n}!`,
+      intro: 'To complete your WAYGO registration, please verify your email address by entering the 6-digit code below.',
+      codeLabel: 'Your verification code',
+      expiry: 'This code expires in 10 minutes. Never share it with anyone.',
+      footer: 'If you did not request this, you can safely ignore this email.',
+      copy: `© ${new Date().getFullYear()} WAYGO Georgia`,
+    },
+    ru: {
+      subject: 'WAYGO — Подтвердите ваш email',
+      badge: 'Подтверждение Email',
+      greeting: (n: string) => `Здравствуйте, ${n}!`,
+      intro: 'Для завершения регистрации на WAYGO подтвердите адрес электронной почты, введя шестизначный код ниже.',
+      codeLabel: 'Ваш код подтверждения',
+      expiry: 'Код действителен 10 минут. Никому не передавайте его.',
+      footer: 'Если вы не запрашивали это, просто проигнорируйте письмо.',
+      copy: `© ${new Date().getFullYear()} WAYGO Georgia`,
+    },
+  },
+  reset_password: {
+    ka: {
+      subject: 'WAYGO — პაროლის აღდგენა',
+      badge: 'პაროლის აღდგენა',
+      greeting: (n: string) => `გამარჯობა, ${n}!`,
+      intro: 'WAYGO-ს ანგარიშის პაროლის განახლებისთვის შეიყვანეთ ქვემოთ მოცემული 6-ნიშნა კოდი.',
+      codeLabel: 'პაროლის აღდგენის კოდი',
+      expiry: 'კოდი მოქმედებს 10 წუთი. ნუ გაუზიარებ მას არავის.',
+      footer: 'თუ ეს მოთხოვნა შენ არ გაგზავნე, გადაამოწმე ანგარიშის უსაფრთხოება.',
+      copy: `© ${new Date().getFullYear()} WAYGO Georgia`,
+    },
+    en: {
+      subject: 'WAYGO — Password reset code',
+      badge: 'Password Reset',
+      greeting: (n: string) => `Hello, ${n}!`,
+      intro: 'We received a request to reset your WAYGO account password. Enter the 6-digit code below to proceed.',
+      codeLabel: 'Your reset code',
+      expiry: 'This code expires in 10 minutes. Never share it with anyone.',
+      footer: 'If you did not request a password reset, please check your account security.',
+      copy: `© ${new Date().getFullYear()} WAYGO Georgia`,
+    },
+    ru: {
+      subject: 'WAYGO — Код сброса пароля',
+      badge: 'Сброс пароля',
+      greeting: (n: string) => `Здравствуйте, ${n}!`,
+      intro: 'Мы получили запрос на сброс пароля вашего аккаунта WAYGO. Введите шестизначный код ниже для продолжения.',
+      codeLabel: 'Ваш код сброса',
+      expiry: 'Код действителен 10 минут. Никому не передавайте его.',
+      footer: 'Если вы не запрашивали сброс пароля, проверьте безопасность аккаунта.',
+      copy: `© ${new Date().getFullYear()} WAYGO Georgia`,
+    },
+  },
+};
+
+// ─── 8. BOOKING CANCELLED EMAIL ───────────────────────────────
+
+export interface BookingCancelledEmailData {
+  guestName: string;
+  guestEmail: string;
+  lang: 'en' | 'ka' | 'ru';
+  car: { brand: string; model: string; year: number };
+  booking: { id: string; startDate: Date; endDate: Date };
+  refundAmount: number;
+  depositRefund: number;
+  platformFeeKept: number;
+  totalRefund: number;
+  tier: string;
+  siteUrl: string;
+}
+
+const CS = {
+  ka: {
+    subject: (b: string, m: string, y: number) => `❌ ჯავშანი გაუქმდა — ${b} ${m} ${y}`,
+    badge: 'ჯავშანი გაუქმდა',
+    greeting: (n: string) => `გამარჯობა, ${n}!`,
+    intro: 'შენი ჯავშანი წარმატებით გაუქმდა. ქვემოთ მოცემულია დაბრუნების დეტალები.',
+    sBooking: 'ჯავშნის ინფო',
+    sRefund: 'თანხის დაბრუნება',
+    lCar: 'მანქანა',
+    lDates: 'თარიღები',
+    lId: 'ჯავშნის ID',
+    lRentalPaid: 'გადახდილი ქირა',
+    lFeeKept: 'სერვის საკომისიო (არ ბრუნდება)',
+    lRentalRefund: 'ქირის დაბრუნება',
+    lDepositRefund: 'დეპოზიტის დაბრუნება',
+    lTotal: 'სულ დაგიბრუნდება',
+    timing: '3–5 სამუშაო დღე',
+    timingNote: 'თანხა დაგიბრუნდება 3–5 სამუშაო დღის განმავლობაში.',
+    ctaLabel: 'ჯავშნების ნახვა',
+    footNote: 'ეს ავტომატური შეტყობინებაა — გთხოვთ პასუხი არ გამოაგზავნოთ.',
+    copy: `© ${new Date().getFullYear()} WAYGO Georgia`,
+  },
+  ru: {
+    subject: (b: string, m: string, y: number) => `❌ Бронирование отменено — ${b} ${m} ${y}`,
+    badge: 'Бронирование отменено',
+    greeting: (n: string) => `Здравствуйте, ${n}!`,
+    intro: 'Ваше бронирование успешно отменено. Ниже приведены детали возврата.',
+    sBooking: 'Информация о бронировании',
+    sRefund: 'Возврат средств',
+    lCar: 'Автомобиль',
+    lDates: 'Даты',
+    lId: 'ID бронирования',
+    lRentalPaid: 'Оплачено за аренду',
+    lFeeKept: 'Комиссия платформы (не возвращается)',
+    lRentalRefund: 'Возврат аренды',
+    lDepositRefund: 'Возврат залога',
+    lTotal: 'Итого к возврату',
+    timing: '3–5 рабочих дней',
+    timingNote: 'Средства будут возвращены в течение 3–5 рабочих дней.',
+    ctaLabel: 'Мои бронирования',
+    footNote: 'Это автоматическое уведомление — пожалуйста, не отвечайте.',
+    copy: `© ${new Date().getFullYear()} WAYGO Georgia`,
+  },
+  en: {
+    subject: (b: string, m: string, y: number) => `❌ Booking Cancelled — ${b} ${m} ${y}`,
+    badge: 'Booking Cancelled',
+    greeting: (n: string) => `Hello, ${n}!`,
+    intro: 'Your booking has been successfully cancelled. Below are the refund details.',
+    sBooking: 'Booking Information',
+    sRefund: 'Refund Breakdown',
+    lCar: 'Car',
+    lDates: 'Dates',
+    lId: 'Booking ID',
+    lRentalPaid: 'Rental amount paid',
+    lFeeKept: 'Platform fee (non-refundable)',
+    lRentalRefund: 'Rental refund',
+    lDepositRefund: 'Deposit return',
+    lTotal: 'Total you will receive',
+    timing: '3–5 business days',
+    timingNote: 'Your refund will be processed within 3–5 business days.',
+    ctaLabel: 'View My Bookings',
+    footNote: 'This is an automated message — please do not reply.',
+    copy: `© ${new Date().getFullYear()} WAYGO Georgia`,
+  },
+};
+
+export function bookingCancelledEmail(data: BookingCancelledEmailData): { html: string; subject: string } {
+  const { lang, car, booking, guestName, refundAmount, depositRefund, platformFeeKept, totalRefund, siteUrl } = data;
+  const s = CS[lang];
+  const rentalPaid = refundAmount + platformFeeKept;
+  const dashUrl = `${siteUrl}/dashboard`;
+
+  const html = emailShell(lang, `
+  <!-- Badge -->
+  <div style="text-align:center;margin:0 0 28px;">
+    <span style="display:inline-block;background:#fee2e2;color:#991b1b;font-weight:800;font-size:11px;letter-spacing:2.5px;padding:7px 22px;border-radius:100px;text-transform:uppercase;">❌ ${s.badge}</span>
+  </div>
+
+  <!-- Greeting -->
+  <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.3;">${s.greeting(guestName)}</h1>
+  <p style="font-size:15px;color:#475569;margin:0 0 32px;line-height:1.8;">${s.intro}</p>
+
+  <!-- Booking info -->
+  <p style="font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#94a3b8;margin:0 0 10px;">${s.sBooking}</p>
+  <div style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;padding:4px 24px;margin-bottom:24px;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      ${row(s.lId, `<span style="font-family:monospace;font-size:12px;background:#e2e8f0;padding:2px 8px;border-radius:4px;">#${booking.id.slice(-8).toUpperCase()}</span>`)}
+      ${row(s.lCar, `${car.brand} ${car.model} ${car.year}`, true)}
+      ${row(s.lDates, `${fmtDate(booking.startDate, lang)} — ${fmtDate(booking.endDate, lang)}`, false, true)}
+    </table>
+  </div>
+
+  <!-- Refund breakdown -->
+  <p style="font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#94a3b8;margin:0 0 10px;">${s.sRefund}</p>
+  <div style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;padding:4px 24px;margin-bottom:24px;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      ${row(s.lRentalPaid, `${rentalPaid} ₾`)}
+      ${platformFeeKept > 0 ? row(`<span style="color:#ef4444;">− ${s.lFeeKept}</span>`, `<span style="color:#ef4444;">−${platformFeeKept} ₾</span>`) : ''}
+      ${refundAmount > 0 ? row(s.lRentalRefund, `${refundAmount} ₾`, true) : `<tr><td style="padding:11px 0;font-size:13px;color:#64748b;border-bottom:1px solid #f1f5f9;">${s.lRentalRefund}</td><td style="padding:11px 0;font-size:13px;color:#94a3b8;text-align:right;border-bottom:1px solid #f1f5f9;">0 ₾</td></tr>`}
+      ${row(s.lDepositRefund, `${depositRefund} ₾`, true)}
+      <tr>
+        <td style="padding:14px 0 10px;font-size:15px;font-weight:800;color:#166534;border-top:2px solid #16a34a;">${s.lTotal}</td>
+        <td style="padding:14px 0 10px;font-size:20px;font-weight:900;color:#16a34a;text-align:right;border-top:2px solid #16a34a;">${totalRefund} ₾</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Timing -->
+  <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:16px 20px;margin-bottom:28px;text-align:center;">
+    <p style="font-size:13px;font-weight:700;color:#166534;margin:0;">⏱ ${s.timingNote}</p>
+  </div>
+
+  <!-- CTA -->
+  <div style="text-align:center;margin-bottom:10px;">
+    <a href="${dashUrl}" style="display:inline-block;background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);color:#ffffff;padding:18px 52px;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none;letter-spacing:0.4px;">${s.ctaLabel}</a>
+  </div>
+  `, s.footNote, s.copy);
+
+  return { html, subject: s.subject(car.brand, car.model, car.year) };
+}
+
+export function sendOtpEmail(data: OtpEmailData): { html: string; subject: string; to: string } {
+  const lang = (data.lang && ['ka', 'en', 'ru'].includes(data.lang) ? data.lang : 'en') as 'ka' | 'en' | 'ru';
+  const s = OTP_STRINGS[data.type][lang];
+  const digits = data.otp.split('');
+
+  const digitCells = digits.map(d =>
+    `<td style="width:54px;height:72px;text-align:center;vertical-align:middle;background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;font-size:42px;font-weight:900;color:#1a56db;font-family:'Courier New',Courier,monospace;letter-spacing:0;">${d}</td>`
+  ).join('<td style="width:8px;"></td>');
+
+  const html = `<!DOCTYPE html>
+<html lang="${lang}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${s.subject}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f1f5f9;padding:40px 16px;">
+  <tr><td align="center">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;margin:0 auto;">
+
+    <!-- Header -->
+    <tr><td style="background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);border-radius:16px 16px 0 0;padding:32px 48px;text-align:center;">
+      <div style="font-size:34px;font-weight:900;color:#ffffff;letter-spacing:-1.5px;">WAYGO<span style="color:#93c5fd;">.ge</span></div>
+      <div style="font-size:10px;color:#93c5fd;margin-top:8px;letter-spacing:4px;text-transform:uppercase;">P2P Car Rental &middot; Georgia</div>
+    </td></tr>
+
+    <!-- Body -->
+    <tr><td style="background:#ffffff;padding:44px 48px 36px;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;">
+
+      <!-- Badge -->
+      <div style="text-align:center;margin-bottom:28px;">
+        <span style="display:inline-block;background:#eff6ff;color:#1e40af;font-weight:800;font-size:11px;letter-spacing:2.5px;padding:7px 22px;border-radius:100px;text-transform:uppercase;">🔐 ${s.badge}</span>
+      </div>
+
+      <!-- Greeting -->
+      <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 12px;text-align:center;line-height:1.3;">${s.greeting(data.toName)}</h1>
+      <p style="font-size:15px;color:#475569;margin:0 0 36px;line-height:1.8;text-align:center;">${s.intro}</p>
+
+      <!-- Code label -->
+      <p style="font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#94a3b8;text-align:center;margin:0 0 16px;">${s.codeLabel}</p>
+
+      <!-- OTP digits table -->
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 28px;">
+        <tr>${digitCells}</tr>
+      </table>
+
+      <!-- Full code copyable fallback -->
+      <div style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px;padding:16px 24px;text-align:center;margin-bottom:28px;">
+        <p style="font-size:11px;color:#94a3b8;margin:0 0 6px;letter-spacing:1px;text-transform:uppercase;">Copy code</p>
+        <p style="font-size:36px;font-weight:900;color:#1a56db;font-family:'Courier New',Courier,monospace;margin:0;letter-spacing:16px;">${data.otp}</p>
+      </div>
+
+      <!-- Expiry notice -->
+      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px 20px;text-align:center;margin-bottom:12px;">
+        <p style="font-size:13px;color:#9a3412;margin:0;font-weight:600;">⏱ ${s.expiry}</p>
+      </div>
+
+    </td></tr>
+
+    <!-- Footer -->
+    <tr><td style="background:#f8fafc;border-radius:0 0 16px 16px;border:1px solid #e2e8f0;border-top:none;padding:24px 48px;text-align:center;">
+      <p style="margin:0 0 4px;font-size:12px;color:#94a3b8;">${s.footer}</p>
+      <p style="margin:0;font-size:11px;color:#cbd5e1;">${s.copy}</p>
+    </td></tr>
+
+  </table>
+  </td></tr>
+</table>
+</body></html>`;
+
+  return { html, subject: s.subject, to: data.toEmail };
 }
 
 export function emailLayout(content: string, ctaHref: string, ctaLabel: string): string {

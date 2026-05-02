@@ -93,6 +93,7 @@ export async function POST(req: Request) {
         deliveryAddress: input.deliveryAddress ?? null,
         status: 'awaiting_host',
         hostApprovalDeadline,
+        platformFeeGel: totals.platformFee,
       },
     });
 

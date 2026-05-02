@@ -87,6 +87,11 @@ model Profile {
   verificationRejectionComment     String?
   hostVerificationRejectionComment String?
   rating                           Float              @default(5)
+  emailVerified                    Boolean            @default(false)
+  emailVerificationCode            String?
+  emailVerificationExpiry          DateTime?
+  passwordResetCode                String?
+  passwordResetExpiry              DateTime?
   cars               Car[]
   bookings           Booking[]          @relation("GuestBookings")
   createdAt          DateTime           @default(now())
@@ -151,7 +156,11 @@ model Booking {
   deliveryCost     Int               @default(0)
   deliveryAddress  String?
   status           BookingStatus     @default(awaiting_host)
-  hostApprovalDeadline DateTime?
+  hostApprovalDeadline    DateTime?
+  platformFeeGel          Int              @default(0)
+  cancelledAt             DateTime?
+  cancellationOtpCode     String?
+  cancellationOtpExpiry   DateTime?
   insurancePolicy  InsurancePolicy?
   transactions     Transaction[]
   conditionReports ConditionReport[]
