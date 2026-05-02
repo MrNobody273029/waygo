@@ -35,19 +35,21 @@ export function DashboardContent({ name, email, bookings, totalSpent, upcomingTr
   const isRejected = verificationStatus === 'REJECTED';
 
   const statusStyle: Record<string, { cls: string; icon: string }> = {
-    confirmed:  { cls: 'bg-tertiary-fixed/40 text-tertiary',       icon: 'check_circle' },
-    pending:    { cls: 'bg-amber-50 text-amber-700',               icon: 'schedule' },
-    completed:  { cls: 'bg-surface-container text-secondary',      icon: 'task_alt' },
-    rejected:   { cls: 'bg-error-container/40 text-error',         icon: 'cancel' },
-    cancelled:  { cls: 'bg-surface-container text-secondary',      icon: 'remove_circle' },
+    awaiting_host: { cls: 'bg-primary-fixed/40 text-primary',      icon: 'hourglass_empty' },
+    confirmed:     { cls: 'bg-tertiary-fixed/40 text-tertiary',    icon: 'check_circle' },
+    pending:       { cls: 'bg-amber-50 text-amber-700',            icon: 'schedule' },
+    completed:     { cls: 'bg-surface-container text-secondary',   icon: 'task_alt' },
+    rejected:      { cls: 'bg-error-container/40 text-error',      icon: 'cancel' },
+    cancelled:     { cls: 'bg-surface-container text-secondary',   icon: 'remove_circle' },
   };
 
   const statusLabel: Record<string, string> = {
-    confirmed: t.dashboard.confirmed,
-    pending:   t.dashboard.pending,
-    completed: t.dashboard.completed,
-    rejected:  t.dashboard.rejected,
-    cancelled: t.dashboard.cancelled,
+    awaiting_host: t.dashboard.awaitingHost,
+    confirmed:     t.dashboard.confirmed,
+    pending:       t.dashboard.pending,
+    completed:     t.dashboard.completed,
+    rejected:      t.dashboard.rejected,
+    cancelled:     t.dashboard.cancelled,
   };
 
   const verBadge = isVerified

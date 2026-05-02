@@ -4,11 +4,10 @@ import { getServerSession } from 'next-auth';
 import { Resend } from 'resend';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { cars } from '@/lib/sample-data';
 import { calculateBooking, DEPOSIT_GEL, insurancePlans, type InsurancePlan } from '@/lib/constants';
 import { daysBetween } from '@/lib/utils';
 import { authorizeDeposit, createRentalPayment } from '@/lib/payments';
-import { bookingConfirmationEmail } from '@/lib/email';
+import { bookingSubmittedEmail, hostBookingRequestEmail } from '@/lib/email';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const SITE_URL = process.env.NEXTAUTH_URL ?? 'https://waygo.ge';
@@ -23,6 +22,17 @@ const schema = z.object({
   deliveryAddress: z.string().optional(),
 });
 
+function dateRange(start: string, end: string): string[] {
+  const dates: string[] = [];
+  const cur = new Date(start);
+  const last = new Date(end);
+  while (cur <= last) {
+    dates.push(cur.toISOString().split('T')[0]);
+    cur.setDate(cur.getDate() + 1);
+  }
+  return dates;
+}
+
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -31,8 +41,29 @@ export async function POST(req: Request) {
   if (!guestId) return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
 
   const input = schema.parse(await req.json());
-  const car = cars.find(c => c.id === input.carId);
+
+  // Load car from Prisma (not static data)
+  const car = await prisma.car.findUnique({
+    where: { id: input.carId },
+    include: { owner: { select: { id: true, email: true, fullName: true, lang: true } } },
+  });
   if (!car) return NextResponse.json({ error: 'Car not found' }, { status: 404 });
+
+  // Check availability: all dates in range must be in CarAvailability with no bookingId
+  const requestedDates = dateRange(input.startDate, input.endDate);
+  const availableRows = await prisma.carAvailability.findMany({
+    where: {
+      carId: input.carId,
+      date: { in: requestedDates.map(d => new Date(d)) },
+      bookingId: null,
+    },
+    select: { date: true },
+  });
+  const availableSet = new Set(availableRows.map(r => r.date.toISOString().split('T')[0]));
+  const unavailable = requestedDates.filter(d => !availableSet.has(d));
+  if (unavailable.length > 0) {
+    return NextResponse.json({ error: 'dates_unavailable', dates: unavailable }, { status: 409 });
+  }
 
   const days = daysBetween(input.startDate, input.endDate);
   const totals = calculateBooking(car.dailyPrice, days, input.insurancePlan as InsurancePlan);
@@ -43,6 +74,8 @@ export async function POST(req: Request) {
     createRentalPayment(totals.total),
     authorizeDeposit(DEPOSIT_GEL),
   ]);
+
+  const hostApprovalDeadline = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   const booking = await prisma.$transaction(async (tx) => {
     const b = await tx.booking.create({
@@ -58,7 +91,8 @@ export async function POST(req: Request) {
         deliveryType: input.deliveryType ?? 'none',
         deliveryCost,
         deliveryAddress: input.deliveryAddress ?? null,
-        status: 'pending',
+        status: 'awaiting_host',
+        hostApprovalDeadline,
       },
     });
 
@@ -91,20 +125,29 @@ export async function POST(req: Request) {
       },
     });
 
+    // Reserve the availability dates
+    await tx.carAvailability.updateMany({
+      where: {
+        carId: input.carId,
+        date: { in: requestedDates.map(d => new Date(d)) },
+        bookingId: null,
+      },
+      data: { bookingId: b.id },
+    });
+
     return b;
   });
 
-  // Send booking confirmation email — fire and forget, does not block response
+  // Send emails — fire and forget
   const validLangs = ['en', 'ka', 'ru'];
   prisma.profile.findUnique({
     where: { id: guestId },
     select: { email: true, fullName: true, lang: true },
   }).then(guest => {
     if (!guest?.email) return;
-    const lang = validLangs.includes(guest.lang)
-      ? (guest.lang as 'en' | 'ka' | 'ru')
-      : 'en';
-    const { html, subject } = bookingConfirmationEmail({
+    const lang = validLangs.includes(guest.lang) ? (guest.lang as 'en' | 'ka' | 'ru') : 'en';
+
+    const emailData = {
       guestName: guest.fullName,
       lang,
       booking: {
@@ -120,26 +163,41 @@ export async function POST(req: Request) {
         brand: car.brand,
         model: car.model,
         year: car.year,
-        type: car.type,
+        type: car.carType,
         transmission: car.transmission,
         fuelType: car.fuelType,
         seats: car.seats,
         location: car.location,
         color: car.color,
-        images: car.images,
+        images: car.imageUrls,
       },
       totals,
       days,
       insurancePlan: input.insurancePlan,
       grandTotal,
       siteUrl: SITE_URL,
-    });
-    return resend.emails.send({
-      from: 'Drivo.ge <no-reply@waygo.ge>',
-      to: guest.email,
-      subject,
-      html,
-    });
+    };
+
+    const { html: guestHtml, subject: guestSubject } = bookingSubmittedEmail(emailData);
+    const sends: Promise<unknown>[] = [
+      resend.emails.send({ from: 'Drivo.ge <no-reply@waygo.ge>', to: guest.email, subject: guestSubject, html: guestHtml }),
+    ];
+
+    if (car.owner?.email) {
+      const { html: hostHtml, subject: hostSubject } = hostBookingRequestEmail({
+        hostName: car.owner.fullName,
+        hostEmail: car.owner.email,
+        guestName: guest.fullName,
+        car: { brand: car.brand, model: car.model, year: car.year, imageUrl: car.imageUrls[0] ?? null },
+        booking: { id: booking.id, startDate: booking.startDate, endDate: booking.endDate, totalPrice: booking.totalPrice },
+        days,
+        deadline: hostApprovalDeadline,
+        siteUrl: SITE_URL,
+      });
+      sends.push(resend.emails.send({ from: 'Drivo.ge <no-reply@waygo.ge>', to: car.owner.email, subject: hostSubject, html: hostHtml }));
+    }
+
+    return Promise.all(sends);
   }).catch(console.error);
 
   return NextResponse.json({
@@ -149,7 +207,7 @@ export async function POST(req: Request) {
     insurance: {
       planType: input.insurancePlan,
       deductibleAmount: insurancePlans[input.insurancePlan as InsurancePlan].deductible,
-      status: 'inactive_until_condition_report',
+      status: 'inactive_until_host_approval',
     },
     transactions: [
       { type: 'payment', providerId: payment.providerId, amount: payment.amount, status: payment.status },

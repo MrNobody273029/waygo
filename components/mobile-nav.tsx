@@ -15,7 +15,6 @@ export function MobileNav() {
 
   const items = [
     { href: '/cars', icon: 'search', label: t.mobileNav.explore },
-    { href: '/dashboard', icon: 'directions_car', label: t.mobileNav.bookings },
     { href: '/verify', icon: 'badge', label: t.mobileNav.verify },
     { href: profileHref, icon: 'person', label: t.mobileNav.profile },
   ];

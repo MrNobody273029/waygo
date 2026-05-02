@@ -22,10 +22,28 @@ export async function generateMetadata({
 }
 
 export default async function CarDetail({ params }: { params: { id: string } }) {
-  const car = await prisma.car.findUnique({
-    where: { id: params.id },
-    include: { owner: { select: { fullName: true, isVerified: true, rating: true } } },
-  });
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [car, availRows] = await Promise.all([
+    prisma.car.findUnique({
+      where: { id: params.id },
+      include: { owner: { select: { fullName: true, isVerified: true, rating: true } } },
+    }),
+    prisma.carAvailability.findMany({
+      where: {
+        carId: params.id,
+        bookingId: null,
+        date: { gte: today },
+      },
+      select: { date: true },
+      orderBy: { date: 'asc' },
+    }),
+  ]);
+
   if (!car) notFound();
-  return <CarDetailContent car={dbCarToUiCar(car)} />;
+
+  const availableDates = availRows.map(r => r.date.toISOString().split('T')[0]);
+
+  return <CarDetailContent car={dbCarToUiCar(car)} availableDates={availableDates} />;
 }

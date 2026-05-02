@@ -145,9 +145,19 @@ export default function BecomeHost() {
   // Step 1 — Specs
   const [seats, setSeats] = useState('5');
   const [doors, setDoors] = useState('4');
+  const [carType, setCarType] = useState('Economy');
   const [transmission, setTransmission] = useState<'Automatic' | 'Manual'>('Automatic');
   const [fuelType, setFuelType] = useState('Petrol');
-  const [ac, setAc] = useState(true);
+  const [steeringWheel, setSteeringWheel] = useState<'left' | 'right'>('left');
+  const [selectedFeatures, setSelectedFeatures] = useState<Set<string>>(new Set(['Air Conditioning']));
+
+  function toggleFeature(f: string) {
+    setSelectedFeatures(prev => {
+      const s = new Set(prev);
+      if (s.has(f)) s.delete(f); else s.add(f);
+      return s;
+    });
+  }
 
   // Step 2 — Description & photos
   const [description, setDescription] = useState('');
@@ -156,6 +166,7 @@ export default function BecomeHost() {
   // Step 3 — Pricing
   const [dailyPrice, setDailyPrice] = useState('');
   const [deposit, setDeposit] = useState('250');
+  const [estimatedValueUsd, setEstimatedValueUsd] = useState('');
   const [minDays, setMinDays] = useState('1');
   const [advanceNotice, setAdvanceNotice] = useState('2');
 
@@ -182,6 +193,10 @@ export default function BecomeHost() {
   const [techPassportFront, setTechPassportFront] = useState<string | null>(null);
   const [techPassportBack, setTechPassportBack] = useState<string | null>(null);
 
+  // Step 8 — Availability
+  const [availDates, setAvailDates] = useState<Set<string>>(new Set());
+  const [availMonth, setAvailMonth] = useState(0);
+
   useEffect(() => {
     if (status === 'loading') return;
     if (!session) {
@@ -202,7 +217,7 @@ export default function BecomeHost() {
   const steps = [
     t.becomeHost.step1, t.becomeHost.step2, t.becomeHost.step3,
     t.becomeHost.step4, t.becomeHost.step5, t.becomeHost.step6,
-    t.becomeHost.step7, t.becomeHost.step8,
+    t.becomeHost.step7, t.becomeHost.step8, t.becomeHost.step9,
   ];
 
   const ic = 'w-full rounded-xl border border-outline-variant bg-white px-4 py-3 text-label-bold outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary-fixed';
@@ -228,9 +243,9 @@ export default function BecomeHost() {
         body: JSON.stringify({
           brand, model, year, plateNumber: plate,
           dailyPrice, location: baseCity,
-          carType: 'Economy',
+          carType,
           transmission,
-          features: ac ? ['AC'] : [],
+          features: Array.from(selectedFeatures),
           imageUrls,
           description,
           techPassportFront,
@@ -239,6 +254,8 @@ export default function BecomeHost() {
           seats,
           doors,
           fuelType,
+          steeringWheel,
+          estimatedValueUsd: estimatedValueUsd ? parseInt(estimatedValueUsd, 10) : null,
           airportTbilisiState: tbilisiState,
           airportTbilisiPrice: tbilisiPrice || '0',
           airportKutaisiState: kutaisiState,
@@ -254,6 +271,14 @@ export default function BecomeHost() {
         }),
       });
       if (res.ok) {
+        const { carId } = await res.json();
+        if (carId && availDates.size > 0) {
+          await fetch(`/api/cars/${carId}/availability`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ add: Array.from(availDates), remove: [] }),
+          }).catch(() => {});
+        }
         router.push('/my-cars');
       } else {
         const data = await res.json().catch(() => ({}));
@@ -319,28 +344,47 @@ export default function BecomeHost() {
       case 1: return (
         <div className="space-y-6">
           <h2 className="text-h2 font-bold text-on-background">{t.becomeHost.specsTitle}</h2>
+
+          {/* Car type */}
           <div>
-            <label className="mb-2 block text-label-bold font-bold text-on-background">{t.becomeHost.seatsLabel}</label>
+            <label className="mb-2 block text-label-bold font-bold text-on-background">{t.becomeHost.carTypeLabel}</label>
             <div className="flex gap-2 flex-wrap">
-              {['2', '4', '5', '7', '8+'].map(s => (
-                <button key={s} type="button" onClick={() => setSeats(s)}
-                  className={`w-14 py-2.5 rounded-xl border text-label-bold font-bold transition cursor-pointer ${seats === s ? 'bg-primary-container text-white border-primary-container' : 'bg-white border-outline-variant/40 text-on-background hover:border-primary/40'}`}>
-                  {s}
+              {['Economy','Compact','Sedan','SUV','Minivan','Premium','Pickup','Coupe','Hatchback','Convertible'].map(ct => (
+                <button key={ct} type="button" onClick={() => setCarType(ct)}
+                  className={`px-4 py-2 rounded-xl border text-label-sm font-bold transition cursor-pointer ${carType === ct ? 'bg-primary-container text-white border-primary-container' : 'bg-white border-outline-variant/40 text-on-background hover:border-primary/40'}`}>
+                  {ct}
                 </button>
               ))}
             </div>
           </div>
-          <div>
-            <label className="mb-2 block text-label-bold font-bold text-on-background">{t.becomeHost.doorsLabel}</label>
-            <div className="flex gap-2 flex-wrap">
-              {['2', '3', '4', '5'].map(d => (
-                <button key={d} type="button" onClick={() => setDoors(d)}
-                  className={`w-14 py-2.5 rounded-xl border text-label-bold font-bold transition cursor-pointer ${doors === d ? 'bg-primary-container text-white border-primary-container' : 'bg-white border-outline-variant/40 text-on-background hover:border-primary/40'}`}>
-                  {d}
-                </button>
-              ))}
+
+          {/* Seats & Doors */}
+          <div className="grid gap-5 md:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-label-bold font-bold text-on-background">{t.becomeHost.seatsLabel}</label>
+              <div className="flex gap-2 flex-wrap">
+                {['2', '4', '5', '7', '8+'].map(s => (
+                  <button key={s} type="button" onClick={() => setSeats(s)}
+                    className={`w-14 py-2.5 rounded-xl border text-label-bold font-bold transition cursor-pointer ${seats === s ? 'bg-primary-container text-white border-primary-container' : 'bg-white border-outline-variant/40 text-on-background hover:border-primary/40'}`}>
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="mb-2 block text-label-bold font-bold text-on-background">{t.becomeHost.doorsLabel}</label>
+              <div className="flex gap-2 flex-wrap">
+                {['2', '3', '4', '5'].map(d => (
+                  <button key={d} type="button" onClick={() => setDoors(d)}
+                    className={`w-14 py-2.5 rounded-xl border text-label-bold font-bold transition cursor-pointer ${doors === d ? 'bg-primary-container text-white border-primary-container' : 'bg-white border-outline-variant/40 text-on-background hover:border-primary/40'}`}>
+                    {d}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
+
+          {/* Transmission */}
           <div>
             <label className="mb-2 block text-label-bold font-bold text-on-background">{t.becomeHost.transmissionLabel}</label>
             <div className="flex gap-3">
@@ -353,6 +397,8 @@ export default function BecomeHost() {
               ))}
             </div>
           </div>
+
+          {/* Fuel type */}
           <div>
             <label className="mb-2 block text-label-bold font-bold text-on-background">{t.becomeHost.fuelTypeLabel}</label>
             <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
@@ -371,19 +417,53 @@ export default function BecomeHost() {
               ))}
             </div>
           </div>
+
+          {/* Steering wheel */}
           <div>
-            <label className="mb-2 block text-label-bold font-bold text-on-background">{t.becomeHost.acLabel}</label>
+            <label className="mb-2 block text-label-bold font-bold text-on-background">{t.becomeHost.steeringWheelLabel}</label>
             <div className="flex gap-3">
-              {[
-                { val: true,  icon: 'ac_unit',         label: t.becomeHost.acYes },
-                { val: false, icon: 'do_not_disturb',  label: t.becomeHost.acNo },
-              ].map(a => (
-                <button key={String(a.val)} type="button" onClick={() => setAc(a.val)}
-                  className={`flex-1 py-3 rounded-xl border text-label-bold font-bold flex items-center justify-center gap-2 transition cursor-pointer ${ac === a.val ? 'bg-primary-container text-white border-primary-container' : 'bg-white border-outline-variant/40 text-on-background hover:border-primary/40'}`}>
-                  <span className="material-symbols-outlined text-[18px]">{a.icon}</span>
-                  {a.label}
+              {([
+                { val: 'left'  as const, icon: 'settings_backup_restore', label: t.becomeHost.steeringLeft },
+                { val: 'right' as const, icon: 'sync',                    label: t.becomeHost.steeringRight },
+              ]).map(sw => (
+                <button key={sw.val} type="button" onClick={() => setSteeringWheel(sw.val)}
+                  className={`flex-1 py-3 rounded-xl border text-label-bold font-bold flex items-center justify-center gap-2 transition cursor-pointer ${steeringWheel === sw.val ? 'bg-primary-container text-white border-primary-container' : 'bg-white border-outline-variant/40 text-on-background hover:border-primary/40'}`}>
+                  <span className="material-symbols-outlined text-[18px]">{sw.icon}</span>
+                  {sw.label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Features */}
+          <div>
+            <label className="mb-2 block text-label-bold font-bold text-on-background">{t.becomeHost.featuresLabel}</label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {[
+                { key: 'Air Conditioning', icon: 'ac_unit' },
+                { key: 'Bluetooth',        icon: 'bluetooth' },
+                { key: 'USB Charging',     icon: 'usb' },
+                { key: 'GPS Navigation',   icon: 'map' },
+                { key: 'Backup Camera',    icon: 'camera_rear' },
+                { key: 'Parking Sensors',  icon: 'sensors' },
+                { key: 'Heated Seats',     icon: 'heat' },
+                { key: 'Sunroof',          icon: 'wb_sunny' },
+                { key: 'Electric Windows', icon: 'power' },
+                { key: 'ABS',              icon: 'emergency_heat' },
+                { key: 'Cruise Control',   icon: 'speed' },
+                { key: 'Roof Rack',        icon: 'luggage' },
+                { key: 'Child Seat',       icon: 'child_care' },
+                { key: 'AWD / 4WD',        icon: 'settings_input_component' },
+              ].map(f => {
+                const active = selectedFeatures.has(f.key);
+                return (
+                  <button key={f.key} type="button" onClick={() => toggleFeature(f.key)}
+                    className={`flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-label-sm font-semibold transition cursor-pointer text-left ${active ? 'bg-primary-fixed/30 border-primary text-primary' : 'bg-white border-outline-variant/40 text-on-background hover:border-primary/40'}`}>
+                    <span className={`material-symbols-outlined text-[18px] shrink-0 ${active ? 'text-primary' : 'text-secondary'}`}>{active ? 'check_circle' : f.icon}</span>
+                    {f.key}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -501,6 +581,19 @@ export default function BecomeHost() {
               <p className="text-h2 font-black text-primary">{gel(Number(dailyPrice) * 18)}<span className="text-label-bold font-normal text-secondary ml-2">{t.becomeHost.perMonth}</span></p>
             </div>
           )}
+          {/* Estimated car value */}
+          <div className="rounded-2xl border border-outline-variant/40 bg-surface-container-low p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-secondary text-[20px]">shield</span>
+              <span className="font-bold text-label-bold text-on-background">{t.becomeHost.estimatedValueLabel}</span>
+            </div>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-black text-label-bold">$</span>
+              <input type="number" value={estimatedValueUsd} onChange={e => setEstimatedValueUsd(e.target.value)}
+                className={`${ic} pl-8`} placeholder="15000" min="0" />
+            </div>
+            <p className="text-label-sm text-slate-400">{t.becomeHost.estimatedValueHint}</p>
+          </div>
         </div>
       );
 
@@ -631,6 +724,111 @@ export default function BecomeHost() {
         </div>
       );
 
+      /* ── STEP 8: Availability ──────────────────────────────── */
+      case 8: {
+        const today = new Date().toISOString().split('T')[0];
+        const base = new Date();
+        base.setDate(1);
+        base.setMonth(base.getMonth() + availMonth);
+        const yr = base.getFullYear();
+        const mo = base.getMonth();
+        const totalD = new Date(yr, mo + 1, 0).getDate();
+        const startOff = (new Date(yr, mo, 1).getDay() + 6) % 7;
+        const ta = t.availability;
+        const monthName = (ta.months as unknown as string[])[mo];
+
+        const toggleDay = (d: string) => {
+          if (d < today) return;
+          setAvailDates(prev => {
+            const s = new Set(prev);
+            if (s.has(d)) s.delete(d); else s.add(d);
+            return s;
+          });
+        };
+
+        const selectAllMonth = () => {
+          setAvailDates(prev => {
+            const s = new Set(prev);
+            for (let i = 1; i <= totalD; i++) {
+              const d = new Date(yr, mo, i).toISOString().split('T')[0];
+              if (d >= today) s.add(d);
+            }
+            return s;
+          });
+        };
+
+        const clearAllMonth = () => {
+          setAvailDates(prev => {
+            const s = new Set(prev);
+            for (let i = 1; i <= totalD; i++) {
+              const d = new Date(yr, mo, i).toISOString().split('T')[0];
+              s.delete(d);
+            }
+            return s;
+          });
+        };
+
+        return (
+          <div className="space-y-5">
+            <div>
+              <h2 className="text-h2 font-bold text-on-background">{t.becomeHost.availabilityStepTitle}</h2>
+              <p className="text-secondary text-label-bold mt-1 mb-1">{t.becomeHost.availabilityStepSub}</p>
+              <p className="text-label-sm text-primary font-semibold">{availDates.size} days selected</p>
+            </div>
+
+            {/* Month nav */}
+            <div className="flex items-center justify-between">
+              <button type="button" onClick={() => setAvailMonth(m => m - 1)} disabled={availMonth === 0}
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-outline-variant disabled:opacity-30 hover:border-primary/40 transition cursor-pointer">
+                <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+              </button>
+              <span className="font-extrabold text-label-bold text-on-background">{monthName} {yr}</span>
+              <button type="button" onClick={() => setAvailMonth(m => m + 1)} disabled={availMonth >= 5}
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-outline-variant disabled:opacity-30 hover:border-primary/40 transition cursor-pointer">
+                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+              </button>
+            </div>
+
+            {/* Quick actions */}
+            <div className="flex gap-2">
+              <button type="button" onClick={selectAllMonth}
+                className="flex-1 rounded-xl border border-primary/30 bg-primary-fixed/20 py-2 text-label-sm font-bold text-primary hover:bg-primary-fixed/30 transition cursor-pointer">
+                {ta.selectMonth}
+              </button>
+              <button type="button" onClick={clearAllMonth}
+                className="flex-1 rounded-xl border border-outline-variant py-2 text-label-sm font-bold text-secondary hover:bg-surface-container-low transition cursor-pointer">
+                {ta.clearMonth}
+              </button>
+            </div>
+
+            {/* Weekday headers */}
+            <div className="grid grid-cols-7">
+              {(ta.weekdays as unknown as string[]).map(d => (
+                <div key={d} className="text-center text-[10px] font-black uppercase text-slate-400 py-1">{d}</div>
+              ))}
+            </div>
+
+            {/* Calendar grid */}
+            <div className="grid grid-cols-7 gap-1">
+              {Array.from({ length: startOff }).map((_, i) => <div key={`e${i}`} />)}
+              {Array.from({ length: totalD }).map((_, i) => {
+                const day = i + 1;
+                const d = new Date(yr, mo, day).toISOString().split('T')[0];
+                const isPast = d < today;
+                const sel = availDates.has(d);
+                let cls = 'flex items-center justify-center rounded-xl h-9 text-[13px] font-bold transition-all ';
+                if (isPast) cls += 'text-slate-300 cursor-default';
+                else if (sel) cls += 'bg-primary-container text-white cursor-pointer active:scale-95';
+                else cls += 'text-slate-500 hover:bg-surface-container-low cursor-pointer';
+                return (
+                  <button key={d} type="button" onClick={() => toggleDay(d)} className={cls}>{day}</button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      }
+
       default: return null;
     }
   }
@@ -717,24 +915,32 @@ export default function BecomeHost() {
                   <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                 </button>
               ) : (
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={submitting || !techPassportFront || !techPassportBack}
-                  className="flex items-center gap-2 rounded-xl bg-primary-container text-white px-8 py-3 font-bold text-label-bold hover:bg-primary transition-all active:scale-95 disabled:opacity-60 cursor-pointer"
-                >
-                  {submitting ? (
-                    <>
-                      <span className="material-symbols-outlined animate-spin text-[18px]">autorenew</span>
-                      {t.common.loading}
-                    </>
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined text-[18px]">rocket_launch</span>
-                      {t.becomeHost.saveBtn}
-                    </>
+                <div className="flex gap-3">
+                  {availDates.size === 0 && (
+                    <button type="button" onClick={handleSubmit} disabled={submitting || !techPassportFront || !techPassportBack}
+                      className="rounded-xl border border-outline-variant px-5 py-3 font-bold text-label-bold text-secondary hover:bg-surface-container-low transition disabled:opacity-60 cursor-pointer">
+                      {t.becomeHost.availabilitySkip}
+                    </button>
                   )}
-                </button>
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={submitting || !techPassportFront || !techPassportBack}
+                    className="flex items-center gap-2 rounded-xl bg-primary-container text-white px-8 py-3 font-bold text-label-bold hover:bg-primary transition-all active:scale-95 disabled:opacity-60 cursor-pointer"
+                  >
+                    {submitting ? (
+                      <>
+                        <span className="material-symbols-outlined animate-spin text-[18px]">autorenew</span>
+                        {t.common.loading}
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-[18px]">rocket_launch</span>
+                        {t.becomeHost.saveBtn}
+                      </>
+                    )}
+                  </button>
+                </div>
               )}
             </div>
           </div>

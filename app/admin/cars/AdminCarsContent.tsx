@@ -11,8 +11,16 @@ type Car = {
   plateNumber: string;
   location: string;
   carType: string;
+  transmission: string;
+  fuelType: string;
+  seats: number;
+  doors: number;
+  color: string;
+  steeringWheel: string;
+  estimatedValueUsd: number | null;
   dailyPrice: number;
   isActive: boolean;
+  listingStatus: string;
   createdAt: Date;
   owner: { fullName: string; email: string | null };
   bookingCount: number;
@@ -39,43 +47,66 @@ export function AdminCarsContent({ cars }: { cars: Car[] }) {
             <table className="w-full text-sm">
               <thead className="bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
                 <tr>
-                  <th className="px-6 py-3 text-left">{t.admin.car}</th>
-                  <th className="px-6 py-3 text-left">{t.admin.owner}</th>
-                  <th className="px-6 py-3 text-left">{t.admin.location}</th>
-                  <th className="px-6 py-3 text-left">{t.admin.type}</th>
-                  <th className="px-6 py-3 text-left">{t.admin.dailyPrice}</th>
-                  <th className="px-6 py-3 text-left">{t.admin.bookings}</th>
-                  <th className="px-6 py-3 text-left">{t.admin.status}</th>
-                  <th className="px-6 py-3 text-left">{t.admin.listed}</th>
+                  <th className="px-5 py-3 text-left">{t.admin.car}</th>
+                  <th className="px-5 py-3 text-left">{t.admin.owner}</th>
+                  <th className="px-5 py-3 text-left">{t.admin.location}</th>
+                  <th className="px-5 py-3 text-left">{t.admin.type}</th>
+                  <th className="px-5 py-3 text-left">Specs</th>
+                  <th className="px-5 py-3 text-left">{t.admin.dailyPrice}</th>
+                  <th className="px-5 py-3 text-left">{t.admin.estimatedValueUsd}</th>
+                  <th className="px-5 py-3 text-left">{t.admin.bookings}</th>
+                  <th className="px-5 py-3 text-left">{t.admin.status}</th>
+                  <th className="px-5 py-3 text-left">{t.admin.listed}</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {cars.map(c => (
                   <tr key={c.id} className="hover:bg-slate-50">
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-4">
                       <p className="font-bold">{c.brand} {c.model}</p>
                       <p className="text-xs text-slate-500">{c.year} · {c.plateNumber}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{c.color}</p>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-4">
                       <p className="font-semibold">{c.owner.fullName}</p>
                       <p className="text-xs text-slate-500">{c.owner.email}</p>
                     </td>
-                    <td className="px-6 py-4 text-slate-600">{c.location}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-4 text-slate-600">{c.location}</td>
+                    <td className="px-5 py-4">
                       <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold">
                         {c.carType}
                       </span>
                     </td>
-                    <td className="px-6 py-4 font-black">{gel(c.dailyPrice)}</td>
-                    <td className="px-6 py-4 font-semibold">{c.bookingCount}</td>
-                    <td className="px-6 py-4">
-                      {c.isActive ? (
-                        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">{t.admin.active}</span>
+                    <td className="px-5 py-4">
+                      <p className="text-xs text-slate-600">{c.transmission} · {c.fuelType}</p>
+                      <p className="text-xs text-slate-500">{c.seats} seats · {c.doors} doors</p>
+                      <p className="text-xs text-slate-400">{c.steeringWheel === 'right' ? 'RHD' : 'LHD'}</p>
+                    </td>
+                    <td className="px-5 py-4 font-black">{gel(c.dailyPrice)}</td>
+                    <td className="px-5 py-4">
+                      {c.estimatedValueUsd != null ? (
+                        <span className="font-semibold text-emerald-700">${c.estimatedValueUsd.toLocaleString()}</span>
                       ) : (
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500">{t.admin.inactive}</span>
+                        <span className="text-slate-400 text-xs">—</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-xs text-slate-500">
+                    <td className="px-5 py-4 font-semibold">{c.bookingCount}</td>
+                    <td className="px-5 py-4">
+                      <div className="flex flex-col gap-1">
+                        {c.isActive ? (
+                          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">{t.admin.active}</span>
+                        ) : (
+                          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500">{t.admin.inactive}</span>
+                        )}
+                        {c.listingStatus === 'PENDING' && (
+                          <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700">Pending</span>
+                        )}
+                        {c.listingStatus === 'REJECTED' && (
+                          <span className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-bold text-red-700">Rejected</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-xs text-slate-500">
                       {new Date(c.createdAt).toLocaleDateString('en-GB')}
                     </td>
                   </tr>

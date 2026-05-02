@@ -51,16 +51,19 @@ function AirportDeliveryRow({ icon, label, state, price, freeText, noneText }: {
   );
 }
 
-export function CarDetailContent({ car }: { car: Car }) {
+export function CarDetailContent({ car, availableDates }: { car: Car; availableDates?: string[] }) {
   const { t } = useLang();
 
+  const steeringLabel = car.steeringWheel === 'right' ? t.carDetail.steeringRight : t.carDetail.steeringLeft;
   const specItems = [
-    { icon: 'person',             label: t.carDetail.seats,        value: String(car.seats) },
-    { icon: 'door_front',         label: t.carDetail.doors,        value: String(car.doors) },
-    { icon: 'settings',           label: t.carDetail.transmission, value: car.transmission === 'Automatic' ? t.becomeHost.transmissionAuto : t.becomeHost.transmissionManual },
+    { icon: 'person',                   label: t.carDetail.seats,         value: String(car.seats) },
+    { icon: 'door_front',               label: t.carDetail.doors,         value: String(car.doors) },
+    { icon: 'category',                 label: t.carDetail.carType,       value: car.type },
+    { icon: 'settings',                 label: t.carDetail.transmission,  value: car.transmission === 'Automatic' ? t.becomeHost.transmissionAuto : t.becomeHost.transmissionManual },
     { icon: FUEL_ICON[car.fuelType] ?? 'local_gas_station', label: t.carDetail.fuelType, value: car.fuelType },
-    { icon: 'ac_unit',            label: t.carDetail.ac,           value: car.ac ? t.becomeHost.acYes : t.becomeHost.acNo },
-    { icon: 'palette',            label: t.carDetail.color,        value: car.color },
+    { icon: 'steering',                 label: t.carDetail.steeringWheel, value: steeringLabel },
+    { icon: 'ac_unit',                  label: t.carDetail.ac,            value: car.ac ? t.becomeHost.acYes : t.becomeHost.acNo },
+    { icon: 'palette',                  label: t.carDetail.color,         value: car.color },
   ];
 
   return (
@@ -266,7 +269,7 @@ export function CarDetailContent({ car }: { car: Car }) {
             </div>
           </section>
 
-          <BookingWidget car={car} />
+          <BookingWidget car={car} availableDates={availableDates} />
         </div>
       </div>
     </main>

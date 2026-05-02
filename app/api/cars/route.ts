@@ -65,6 +65,8 @@ export async function POST(req: NextRequest) {
         returnPolicy: body.returnPolicy ?? 'same',
         minDays: parseInt(body.minDays ?? '1', 10),
         advanceNotice: parseInt(body.advanceNotice ?? '2', 10),
+        steeringWheel: body.steeringWheel ?? 'left',
+        estimatedValueUsd: body.estimatedValueUsd ? parseInt(String(body.estimatedValueUsd), 10) : null,
         listingStatus: 'PENDING',
       },
     }),

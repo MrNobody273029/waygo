@@ -11,7 +11,7 @@ import type { AirportState } from '@/lib/sample-data';
 
 type DeliveryOption = { id: string; label: string; cost: number; icon: string };
 
-export function BookingWidget({ car }: { car: any }) {
+export function BookingWidget({ car, availableDates }: { car: any; availableDates?: string[] }) {
   const { t } = useLang();
   const { data: session } = useSession();
   const today = new Date().toISOString().split('T')[0];
@@ -27,6 +27,10 @@ export function BookingWidget({ car }: { car: any }) {
   const [deliveryId, setDeliveryId] = useState('none');
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [deliveryOpen, setDeliveryOpen] = useState(false);
+  const [availError, setAvailError] = useState<string | null>(null);
+
+  const availSet = availableDates ? new Set(availableDates) : null;
+  const noAvailability = availSet !== null && availSet.size === 0;
 
   // Build delivery options from car data
   const deliveryOptions: DeliveryOption[] = useMemo(() => {
@@ -67,6 +71,17 @@ export function BookingWidget({ car }: { car: any }) {
   const totals = useMemo(() => calculateBooking(car.dailyPrice, days, plan), [car.dailyPrice, days, plan]);
   const grandTotal = totals.total + selectedDelivery.cost;
 
+  function dateRange(s: string, e: string): string[] {
+    const dates: string[] = [];
+    const cur = new Date(s);
+    const last = new Date(e);
+    while (cur <= last) {
+      dates.push(cur.toISOString().split('T')[0]);
+      cur.setDate(cur.getDate() + 1);
+    }
+    return dates;
+  }
+
   async function book() {
     if (!session) { setShowLoginPrompt(true); return; }
     const isVerified = (session?.user as any)?.isVerified as boolean | undefined;
@@ -80,6 +95,16 @@ export function BookingWidget({ car }: { car: any }) {
       setShowKYC(true);
       return;
     }
+    // Check availability client-side before submitting
+    if (availSet !== null) {
+      const requested = dateRange(start, end);
+      const unavailable = requested.filter(d => !availSet.has(d));
+      if (unavailable.length > 0) {
+        setAvailError(t.booking.datesUnavailable);
+        return;
+      }
+    }
+    setAvailError(null);
     if (deliveryId === 'city' && !deliveryAddress.trim()) {
       document.getElementById('delivery-address-input')?.focus();
       return;
@@ -140,19 +165,34 @@ export function BookingWidget({ car }: { car: any }) {
           <span className="text-secondary text-label-sm"> {t.booking.perDay}</span>
         </div>
 
+        {/* No availability notice */}
+        {noAvailability && (
+          <div className="mb-4 flex items-start gap-2 rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5">
+            <span className="material-symbols-outlined text-amber-500 text-[18px] shrink-0 mt-0.5">event_busy</span>
+            <p className="text-label-sm text-amber-700 font-semibold">{t.booking.noAvailability}</p>
+          </div>
+        )}
+
         {/* Dates */}
-        <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="grid grid-cols-2 gap-3 mb-1">
           <div className="rounded-xl border px-3 py-2.5">
             <p className="text-label-sm text-slate-400 uppercase tracking-wider mb-1">{t.booking.pickup}</p>
-            <input type="date" value={start} min={today} onChange={e => setStart(e.target.value)}
+            <input type="date" value={start} min={today} onChange={e => { setStart(e.target.value); setAvailError(null); }}
               className="w-full border-none p-0 focus:ring-0 font-bold text-label-bold bg-transparent text-on-background" />
           </div>
           <div className="rounded-xl border px-3 py-2.5">
             <p className="text-label-sm text-slate-400 uppercase tracking-wider mb-1">{t.booking.dropoff}</p>
-            <input type="date" value={end} min={start} onChange={e => setEnd(e.target.value)}
+            <input type="date" value={end} min={start} onChange={e => { setEnd(e.target.value); setAvailError(null); }}
               className="w-full border-none p-0 focus:ring-0 font-bold text-label-bold bg-transparent text-on-background" />
           </div>
         </div>
+        {availError && (
+          <p className="mb-4 text-[12px] font-bold text-error flex items-center gap-1">
+            <span className="material-symbols-outlined text-[14px]">error</span>
+            {availError}
+          </p>
+        )}
+        {!availError && <div className="mb-4" />}
 
         {/* Delivery selector */}
         <div className="mb-5">
@@ -248,7 +288,8 @@ export function BookingWidget({ car }: { car: any }) {
             <><span className="material-symbols-outlined text-[18px]">lock</span>{t.booking.reserveBtn} — {gel(grandTotal)}</>
           )}
         </button>
-        <p className="mt-3 text-center text-label-sm text-secondary">{t.booking.depositNote}</p>
+        <p className="mt-2 text-center text-label-sm text-secondary">{t.booking.depositNote}</p>
+        <p className="mt-1 text-center text-[11px] text-slate-400">{t.booking.awaitingHostNote}</p>
       </aside>
     </>
   );

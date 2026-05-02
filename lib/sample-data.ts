@@ -32,6 +32,7 @@ export interface Car {
   };
   cityDelivery: { enabled: boolean; city: string; price: number };
   returnLocation: 'same' | 'flexible';
+  steeringWheel: string;
 }
 
 export const cars: Car[] = [
@@ -60,6 +61,7 @@ export const cars: Car[] = [
     },
     cityDelivery: { enabled: true, city: 'Tbilisi', price: 30 },
     returnLocation: 'same',
+    steeringWheel: 'left',
   },
   {
     id: '2',
@@ -86,6 +88,7 @@ export const cars: Car[] = [
     },
     cityDelivery: { enabled: false, city: 'Kutaisi', price: 0 },
     returnLocation: 'same',
+    steeringWheel: 'left',
   },
   {
     id: '3',
@@ -112,6 +115,7 @@ export const cars: Car[] = [
     },
     cityDelivery: { enabled: true, city: 'Batumi', price: 50 },
     returnLocation: 'flexible',
+    steeringWheel: 'left',
   },
 ];
 
@@ -142,6 +146,8 @@ export type DbCarWithOwner = {
   cityDeliveryCity: string;
   cityDeliveryPrice: number;
   returnPolicy: string;
+  steeringWheel: string;
+  estimatedValueUsd: number | null;
   owner: { fullName: string; isVerified: boolean; rating: number } | null;
 };
 
@@ -176,5 +182,6 @@ export function dbCarToUiCar(c: DbCarWithOwner): Car {
     },
     cityDelivery: { enabled: c.cityDeliveryEnabled, city: c.cityDeliveryCity, price: c.cityDeliveryPrice },
     returnLocation: c.returnPolicy as 'same' | 'flexible',
+    steeringWheel: c.steeringWheel,
   };
 }

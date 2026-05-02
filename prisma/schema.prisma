@@ -14,6 +14,7 @@ enum UserRole {
 }
 
 enum BookingStatus {
+  awaiting_host
   pending
   confirmed
   rejected
@@ -125,14 +126,19 @@ model Car {
   returnPolicy            String           @default("same")
   minDays                 Int              @default(1)
   advanceNotice           Int              @default(2)
+  steeringWheel           String           @default("left")
+  estimatedValueUsd       Int?
   listingStatus           CarListingStatus @default(APPROVED)
   listingRejectionComment String?
   createdAt               DateTime         @default(now())
+  availability            CarAvailability[]
+  bookings                Booking[]        @relation("CarBookings")
 }
 
 model Booking {
   id               String            @id @default(cuid())
   carId            String?
+  car              Car?              @relation("CarBookings", fields: [carId], references: [id], onDelete: SetNull)
   carBrand         String            @default("")
   carModel         String            @default("")
   carYear          Int               @default(0)
@@ -144,11 +150,24 @@ model Booking {
   deliveryType     String            @default("none")
   deliveryCost     Int               @default(0)
   deliveryAddress  String?
-  status           BookingStatus     @default(pending)
+  status           BookingStatus     @default(awaiting_host)
+  hostApprovalDeadline DateTime?
   insurancePolicy  InsurancePolicy?
   transactions     Transaction[]
   conditionReports ConditionReport[]
+  availability     CarAvailability[]
   createdAt        DateTime          @default(now())
+}
+
+model CarAvailability {
+  id        String   @id @default(cuid())
+  carId     String
+  car       Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@unique([carId, date])
 }
 
 model InsurancePolicy {
@@ -181,6 +200,7 @@ model ConditionReport {
   notes     String?
   createdAt DateTime @default(now())
 }
+
 model AdminEmail {
   id          String                 @id @default(cuid())
   from        String

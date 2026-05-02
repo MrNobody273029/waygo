@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useLang } from '@/components/lang-provider';
 import { KYCModal } from '@/components/kyc-modal';
 import { VerificationPendingPopup } from '@/components/verification-pending-popup';
+import { AvailabilityCalendarModal } from '@/components/availability-calendar';
 import { gel } from '@/lib/utils';
 
 type CarListingStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -25,6 +26,19 @@ interface HostCar {
   listingRejectionComment: string | null;
 }
 
+export interface HostRequest {
+  id: string;
+  carBrand: string;
+  carModel: string;
+  carYear: number;
+  startDate: string;
+  endDate: string;
+  totalPrice: number;
+  hostApprovalDeadline: string | null;
+  guestName: string;
+  carId: string | null;
+}
+
 interface Props {
   cars: HostCar[];
   hostVerified: boolean;
@@ -33,6 +47,7 @@ interface Props {
   idCardBack: string | null;
   hostSelfieUrl: string | null;
   hostVerificationRejectionComment: string | null;
+  pendingRequests: HostRequest[];
 }
 
 export function MyCarsContent({
@@ -43,14 +58,18 @@ export function MyCarsContent({
   idCardBack,
   hostSelfieUrl,
   hostVerificationRejectionComment,
+  pendingRequests: initialRequests,
 }: Props) {
   const { t } = useLang();
   const router = useRouter();
   const [list, setList] = useState(cars);
+  const [requests, setRequests] = useState<HostRequest[]>(initialRequests);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [showKYC, setShowKYC] = useState(false);
   const [showPending, setShowPending] = useState(false);
+  const [availCarId, setAvailCarId] = useState<string | null>(null);
+  const [actioningId, setActioningId] = useState<string | null>(null);
 
   async function confirmDelete() {
     if (!deleteId) return;
@@ -59,6 +78,20 @@ export function MyCarsContent({
     setList(prev => prev.filter(c => c.id !== deleteId));
     setDeleteId(null);
     setDeleting(false);
+  }
+
+  async function handleApprove(reqId: string) {
+    setActioningId(reqId);
+    await fetch(`/api/bookings/${reqId}/approve`, { method: 'POST' });
+    setRequests(prev => prev.filter(r => r.id !== reqId));
+    setActioningId(null);
+  }
+
+  async function handleReject(reqId: string) {
+    setActioningId(reqId);
+    await fetch(`/api/bookings/${reqId}/reject`, { method: 'POST' });
+    setRequests(prev => prev.filter(r => r.id !== reqId));
+    setActioningId(null);
   }
 
   function HostVerBanner() {
@@ -162,6 +195,13 @@ export function MyCarsContent({
         rejectionComment={hostVerificationRejectionComment}
       />
       <VerificationPendingPopup open={showPending} onClose={() => setShowPending(false)} />
+      {availCarId && (
+        <AvailabilityCalendarModal
+          carId={availCarId}
+          open={!!availCarId}
+          onClose={() => setAvailCarId(null)}
+        />
+      )}
 
       {deleteId && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
@@ -205,6 +245,79 @@ export function MyCarsContent({
 
           <HostVerBanner />
 
+          {/* Pending booking requests */}
+          {requests.length > 0 && (
+            <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 overflow-hidden">
+              <div className="flex items-center gap-3 px-5 py-4 border-b border-amber-200">
+                <span className="material-symbols-outlined text-amber-600 text-[22px]">notifications_active</span>
+                <div>
+                  <p className="font-extrabold text-label-bold text-amber-900">{t.hostRequests.title}</p>
+                  <p className="text-label-sm text-amber-700">{t.hostRequests.subtitle}</p>
+                </div>
+              </div>
+              <div className="divide-y divide-amber-200">
+                {requests.map(req => {
+                  const deadline = req.hostApprovalDeadline ? new Date(req.hostApprovalDeadline) : null;
+                  const isExpired = deadline && deadline < new Date();
+                  const acting = actioningId === req.id;
+                  const hours = deadline
+                    ? Math.max(0, Math.round((deadline.getTime() - Date.now()) / 3600000))
+                    : null;
+
+                  return (
+                    <div key={req.id} className="px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-label-bold text-on-background">
+                          {req.carBrand} {req.carModel} {req.carYear}
+                        </p>
+                        <p className="text-label-sm text-secondary mt-0.5">
+                          {new Date(req.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                          {' – '}
+                          {new Date(req.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {' · '}{gel(req.totalPrice)}
+                        </p>
+                        <p className="text-label-sm text-secondary mt-0.5 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[13px]">person</span>
+                          {req.guestName}
+                        </p>
+                        {isExpired ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-error mt-1">
+                            <span className="material-symbols-outlined text-[13px]">timer_off</span>
+                            {t.hostRequests.autoRejected}
+                          </span>
+                        ) : hours !== null && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 mt-1">
+                            <span className="material-symbols-outlined text-[13px]">schedule</span>
+                            {t.hostRequests.deadlineLabel}: {hours}h
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        {isExpired ? (
+                          <button onClick={() => handleReject(req.id)} disabled={acting}
+                            className="rounded-xl border border-error/30 px-4 py-2 font-bold text-label-sm text-error hover:bg-error-container/20 transition disabled:opacity-60 cursor-pointer">
+                            {acting ? <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span> : t.hostRequests.expired}
+                          </button>
+                        ) : (
+                          <>
+                            <button onClick={() => handleReject(req.id)} disabled={acting}
+                              className="rounded-xl border border-error/30 px-4 py-2.5 font-bold text-label-bold text-error hover:bg-error-container/20 transition disabled:opacity-60 cursor-pointer">
+                              {acting ? <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span> : t.hostRequests.reject}
+                            </button>
+                            <button onClick={() => handleApprove(req.id)} disabled={acting}
+                              className="rounded-xl bg-tertiary px-4 py-2.5 font-bold text-label-bold text-white hover:opacity-90 transition disabled:opacity-60 cursor-pointer">
+                              {acting ? <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span> : t.hostRequests.approve}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {list.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-6 py-24 text-center">
               <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-surface-container">
@@ -233,7 +346,6 @@ export function MyCarsContent({
                         <span className="material-symbols-outlined text-[52px] text-slate-300">directions_car</span>
                       </div>
                     )}
-                    {/* Listing status badge */}
                     <span className="absolute top-3 left-3">
                       <CarListingStatusBadge status={car.listingStatus} />
                     </span>
@@ -267,7 +379,6 @@ export function MyCarsContent({
                       </span>
                     </div>
 
-                    {/* Rejection comment */}
                     {car.listingStatus === 'REJECTED' && car.listingRejectionComment && (
                       <div className="rounded-xl border border-red-100 bg-red-50 px-3 py-2.5">
                         <p className="text-[10px] font-black uppercase tracking-wider text-red-400 mb-1">{t.myCars.carRejectedComment}</p>
@@ -275,7 +386,6 @@ export function MyCarsContent({
                       </div>
                     )}
 
-                    {/* Pending info */}
                     {car.listingStatus === 'PENDING' && (
                       <div className="rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 flex items-center gap-2">
                         <span className="material-symbols-outlined text-amber-500 text-[16px]">lock</span>
@@ -289,10 +399,7 @@ export function MyCarsContent({
                     </div>
 
                     {/* Action buttons */}
-                    {car.listingStatus === 'PENDING' ? (
-                      // No actions while pending
-                      null
-                    ) : car.listingStatus === 'REJECTED' ? (
+                    {car.listingStatus === 'PENDING' ? null : car.listingStatus === 'REJECTED' ? (
                       <div className="flex gap-2 pt-1 border-t border-slate-100">
                         <button
                           onClick={() => router.push(`/edit-car/${car.id}`)}
@@ -311,6 +418,14 @@ export function MyCarsContent({
                     ) : (
                       <div className="flex gap-2 pt-1 border-t border-slate-100">
                         <button
+                          onClick={() => setAvailCarId(car.id)}
+                          className="flex items-center justify-center gap-1.5 rounded-xl border border-primary/30 bg-primary-fixed/20 px-3 py-2.5 font-bold text-label-bold text-primary hover:bg-primary-fixed/30 transition cursor-pointer"
+                          title={t.myCars.availabilityBtn}
+                        >
+                          <span className="material-symbols-outlined text-[16px]">calendar_month</span>
+                          <span className="hidden sm:inline text-[12px]">{t.myCars.availabilityBtn}</span>
+                        </button>
+                        <button
                           onClick={() => router.push(`/edit-car/${car.id}`)}
                           className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-outline-variant py-2.5 font-bold text-label-bold text-on-background hover:border-primary hover:text-primary transition cursor-pointer"
                         >
@@ -319,10 +434,9 @@ export function MyCarsContent({
                         </button>
                         <button
                           onClick={() => setDeleteId(car.id)}
-                          className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-error/30 py-2.5 font-bold text-label-bold text-error hover:bg-error-container/30 transition cursor-pointer"
+                          className="flex items-center justify-center gap-2 rounded-xl border border-error/30 px-3 py-2.5 font-bold text-label-bold text-error hover:bg-error-container/30 transition cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[16px]">delete</span>
-                          {t.myCars.deleteBtn}
                         </button>
                       </div>
                     )}
