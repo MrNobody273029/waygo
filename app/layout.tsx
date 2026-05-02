@@ -13,8 +13,15 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: { default: 'WAYGO.GE — P2P Car Sharing', template: '%s | WAYGO.GE' },
-  description: 'Rent trusted local cars across Georgia with verified hosts, insurance, and deposit protection.',
+  title: { default: 'WAYGO.GE — Car Rental in Georgia', template: '%s | WAYGO.GE' },
+  description: 'Rent a car anywhere in Georgia. Verified local cars, flexible insurance, and deposit protection.',
+  icons: {
+    icon: [
+      { url: '/favicon.png', type: 'image/png' },
+    ],
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
