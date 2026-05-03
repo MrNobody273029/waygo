@@ -1,7 +1,7 @@
 'use client';
 import { useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { calculateBooking, DEPOSIT_GEL, type InsurancePlan } from '@/lib/constants';
+import { calculateBooking, type InsurancePlan } from '@/lib/constants';
 import { daysBetween, gel } from '@/lib/utils';
 import { InsurancePicker } from './insurance-picker';
 import { useLang } from '@/components/lang-provider';
@@ -16,6 +16,11 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
   const { data: session } = useSession();
   const today = new Date().toISOString().split('T')[0];
   const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const minEnd = (s: string) => {
+    const d = new Date(s);
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  };
   const [start, setStart] = useState(today);
   const [end, setEnd] = useState(tomorrow);
   const [plan, setPlan] = useState<InsurancePlan>('standard');
@@ -93,6 +98,11 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
         setRejectionComment(data.verificationRejectionComment ?? null);
       }
       setShowKYC(true);
+      return;
+    }
+    // Validate date range
+    if (new Date(end) <= new Date(start)) {
+      setAvailError(t.booking.invalidDates);
       return;
     }
     // Check availability client-side before submitting
@@ -177,12 +187,16 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
         <div className="grid grid-cols-2 gap-3 mb-1">
           <div className="rounded-xl border px-3 py-2.5">
             <p className="text-label-sm text-slate-400 uppercase tracking-wider mb-1">{t.booking.pickup}</p>
-            <input type="date" value={start} min={today} onChange={e => { setStart(e.target.value); setAvailError(null); }}
-              className="w-full border-none p-0 focus:ring-0 font-bold text-label-bold bg-transparent text-on-background" />
+            <input type="date" value={start} min={today} onChange={e => {
+              const s = e.target.value;
+              setStart(s);
+              if (end <= s) setEnd(minEnd(s));
+              setAvailError(null);
+            }} className="w-full border-none p-0 focus:ring-0 font-bold text-label-bold bg-transparent text-on-background" />
           </div>
           <div className="rounded-xl border px-3 py-2.5">
             <p className="text-label-sm text-slate-400 uppercase tracking-wider mb-1">{t.booking.dropoff}</p>
-            <input type="date" value={end} min={start} onChange={e => { setEnd(e.target.value); setAvailError(null); }}
+            <input type="date" value={end} min={minEnd(start)} onChange={e => { setEnd(e.target.value); setAvailError(null); }}
               className="w-full border-none p-0 focus:ring-0 font-bold text-label-bold bg-transparent text-on-background" />
           </div>
         </div>
@@ -270,7 +284,7 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
           {selectedDelivery.cost > 0 && (
             <Row l={t.booking.deliveryCost} r={gel(selectedDelivery.cost)} />
           )}
-          <Row l={t.booking.depositHold} r={gel(DEPOSIT_GEL)} muted />
+          <Row l={t.booking.depositHold} r={gel(car.deposit ?? 250)} muted />
           <div className="flex justify-between pt-3 border-t border-slate-100 text-h3 font-bold">
             <span>{t.booking.totalNow}</span>
             <span className="text-primary">{gel(grandTotal)}</span>

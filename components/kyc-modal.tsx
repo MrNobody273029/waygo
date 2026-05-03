@@ -34,6 +34,7 @@ export function KYCModal({ open, onClose, onSuccess, verificationType, initialDo
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
 
   if (!open) return null;
 
@@ -73,7 +74,7 @@ export function KYCModal({ open, onClose, onSuccess, verificationType, initialDo
       else if (step === 'doc-back') setDocBack(url);
       else if (step === 'selfie') setSelfie(url);
     } catch { setPreview(null); }
-    finally { setUploading(false); if (fileRef.current) fileRef.current.value = ''; }
+    finally { setUploading(false); if (fileRef.current) fileRef.current.value = ''; if (cameraRef.current) cameraRef.current.value = ''; }
   }
 
   function advance() {
@@ -222,12 +223,30 @@ export function KYCModal({ open, onClose, onSuccess, verificationType, initialDo
                 )}
               </div>
             ) : (
-              <label className="block rounded-2xl border-2 border-dashed border-outline-variant p-8 text-center hover:border-primary/40 transition-colors cursor-pointer group">
-                <span className="material-symbols-outlined text-[52px] text-slate-300 group-hover:text-primary/40 transition-colors block mb-3">{stepIcon}</span>
-                <p className="font-semibold text-secondary text-label-bold">{t.kyc.uploadZone}</p>
-                <p className="text-label-sm text-slate-400 mt-1">{t.kyc.uploadHint}</p>
+              <div className="rounded-2xl border-2 border-dashed border-outline-variant p-8 text-center">
+                <span className="material-symbols-outlined text-[52px] text-slate-300 block mb-3">{stepIcon}</span>
+                <p className="text-label-sm text-slate-400 mb-5">{t.kyc.uploadHint}</p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => cameraRef.current?.click()}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary-container text-white font-bold text-label-bold hover:bg-primary transition-all active:scale-95 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">photo_camera</span>
+                    {t.kyc.uploadCamera}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-outline-variant text-on-background font-semibold text-label-bold hover:border-primary/50 hover:bg-surface-container-low transition-all cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">photo_library</span>
+                    {t.kyc.uploadGallery}
+                  </button>
+                </div>
+                <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="sr-only" onChange={handleFileSelect} />
                 <input ref={fileRef} type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} />
-              </label>
+              </div>
             )}
           </div>
         )}

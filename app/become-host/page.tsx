@@ -126,7 +126,7 @@ function UploadZone({ label, url, onUpload, t }: {
 export default function BecomeHost() {
   const { t } = useLang();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const [activeStep, setActiveStep] = useState(0);
   const [showKYC, setShowKYC] = useState(false);
   const [showPending, setShowPending] = useState(false);
@@ -165,7 +165,6 @@ export default function BecomeHost() {
 
   // Step 3 — Pricing
   const [dailyPrice, setDailyPrice] = useState('');
-  const [deposit, setDeposit] = useState('250');
   const [estimatedValueUsd, setEstimatedValueUsd] = useState('');
   const [minDays, setMinDays] = useState('1');
   const [advanceNotice, setAdvanceNotice] = useState('2');
@@ -197,12 +196,21 @@ export default function BecomeHost() {
   const [availDates, setAvailDates] = useState<Set<string>>(new Set());
   const [availMonth, setAvailMonth] = useState(0);
 
+  const sessionRefreshed = useRef(false);
+
   useEffect(() => {
     if (status === 'loading') return;
-    if (!session) {
-      router.push('/login');
-      return;
+    if (!session) { router.push('/login'); return; }
+
+    // On first mount, refresh the session from DB so we get the latest
+    // hostVerified/hostVerificationStatus (avoids showing stale "pending" popup
+    // to a host who was already approved while their JWT was still old).
+    if (!sessionRefreshed.current) {
+      sessionRefreshed.current = true;
+      update(); // triggers jwt callback with trigger='update', re-reads from DB
+      return;   // wait for the re-render with fresh session data
     }
+
     const hostVerified = (session.user as any)?.hostVerified as boolean | undefined;
     const hostVerificationStatus = (session.user as any)?.hostVerificationStatus as string | undefined;
     if (!hostVerified) {
@@ -212,7 +220,7 @@ export default function BecomeHost() {
         setShowKYC(true);
       }
     }
-  }, [status, session, router]);
+  }, [status, session, router, update]);
 
   const steps = [
     t.becomeHost.step1, t.becomeHost.step2, t.becomeHost.step3,
@@ -256,6 +264,7 @@ export default function BecomeHost() {
           fuelType,
           steeringWheel,
           estimatedValueUsd: estimatedValueUsd ? parseInt(estimatedValueUsd, 10) : null,
+          depositGel: estimatedValueUsd ? Math.round(parseFloat(estimatedValueUsd) * 0.05) : 250,
           airportTbilisiState: tbilisiState,
           airportTbilisiPrice: tbilisiPrice || '0',
           airportKutaisiState: kutaisiState,
@@ -543,22 +552,12 @@ export default function BecomeHost() {
       case 3: return (
         <div className="space-y-5">
           <h2 className="text-h2 font-bold text-on-background">{t.becomeHost.pricingTitle}</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-1.5 block text-label-bold font-bold text-on-background">{t.becomeHost.pricePlaceholder}</label>
-              <div className="relative">
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-black">₾</span>
-                <input type="number" value={dailyPrice} onChange={e => setDailyPrice(e.target.value)}
-                  className={`${ic} pl-8`} placeholder="120" min="20" />
-              </div>
-            </div>
-            <div>
-              <label className="mb-1.5 block text-label-bold font-bold text-on-background">{t.becomeHost.depositLabel}</label>
-              <div className="relative">
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-black">₾</span>
-                <input type="number" value={deposit} onChange={e => setDeposit(e.target.value)}
-                  className={`${ic} pl-8`} placeholder="250" min="0" />
-              </div>
+          <div>
+            <label className="mb-1.5 block text-label-bold font-bold text-on-background">{t.becomeHost.pricePlaceholder}</label>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-black">₾</span>
+              <input type="number" value={dailyPrice} onChange={e => setDailyPrice(e.target.value)}
+                className={`${ic} pl-8`} placeholder="120" min="20" />
             </div>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
@@ -593,6 +592,20 @@ export default function BecomeHost() {
                 className={`${ic} pl-8`} placeholder="15000" min="0" />
             </div>
             <p className="text-label-sm text-slate-400">{t.becomeHost.estimatedValueHint}</p>
+            {/* Auto-calculated deposit */}
+            <div className="border-t border-outline-variant/30 pt-3">
+              <label className="mb-1.5 block text-label-bold font-bold text-on-background">{t.becomeHost.depositLabel}</label>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-black">₾</span>
+                <input
+                  type="number"
+                  readOnly
+                  value={estimatedValueUsd ? Math.round(parseFloat(estimatedValueUsd) * 0.05) : 250}
+                  className={`${ic} pl-8 bg-surface-container cursor-default`}
+                />
+              </div>
+              <p className="text-label-sm text-slate-400 mt-1.5">{t.becomeHost.depositHint}</p>
+            </div>
           </div>
         </div>
       );

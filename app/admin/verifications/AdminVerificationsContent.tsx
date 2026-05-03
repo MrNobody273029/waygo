@@ -9,6 +9,8 @@ interface VerificationUser {
   id: string;
   fullName: string;
   email: string | null;
+  phone: string | null;
+  idNumber: string | null;
   createdAt: Date;
   lang: string;
   isVerified: boolean;
@@ -137,6 +139,8 @@ function GuestCard({ u, rejectingId, rejectComment, loading, onRejectComment, on
         <div>
           <p className="font-bold text-label-bold text-on-background">{u.fullName}</p>
           <p className="text-label-sm text-secondary">{u.email}</p>
+          {u.phone && <p className="text-label-sm text-slate-500 mt-0.5 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">phone</span>{u.phone}</p>}
+          {u.idNumber && <p className="text-label-sm font-bold text-primary mt-0.5 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">badge</span>{u.idNumber}</p>}
           <p className="text-label-sm text-slate-400 mt-0.5">{new Date(u.createdAt).toLocaleDateString('en-GB')}</p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
@@ -198,12 +202,11 @@ function GuestCard({ u, rejectingId, rejectComment, loading, onRejectComment, on
       )}
 
       {u.verificationStatus === 'REJECTED' && (
-        <div className="flex gap-2 pt-2 border-t border-slate-100">
-          <button onClick={() => onAction(u.id, 'approve_guest')} disabled={!!loading}
-            className="flex items-center gap-1.5 rounded-xl border border-tertiary/20 text-tertiary px-4 py-2 font-semibold text-label-bold hover:bg-tertiary/5 transition disabled:opacity-60 cursor-pointer">
-            <span className="material-symbols-outlined text-[15px]">check_circle</span>
-            Approve
-          </button>
+        <div className="pt-2 border-t border-slate-100">
+          <p className="text-[11px] text-slate-400 font-semibold flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[13px]">info</span>
+            Waiting for guest to resubmit new documents
+          </p>
         </div>
       )}
     </div>
@@ -221,6 +224,8 @@ function HostCard({ u, rejectingId, rejectComment, loading, onRejectComment, onS
         <div>
           <p className="font-bold text-label-bold text-on-background">{u.fullName}</p>
           <p className="text-label-sm text-secondary">{u.email}</p>
+          {u.phone && <p className="text-label-sm text-slate-500 mt-0.5 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">phone</span>{u.phone}</p>}
+          {u.idNumber && <p className="text-label-sm font-bold text-primary mt-0.5 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">badge</span>{u.idNumber}</p>}
           <p className="text-label-sm text-slate-400 mt-0.5">{new Date(u.createdAt).toLocaleDateString('en-GB')}</p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
@@ -282,12 +287,11 @@ function HostCard({ u, rejectingId, rejectComment, loading, onRejectComment, onS
       )}
 
       {u.hostVerificationStatus === 'REJECTED' && (
-        <div className="flex gap-2 pt-2 border-t border-slate-100">
-          <button onClick={() => onAction(u.id, 'approve_host')} disabled={!!loading}
-            className="flex items-center gap-1.5 rounded-xl border border-tertiary/20 text-tertiary px-4 py-2 font-semibold text-label-bold hover:bg-tertiary/5 transition disabled:opacity-60 cursor-pointer">
-            <span className="material-symbols-outlined text-[15px]">check_circle</span>
-            Approve
-          </button>
+        <div className="pt-2 border-t border-slate-100">
+          <p className="text-[11px] text-slate-400 font-semibold flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[13px]">info</span>
+            Waiting for host to resubmit new documents
+          </p>
         </div>
       )}
     </div>

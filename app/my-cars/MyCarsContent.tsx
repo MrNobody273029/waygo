@@ -36,6 +36,7 @@ export interface HostRequest {
   totalPrice: number;
   hostApprovalDeadline: string | null;
   guestName: string;
+  guestLang: string;
   carId: string | null;
 }
 
@@ -70,6 +71,8 @@ export function MyCarsContent({
   const [showPending, setShowPending] = useState(false);
   const [availCarId, setAvailCarId] = useState<string | null>(null);
   const [actioningId, setActioningId] = useState<string | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<HostRequest | null>(null);
+  const [rejectComment, setRejectComment] = useState('');
 
   async function confirmDelete() {
     if (!deleteId) return;
@@ -87,11 +90,26 @@ export function MyCarsContent({
     setActioningId(null);
   }
 
-  async function handleReject(reqId: string) {
+  async function handleReject(reqId: string, comment?: string) {
     setActioningId(reqId);
-    await fetch(`/api/bookings/${reqId}/reject`, { method: 'POST' });
+    await fetch(`/api/bookings/${reqId}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rejectionComment: comment?.trim() || undefined }),
+    });
     setRequests(prev => prev.filter(r => r.id !== reqId));
     setActioningId(null);
+  }
+
+  function openRejectModal(req: HostRequest) {
+    setRejectComment('');
+    setRejectTarget(req);
+  }
+
+  async function confirmReject() {
+    if (!rejectTarget) return;
+    setRejectTarget(null);
+    await handleReject(rejectTarget.id, rejectComment);
   }
 
   function HostVerBanner() {
@@ -228,6 +246,64 @@ export function MyCarsContent({
         </div>
       )}
 
+      {rejectTarget && (() => {
+        const langNames: Record<string, string> = { en: 'English', ka: 'ქართული', ru: 'Русский' };
+        const langName = langNames[rejectTarget.guestLang] ?? 'English';
+        const acting = actioningId === rejectTarget.id;
+        return (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => !acting && setRejectTarget(null)} />
+            <div className="relative z-10 w-full max-w-sm rounded-3xl bg-white shadow-2xl p-7 flex flex-col gap-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-error-container/30">
+                  <span className="material-symbols-outlined text-error text-[24px]">cancel</span>
+                </div>
+                <div>
+                  <h2 className="font-black text-h3 text-on-background">{t.hostRequests.rejectModalTitle}</h2>
+                  <p className="text-secondary text-label-sm mt-0.5">{rejectTarget.carBrand} {rejectTarget.carModel} {rejectTarget.carYear}</p>
+                </div>
+              </div>
+
+              <p className="text-secondary text-label-sm">{t.hostRequests.rejectModalSub}</p>
+
+              <div className="rounded-xl bg-amber-50 border border-amber-200 px-3.5 py-2.5 flex items-center gap-2">
+                <span className="material-symbols-outlined text-amber-600 text-[16px] shrink-0">translate</span>
+                <p className="text-label-sm font-bold text-amber-800">
+                  {t.hostRequests.rejectLangHint} <span className="text-amber-900">{langName}</span>
+                </p>
+              </div>
+
+              <textarea
+                value={rejectComment}
+                onChange={e => setRejectComment(e.target.value)}
+                placeholder={t.hostRequests.rejectCommentPlaceholder}
+                rows={3}
+                className="w-full rounded-xl border border-outline-variant px-3.5 py-3 text-label-bold font-semibold text-on-background outline-none focus:border-primary focus:ring-2 focus:ring-primary-fixed placeholder:text-slate-400 transition resize-none text-sm"
+              />
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setRejectTarget(null)}
+                  disabled={acting}
+                  className="flex-1 rounded-xl border border-outline-variant py-3 font-bold text-label-bold text-secondary hover:bg-surface-container-low transition disabled:opacity-50 cursor-pointer"
+                >
+                  {t.myCars.deleteCancel}
+                </button>
+                <button
+                  onClick={confirmReject}
+                  disabled={acting}
+                  className="flex-1 rounded-xl bg-error py-3 font-bold text-label-bold text-white hover:opacity-90 transition disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {acting
+                    ? <><span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span>{t.hostRequests.rejecting}</>
+                    : t.hostRequests.rejectConfirmBtn}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       <main className="pt-[62px] md:pt-[73px] min-h-screen bg-surface pb-20">
         <div className="mx-auto max-w-screen-xl px-4 md:px-12 py-10">
           <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
@@ -294,13 +370,13 @@ export function MyCarsContent({
                       </div>
                       <div className="flex gap-2 shrink-0">
                         {isExpired ? (
-                          <button onClick={() => handleReject(req.id)} disabled={acting}
+                          <button onClick={() => openRejectModal(req)} disabled={acting}
                             className="rounded-xl border border-error/30 px-4 py-2 font-bold text-label-sm text-error hover:bg-error-container/20 transition disabled:opacity-60 cursor-pointer">
                             {acting ? <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span> : t.hostRequests.expired}
                           </button>
                         ) : (
                           <>
-                            <button onClick={() => handleReject(req.id)} disabled={acting}
+                            <button onClick={() => openRejectModal(req)} disabled={acting}
                               className="rounded-xl border border-error/30 px-4 py-2.5 font-bold text-label-bold text-error hover:bg-error-container/20 transition disabled:opacity-60 cursor-pointer">
                               {acting ? <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span> : t.hostRequests.reject}
                             </button>

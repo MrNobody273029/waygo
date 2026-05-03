@@ -11,7 +11,7 @@ export default async function AdminBookingDetailPage({ params }: { params: { id:
       guest: {
         select: {
           id: true, fullName: true, email: true, phone: true, country: true,
-          role: true, isVerified: true, guestVerificationStatus: true,
+          role: true, isVerified: true, verificationStatus: true,
         },
       },
       insurancePolicy: true,

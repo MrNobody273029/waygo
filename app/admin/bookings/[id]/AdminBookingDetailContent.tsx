@@ -16,7 +16,7 @@ type InsurancePolicy = {
 };
 type Guest = {
   id: string; fullName: string; email: string | null; phone: string | null;
-  country: string; role: string; isVerified: boolean; guestVerificationStatus: string;
+  country: string; role: string; isVerified: boolean; verificationStatus: string;
 };
 type Booking = {
   id: string; carBrand: string; carModel: string; carYear: number;

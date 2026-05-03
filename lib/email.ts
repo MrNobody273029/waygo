@@ -1,5 +1,5 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// EMAIL TEMPLATES — Drivo.ge
+// EMAIL TEMPLATES — WAYGO.ge
 // Enterprise-grade transactional email system
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -43,6 +43,8 @@ export interface HostRequestEmailData {
   hostName: string;
   hostEmail: string;
   guestName: string;
+  guestPhone: string;
+  guestIdNumber: string;
   car: { brand: string; model: string; year: number; imageUrl: string | null };
   booking: { id: string; startDate: Date; endDate: Date; totalPrice: number };
   days: number;
@@ -56,6 +58,7 @@ export interface BookingRejectedEmailData {
   car: { brand: string; model: string; year: number };
   booking: { startDate: Date; endDate: Date };
   isAutoRejected: boolean;
+  rejectionComment?: string;
   siteUrl: string;
 }
 
@@ -81,7 +84,7 @@ function emailShell(lang: string, body: string, footNote: string, copy: string):
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Drivo.ge</title>
+  <title>WAYGO.ge</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f1f5f9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f1f5f9;padding:40px 16px;">
@@ -90,7 +93,7 @@ function emailShell(lang: string, body: string, footNote: string, copy: string):
 
     <!-- Header -->
     <tr><td style="background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);border-radius:16px 16px 0 0;padding:34px 48px;text-align:center;">
-      <div style="font-size:36px;font-weight:900;color:#ffffff;letter-spacing:-1.5px;">Drivo<span style="color:#93c5fd;">.ge</span></div>
+      <div style="font-size:36px;font-weight:900;color:#ffffff;letter-spacing:-1.5px;">WAYGO<span style="color:#93c5fd;">.ge</span></div>
       <div style="font-size:10px;color:#93c5fd;margin-top:8px;letter-spacing:4px;text-transform:uppercase;">P2P Car Rental &middot; Georgia</div>
     </td></tr>
 
@@ -160,13 +163,13 @@ const GS = {
     photoSub: 'ფოტოები — თქვენი ერთადერთი დაცვა. ატვირთეთ დეშბორდიდან.',
     pickupH: 'მანქანის აყვანისას', pickupBody: 'გახსენით ჯავშანი დეშბორდიდან. გადაიღეთ ფოტოები წინა, უკანა, ორივე გვერდიდან და სალონიდან. ატვირთეთ და მხოლოდ შემდეგ დააჭირეთ <strong>"მანქანა აყვანილია"</strong>.',
     returnH: 'მანქანის დაბრუნებისას', returnBody: 'ბრუნვამდე გადაიღეთ ფოტოები, ატვირთეთ და დააჭირეთ <strong>"მანქანა დაბრუნებულია"</strong>.',
-    photoWarn: 'ფოტოების გარეშე Drivo.ge ვერ დაიცავს თქვენ გაურკვეველ სიტუაციებში. <strong>ფოტოები = თქვენი უფლებების დაცვა.</strong>',
+    photoWarn: 'ფოტოების გარეშე WAYGO.ge ვერ დაიცავს თქვენ გაურკვეველ სიტუაციებში. <strong>ფოტოები = თქვენი უფლებების დაცვა.</strong>',
     ctaBooking: 'ჩემი ჯავშნის ნახვა',
     ctaFind: 'სხვა მანქანა ნახე',
     ctaNote: 'თუ ავტორიზებული არ ხარ, ჯერ შესვლის გვერდი გამოჩნდება.',
     rejectedFindNote: 'სხვა შესაფერისი მანქანები ელოდებიან!',
     footNote: 'ეს ავტომატური შეტყობინებაა — გთხოვთ პასუხი არ გამოაგზავნოთ.',
-    copy: `© ${new Date().getFullYear()} Drivo.ge — P2P ავტოდაქირავება საქართველოში`,
+    copy: `© ${new Date().getFullYear()} WAYGO.ge — P2P ავტოდაქირავება საქართველოში`,
   },
   ru: {
     subjectSubmitted: (b: string, m: string, y: number) => `📋 Запрос на бронирование отправлен — ${b} ${m} ${y}`,
@@ -198,13 +201,13 @@ const GS = {
     photoSub: 'Фотографии — ваша единственная защита. Загрузите через личный кабинет.',
     pickupH: 'При получении автомобиля', pickupBody: 'Откройте бронирование в личном кабинете. Сфотографируйте автомобиль со всех сторон. Загрузите фото и нажмите <strong>«Автомобиль получен»</strong>.',
     returnH: 'При возврате автомобиля', returnBody: 'Перед возвратом сделайте фотографии, загрузите и нажмите <strong>«Автомобиль возвращён»</strong>.',
-    photoWarn: 'Без фотографий Drivo.ge не сможет защитить вас в спорных ситуациях. <strong>Фотографии = защита ваших прав.</strong>',
+    photoWarn: 'Без фотографий WAYGO.ge не сможет защитить вас в спорных ситуациях. <strong>Фотографии = защита ваших прав.</strong>',
     ctaBooking: 'Посмотреть бронирование',
     ctaFind: 'Найти другой автомобиль',
     ctaNote: 'Если вы не авторизованы, сначала появится страница входа.',
     rejectedFindNote: 'Другие подходящие автомобили уже ждут вас!',
     footNote: 'Это автоматическое уведомление — пожалуйста, не отвечайте на него.',
-    copy: `© ${new Date().getFullYear()} Drivo.ge — P2P аренда авто в Грузии`,
+    copy: `© ${new Date().getFullYear()} WAYGO.ge — P2P аренда авто в Грузии`,
   },
   en: {
     subjectSubmitted: (b: string, m: string, y: number) => `📋 Booking Request Sent — ${b} ${m} ${y}`,
@@ -236,13 +239,13 @@ const GS = {
     photoSub: 'Photos are your only protection — upload them from your dashboard.',
     pickupH: 'When picking up the car', pickupBody: 'Open this booking in your dashboard. Photograph the car from all angles. Upload the photos, then press <strong>"Car Picked Up"</strong>.',
     returnH: 'When returning the car', returnBody: 'Before handing over the keys, take the same photos, upload them, and press <strong>"Car Returned"</strong>.',
-    photoWarn: 'Without photos, Drivo.ge cannot protect you in disputed situations. <strong>Photos = protection of your rights.</strong>',
+    photoWarn: 'Without photos, WAYGO.ge cannot protect you in disputed situations. <strong>Photos = protection of your rights.</strong>',
     ctaBooking: 'View My Booking',
     ctaFind: 'Browse Other Cars',
     ctaNote: 'If not logged in, you will be redirected to sign in first.',
     rejectedFindNote: 'Other great cars are waiting for you!',
     footNote: 'This is an automated message — please do not reply.',
-    copy: `© ${new Date().getFullYear()} Drivo.ge — P2P Car Rental in Georgia`,
+    copy: `© ${new Date().getFullYear()} WAYGO.ge — P2P Car Rental in Georgia`,
   },
 };
 
@@ -257,6 +260,8 @@ const HS = {
     sCar:          'მოთხოვნილი მანქანა',
     sDetails:      'ჯავშნის მოთხოვნა',
     lGuest:        'სტუმარი',
+    lPhone:        'მობილური',
+    lIdNumber:     'პირადი ნომერი',
     lPickDate:     'აყვანის თარიღი',
     lRetDate:      'დაბრუნების თარიღი',
     lDur:          'ხანგრძლივობა',
@@ -268,7 +273,7 @@ const HS = {
     cta:           'My Cars — პასუხის გაცემა',
     ctaNote:       'თუ ავტორიზებული არ ხარ, ჯერ შესვლის გვერდი გამოჩნდება.',
     footNote:      'ეს ავტომატური შეტყობინებაა — გთხოვთ პასუხი არ გამოაგზავნოთ.',
-    copy:          `© ${new Date().getFullYear()} Drivo.ge — P2P ავტოდაქირავება საქართველოში`,
+    copy:          `© ${new Date().getFullYear()} WAYGO.ge — P2P ავტოდაქირავება საქართველოში`,
   },
   en: {
     subject:       (b: string, m: string, y: number, guest: string) => `🔔 New Booking Request — ${b} ${m} ${y} · ${guest}`,
@@ -278,6 +283,8 @@ const HS = {
     sCar:          'Requested Car',
     sDetails:      'Booking Request',
     lGuest:        'Guest',
+    lPhone:        'Mobile',
+    lIdNumber:     'ID Number',
     lPickDate:     'Pick-up Date',
     lRetDate:      'Return Date',
     lDur:          'Duration',
@@ -289,7 +296,7 @@ const HS = {
     cta:           'My Cars — Respond Now',
     ctaNote:       'If not logged in, you will be redirected to sign in first.',
     footNote:      'This is an automated message — please do not reply.',
-    copy:          `© ${new Date().getFullYear()} Drivo.ge — P2P Car Rental in Georgia`,
+    copy:          `© ${new Date().getFullYear()} WAYGO.ge — P2P Car Rental in Georgia`,
   },
 };
 
@@ -419,7 +426,7 @@ function buildGuestSection(
 
 function buildHostSection(lang: 'ka' | 'en', data: HostRequestEmailData): string {
   const s = HS[lang];
-  const { hostName, guestName, car, booking, days, deadline, siteUrl } = data;
+  const { hostName, guestName, guestPhone, guestIdNumber, car, booking, days, deadline, siteUrl } = data;
   const myCarsUrl = `${siteUrl}/my-cars`;
   const imgUrl = car.imageUrl;
 
@@ -447,6 +454,8 @@ function buildHostSection(lang: 'ka' | 'en', data: HostRequestEmailData): string
   <div style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;padding:4px 24px;margin-bottom:24px;">
     <table width="100%" cellpadding="0" cellspacing="0" border="0">
       ${row(s.lGuest, `<strong>${guestName}</strong>`, true)}
+      ${guestPhone ? row(s.lPhone, guestPhone, true) : ''}
+      ${guestIdNumber ? row(s.lIdNumber, `<span style="font-family:monospace;font-weight:700;">${guestIdNumber}</span>`, true) : ''}
       ${row(s.lPickDate, fmtDate(booking.startDate, lang), true)}
       ${row(s.lRetDate, fmtDate(booking.endDate, lang), true)}
       ${row(s.lDur, s.lDays(days), true)}
@@ -492,6 +501,14 @@ function buildRejectedSection(lang: 'en' | 'ka' | 'ru', data: BookingRejectedEma
   <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.3;">${s.greeting(data.guestName)}</h1>
   <p style="font-size:15px;color:#475569;margin:0 0 28px;line-height:1.8;">${intro}</p>
 
+  ${data.rejectionComment ? `
+  <!-- Host comment -->
+  <div style="background:#fff7ed;border:2px solid #fed7aa;border-radius:14px;padding:20px 24px;margin-bottom:24px;">
+    <p style="font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#c2410c;margin:0 0 8px;">Host Note</p>
+    <p style="font-size:14px;color:#7c2d12;line-height:1.7;margin:0;">${data.rejectionComment.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+  </div>
+  ` : ''}
+
   <!-- Car reference -->
   <div style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;padding:20px 24px;margin-bottom:24px;">
     <p style="font-size:18px;font-weight:800;color:#1e293b;margin:0 0 8px;">${data.car.brand} ${data.car.model} &middot; ${data.car.year}</p>
@@ -526,7 +543,7 @@ export function hostBookingRequestEmail(data: HostRequestEmailData): { html: str
 
   const html = `<!DOCTYPE html>
 <html lang="ka">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Drivo.ge — Booking Request</title></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WAYGO.ge — Booking Request</title></head>
 <body style="margin:0;padding:0;background-color:#f1f5f9;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f1f5f9;padding:40px 16px;">
   <tr><td align="center">
@@ -534,7 +551,7 @@ export function hostBookingRequestEmail(data: HostRequestEmailData): { html: str
 
     <!-- Header -->
     <tr><td style="background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);border-radius:16px 16px 0 0;padding:34px 48px;text-align:center;">
-      <div style="font-size:36px;font-weight:900;color:#ffffff;letter-spacing:-1.5px;">Drivo<span style="color:#93c5fd;">.ge</span></div>
+      <div style="font-size:36px;font-weight:900;color:#ffffff;letter-spacing:-1.5px;">WAYGO<span style="color:#93c5fd;">.ge</span></div>
       <div style="font-size:10px;color:#93c5fd;margin-top:8px;letter-spacing:4px;text-transform:uppercase;">Host Notification &middot; Georgia</div>
     </td></tr>
 

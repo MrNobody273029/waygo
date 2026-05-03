@@ -25,6 +25,7 @@ type FormState = {
   fullName: string;
   email: string;
   phone: string;
+  idNumber: string;
   country: string;
   password: string;
   confirmPassword: string;
@@ -103,6 +104,7 @@ export default function RegisterPage() {
     fullName: '',
     email: '',
     phone: '',
+    idNumber: '',
     country: 'GE',
     password: '',
     confirmPassword: '',
@@ -142,6 +144,7 @@ export default function RegisterPage() {
           fullName: form.fullName,
           email: form.email,
           phone: form.phone,
+          idNumber: form.idNumber,
           country: form.country,
           lang,
           password: form.password,
@@ -149,7 +152,10 @@ export default function RegisterPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(res.status === 409 ? t.auth.emailTaken : ((data as any).error || 'Registration failed'));
+        const errMsg = res.status === 409
+          ? ((data as any).error === 'ID number already registered' ? t.auth.idTaken : t.auth.emailTaken)
+          : ((data as any).error || 'Registration failed');
+        setError(errMsg);
         return;
       }
       setRegisteredEmail(form.email);
@@ -288,6 +294,10 @@ export default function RegisterPage() {
                     </select>
                   </Field>
                 </div>
+
+                <Field label={t.auth.idNumber}>
+                  <input type="text" value={form.idNumber} onChange={set('idNumber')} required className={ic} placeholder="01234567890" autoComplete="off" />
+                </Field>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label={t.auth.password}>

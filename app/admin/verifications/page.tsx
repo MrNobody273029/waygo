@@ -20,6 +20,8 @@ export default async function AdminVerificationsPage() {
         id: true,
         fullName: true,
         email: true,
+        phone: true,
+        idNumber: true,
         createdAt: true,
         lang: true,
         isVerified: true,

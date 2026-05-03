@@ -8,11 +8,13 @@ import { bookingRejectedEmail } from '@/lib/email';
 const resend = new Resend(process.env.RESEND_API_KEY);
 const SITE_URL = process.env.NEXTAUTH_URL ?? 'https://waygo.ge';
 
-export async function POST(_req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const userId = (session.user as any).id as string;
+  const body = await req.json().catch(() => ({}));
+  const rejectionComment: string | undefined = body?.rejectionComment?.trim() || undefined;
 
   const booking = await prisma.booking.findUnique({
     where: { id: params.id },
@@ -60,11 +62,12 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
       car: { brand: booking.carBrand, model: booking.carModel, year: booking.carYear },
       booking: { startDate: booking.startDate, endDate: booking.endDate },
       isAutoRejected,
+      rejectionComment,
       siteUrl: SITE_URL,
     });
 
     resend.emails.send({
-      from: 'Drivo.ge <no-reply@waygo.ge>',
+      from: 'WAYGO <info@waygo.ge>',
       to: guest.email,
       subject,
       html,

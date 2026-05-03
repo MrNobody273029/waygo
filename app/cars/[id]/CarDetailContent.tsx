@@ -61,7 +61,7 @@ export function CarDetailContent({ car, availableDates }: { car: Car; availableD
     { icon: 'category',                 label: t.carDetail.carType,       value: car.type },
     { icon: 'settings',                 label: t.carDetail.transmission,  value: car.transmission === 'Automatic' ? t.becomeHost.transmissionAuto : t.becomeHost.transmissionManual },
     { icon: FUEL_ICON[car.fuelType] ?? 'local_gas_station', label: t.carDetail.fuelType, value: car.fuelType },
-    { icon: 'steering',                 label: t.carDetail.steeringWheel, value: steeringLabel },
+    { icon: 'directions_car',            label: t.carDetail.steeringWheel, value: steeringLabel },
     { icon: 'ac_unit',                  label: t.carDetail.ac,            value: car.ac ? t.becomeHost.acYes : t.becomeHost.acNo },
     { icon: 'palette',                  label: t.carDetail.color,         value: car.color },
   ];

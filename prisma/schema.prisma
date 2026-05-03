@@ -133,6 +133,7 @@ model Car {
   advanceNotice           Int              @default(2)
   steeringWheel           String           @default("left")
   estimatedValueUsd       Int?
+  depositGel              Int              @default(250)
   listingStatus           CarListingStatus @default(APPROVED)
   listingRejectionComment String?
   createdAt               DateTime         @default(now())

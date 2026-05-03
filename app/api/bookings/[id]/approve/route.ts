@@ -93,7 +93,7 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
 
     const { html, subject } = bookingApprovedEmail(emailData);
     resend.emails.send({
-      from: 'Drivo.ge <no-reply@waygo.ge>',
+      from: 'WAYGO <info@waygo.ge>',
       to: guest.email,
       subject,
       html,

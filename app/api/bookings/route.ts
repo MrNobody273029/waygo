@@ -42,6 +42,10 @@ export async function POST(req: Request) {
 
   const input = schema.parse(await req.json());
 
+  if (new Date(input.endDate) <= new Date(input.startDate)) {
+    return NextResponse.json({ error: 'Return date must be after pickup date' }, { status: 400 });
+  }
+
   // Load car from Prisma (not static data)
   const car = await prisma.car.findUnique({
     where: { id: input.carId },
@@ -72,7 +76,7 @@ export async function POST(req: Request) {
 
   const [payment, hold] = await Promise.all([
     createRentalPayment(totals.total),
-    authorizeDeposit(DEPOSIT_GEL),
+    authorizeDeposit(car.depositGel ?? 250),
   ]);
 
   const hostApprovalDeadline = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -155,7 +159,7 @@ export async function POST(req: Request) {
   const validLangs = ['en', 'ka', 'ru'];
   prisma.profile.findUnique({
     where: { id: guestId },
-    select: { email: true, fullName: true, lang: true },
+    select: { email: true, fullName: true, lang: true, phone: true, idNumber: true },
   }).then(guest => {
     if (!guest?.email) return;
     const lang = validLangs.includes(guest.lang) ? (guest.lang as 'en' | 'ka' | 'ru') : 'en';
@@ -193,7 +197,7 @@ export async function POST(req: Request) {
 
     const { html: guestHtml, subject: guestSubject } = bookingSubmittedEmail(emailData);
     const sends: Promise<unknown>[] = [
-      resend.emails.send({ from: 'Drivo.ge <no-reply@waygo.ge>', to: guest.email, subject: guestSubject, html: guestHtml }),
+      resend.emails.send({ from: 'WAYGO <info@waygo.ge>', to: guest.email, subject: guestSubject, html: guestHtml }),
     ];
 
     if (car.owner?.email) {
@@ -201,13 +205,15 @@ export async function POST(req: Request) {
         hostName: car.owner.fullName,
         hostEmail: car.owner.email,
         guestName: guest.fullName,
+        guestPhone: guest.phone ?? '',
+        guestIdNumber: guest.idNumber ?? '',
         car: { brand: car.brand, model: car.model, year: car.year, imageUrl: car.imageUrls[0] ?? null },
         booking: { id: booking.id, startDate: booking.startDate, endDate: booking.endDate, totalPrice: booking.totalPrice },
         days,
         deadline: hostApprovalDeadline,
         siteUrl: SITE_URL,
       });
-      sends.push(resend.emails.send({ from: 'Drivo.ge <no-reply@waygo.ge>', to: car.owner.email, subject: hostSubject, html: hostHtml }));
+      sends.push(resend.emails.send({ from: 'WAYGO <info@waygo.ge>', to: car.owner.email, subject: hostSubject, html: hostHtml }));
     }
 
     return Promise.all(sends);

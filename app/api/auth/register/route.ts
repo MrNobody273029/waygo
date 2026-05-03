@@ -11,6 +11,7 @@ const schema = z.object({
   fullName: z.string().min(2),
   email: z.string().email(),
   phone: z.string().min(6),
+  idNumber: z.string().min(5),
   country: z.string().default('GE'),
   lang: z.string().optional(),
   password: z.string().min(8),
@@ -27,11 +28,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid data', details: input.error.issues }, { status: 400 });
   }
 
-  const { fullName, email, phone, country, lang, password } = input.data;
+  const { fullName, email, phone, idNumber, country, lang, password } = input.data;
 
-  const existing = await prisma.profile.findUnique({ where: { email } });
-  if (existing) {
+  const [existingEmail, existingId] = await Promise.all([
+    prisma.profile.findUnique({ where: { email } }),
+    prisma.profile.findUnique({ where: { idNumber } }),
+  ]);
+  if (existingEmail) {
     return NextResponse.json({ error: 'Email already registered' }, { status: 409 });
+  }
+  if (existingId) {
+    return NextResponse.json({ error: 'ID number already registered' }, { status: 409 });
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
@@ -43,6 +50,7 @@ export async function POST(req: Request) {
       fullName,
       email,
       phone,
+      idNumber,
       country,
       lang: lang ?? 'en',
       passwordHash,

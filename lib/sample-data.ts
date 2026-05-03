@@ -148,6 +148,7 @@ export type DbCarWithOwner = {
   returnPolicy: string;
   steeringWheel: string;
   estimatedValueUsd: number | null;
+  depositGel: number;
   owner: { fullName: string; isVerified: boolean; rating: number } | null;
 };
 
@@ -170,7 +171,7 @@ export function dbCarToUiCar(c: DbCarWithOwner): Car {
     color: c.color,
     description: c.description ?? '',
     minDays: c.minDays,
-    deposit: DEPOSIT_GEL,
+    deposit: c.depositGel ?? 250,
     host: c.owner?.fullName ?? 'Host',
     verified: c.owner?.isVerified ?? false,
     images: c.imageUrls,

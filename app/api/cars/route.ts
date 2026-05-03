@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
         advanceNotice: parseInt(body.advanceNotice ?? '2', 10),
         steeringWheel: body.steeringWheel ?? 'left',
         estimatedValueUsd: body.estimatedValueUsd ? parseInt(String(body.estimatedValueUsd), 10) : null,
+        depositGel: body.depositGel ? parseInt(String(body.depositGel), 10) : 250,
         listingStatus: 'PENDING',
       },
     }),
