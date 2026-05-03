@@ -56,7 +56,7 @@ export default async function HostReviewPage({ params }: { params: { bookingId: 
       revieweeName={revieweeProfile?.fullName ?? 'User'}
       revieweeRating={revieweeProfile?.rating ?? 0}
       revieweeCount={revieweeProfile?.reviewCount ?? 0}
-      existingReview={existingReview ?? null}
+      existingReview={existingReview ? { ...existingReview, createdAt: existingReview.createdAt.toISOString() } : null}
     />
   );
 }

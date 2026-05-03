@@ -13,7 +13,7 @@ const ADMIN_EMAIL = 'admin@waygo.ge';
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const car = await prisma.car.findUnique({
     where: { id: params.id },
-    include: { owner: { select: { fullName: true, isVerified: true, rating: true } } },
+    include: { owner: { select: { fullName: true, isVerified: true, rating: true, reviewCount: true } } },
   });
   if (!car) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json(dbCarToUiCar(car));

@@ -9,7 +9,7 @@ export default async function CarsPage({
 }) {
   const dbCars = await prisma.car.findMany({
     where: { isActive: true },
-    include: { owner: { select: { fullName: true, isVerified: true, rating: true } } },
+    include: { owner: { select: { fullName: true, isVerified: true, rating: true, reviewCount: true } } },
     orderBy: { createdAt: 'desc' },
   });
   const cars = dbCars.map(dbCarToUiCar);

@@ -13,6 +13,7 @@ export default async function Home() {
           fullName: true,
           isVerified: true,
           rating: true,
+          reviewCount: true,
         },
       },
     },

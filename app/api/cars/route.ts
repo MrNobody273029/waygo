@@ -13,7 +13,7 @@ const ADMIN_EMAIL = 'admin@waygo.ge';
 export async function GET() {
   const dbCars = await prisma.car.findMany({
     where: { isActive: true, listingStatus: 'APPROVED' },
-    include: { owner: { select: { fullName: true, isVerified: true, rating: true } } },
+    include: { owner: { select: { fullName: true, isVerified: true, rating: true, reviewCount: true } } },
     orderBy: { createdAt: 'desc' },
   });
   return NextResponse.json(dbCars.map(dbCarToUiCar));
