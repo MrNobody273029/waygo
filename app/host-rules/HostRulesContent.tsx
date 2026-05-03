@@ -1,4 +1,5 @@
 'use client';
+
 import Link from 'next/link';
 import { useLang } from '@/components/lang-provider';
 
@@ -32,7 +33,7 @@ const t = {
         },
         {
           ka: 'ჰოსტი ვალდებულია ჯავშნის მოთხოვნაზე 24 საათის განმავლობაში გასცეს პასუხი. პასუხის გაჭიანურება ახდენს უარყოფით გავლენას ჰოსტის რეიტინგზე.',
-          en: 'The host must respond to booking requests within 24 hours. Delayed responses negatively affect the host's rating.',
+          en: "The host must respond to booking requests within 24 hours. Delayed responses negatively affect the host's rating.",
           ru: 'Хозяин обязан ответить на запрос бронирования в течение 24 часов. Задержка ответа негативно влияет на рейтинг хозяина.',
         },
         {
@@ -60,7 +61,7 @@ const t = {
       items: [
         {
           ka: 'სიცრუე ავტომობილის მდგომარეობის, ტექნიკური გამართულობის ან ფაქტობრივი სპეციფიკაციების შესახებ.',
-          en: 'Lying about the car\'s condition, mechanical soundness, or actual specifications.',
+          en: "Lying about the car's condition, mechanical soundness, or actual specifications.",
           ru: 'Ложь о состоянии автомобиля, его технической исправности или фактических характеристиках.',
         },
         {
@@ -75,12 +76,12 @@ const t = {
         },
         {
           ka: 'ნებისმიერი სახის დისკრიმინაცია: სტუმრის ეთნიკური წარმომავლობის, სქესის, ასაკის, რელიგიის ან სხვა ნიშნის საფუძველზე ჯავშნის გაუმართლებელი უარყოფა.',
-          en: 'Any form of discrimination: unjustified refusal of a booking based on the guest\'s ethnicity, gender, age, religion or other protected characteristic.',
+          en: "Any form of discrimination: unjustified refusal of a booking based on the guest's ethnicity, gender, age, religion or other protected characteristic.",
           ru: 'Любая форма дискриминации: необоснованный отказ в бронировании на основе этнического происхождения, пола, возраста, религии или иного признака.',
         },
         {
           ka: 'ავტომობილის გაცემა ისეთ ტექნიკურ მდგომარეობაში, რომელიც საფრთხეს შეიცავს სტუმრის ან მესამე პირის სიცოცხლისა და ჯანმრთელობისთვის.',
-          en: 'Handing over a car in a technical condition that poses a danger to the guest\'s or a third party\'s life and health.',
+          en: "Handing over a car in a technical condition that poses a danger to the guest's or a third party's life and health.",
           ru: 'Передача автомобиля в техническом состоянии, представляющем угрозу для жизни и здоровья гостя или третьих лиц.',
         },
       ],
@@ -131,7 +132,7 @@ const t = {
         },
         {
           ka: 'ფინანსური ზიანის შემთხვევა: WAYGO.ge-ს ვალდებულება გათვალისწინებულ ანაზღაურებაზე.',
-          en: 'In case of financial damage: WAYGO.ge\'s obligation on agreed compensation.',
+          en: "In case of financial damage: WAYGO.ge's obligation on agreed compensation.",
           ru: 'В случае финансового ущерба: обязательство WAYGO.ge по согласованному возмещению.',
         },
         {
@@ -144,88 +145,68 @@ const t = {
   ],
 };
 
-function ItemIcon({ type }: { type: 'check' | 'ban' | 'warning' }) {
-  if (type === 'check') return <span className="material-symbols-outlined text-[16px] text-tertiary mt-0.5 shrink-0">check_circle</span>;
-  if (type === 'ban') return <span className="material-symbols-outlined text-[16px] text-error mt-0.5 shrink-0">cancel</span>;
-  return <span className="material-symbols-outlined text-[16px] text-amber-600 mt-0.5 shrink-0">warning</span>;
-}
-
-export function HostRulesContent() {
+export default function HostRulesContent() {
   const { lang } = useLang();
-  const l = lang as Lang;
+  const currentLang = lang as Lang;
 
   return (
-    <main className="min-h-screen bg-surface pt-[62px] md:pt-[73px] pb-20 md:pb-0">
-      <div className="mx-auto max-w-screen-md px-4 md:px-8 py-12">
-
-        <Link href="/" className="inline-flex items-center gap-1.5 text-label-sm font-bold text-secondary hover:text-primary mb-8 transition-colors">
-          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-          {t.back[l]}
+    <main className="min-h-screen bg-surface text-on-surface">
+      <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+        <Link
+          href="/"
+          className="mb-8 inline-flex items-center gap-2 rounded-full border border-outline-variant bg-surface-container px-4 py-2 text-sm font-medium text-on-surface-variant transition hover:bg-surface-container-high"
+        >
+          <span className="material-symbols-rounded text-[20px]">arrow_back</span>
+          {t.back[currentLang]}
         </Link>
 
-        {/* Hero */}
-        <div className="mb-10">
-          <div className="flex items-center gap-4 mb-5">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50">
-              <span className="material-symbols-outlined text-[30px] text-violet-600">manage_accounts</span>
-            </div>
-            <div>
-              <h1 className="text-h1 font-extrabold text-on-background">{t.title[l]}</h1>
-              <p className="text-label-sm text-secondary mt-0.5">{t.updated[l]}</p>
-            </div>
-          </div>
-          <div className="rounded-2xl bg-primary-fixed/10 border border-primary/10 p-5">
-            <p className="text-body-md text-secondary leading-relaxed">{t.intro[l]}</p>
-          </div>
+        <div className="mb-10 rounded-[2rem] bg-surface-container p-6 shadow-sm sm:p-8">
+          <p className="mb-3 text-sm font-medium text-primary">{t.updated[currentLang]}</p>
+
+          <h1 className="mb-5 text-3xl font-bold tracking-tight text-on-surface sm:text-4xl">
+            {t.title[currentLang]}
+          </h1>
+
+          <p className="max-w-3xl text-base leading-8 text-on-surface-variant">
+            {t.intro[currentLang]}
+          </p>
         </div>
 
-        {/* Sections */}
-        <div className="space-y-8">
-          {t.sections.map((section, si) => (
-            <section key={si}>
-              <div className="flex items-center gap-3 mb-5">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${section.color}`}>
-                  <span className="material-symbols-outlined text-[20px]">{section.icon}</span>
+        <div className="space-y-6">
+          {t.sections.map((section) => (
+            <article
+              key={section.title.en}
+              className="rounded-[2rem] border border-outline-variant bg-surface-container-low p-5 shadow-sm sm:p-6"
+            >
+              <div className="mb-5 flex items-center gap-3">
+                <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${section.color}`}>
+                  <span className="material-symbols-rounded text-[24px]">{section.icon}</span>
                 </div>
-                <h2 className="text-h2 font-extrabold text-on-background">{section.title[l]}</h2>
+
+                <h2 className="text-xl font-semibold text-on-surface">
+                  {section.title[currentLang]}
+                </h2>
               </div>
-              <div className="rounded-2xl border border-outline-variant/40 bg-white shadow-card overflow-hidden">
-                {section.items.map((item, ii) => (
-                  <div
-                    key={ii}
-                    className={`flex gap-3 px-5 py-4 ${ii < section.items.length - 1 ? 'border-b border-outline-variant/30' : ''}`}
-                  >
-                    <ItemIcon type={section.type} />
-                    <p className="text-[13px] text-secondary leading-relaxed">{item[l]}</p>
-                  </div>
+
+              <ul className="space-y-4">
+                {section.items.map((item, index) => (
+                  <li key={index} className="flex gap-3 text-sm leading-7 text-on-surface-variant sm:text-base">
+                    <span className="material-symbols-rounded mt-0.5 text-[20px] text-primary">
+                      {section.type === 'ban'
+                        ? 'block'
+                        : section.type === 'warning'
+                          ? 'warning'
+                          : 'check_circle'}
+                    </span>
+
+                    <span>{item[currentLang]}</span>
+                  </li>
                 ))}
-              </div>
-            </section>
+              </ul>
+            </article>
           ))}
         </div>
-
-        {/* CTA */}
-        <div className="mt-12 rounded-3xl bg-primary-fixed/20 border border-primary/10 p-8 text-center">
-          <h3 className="text-h3 font-extrabold text-on-background mb-3">
-            {l === 'ka' ? 'კითხვა გაქვს?' : l === 'ru' ? 'Остались вопросы?' : 'Have questions?'}
-          </h3>
-          <p className="text-body-md text-secondary mb-5">
-            {l === 'ka'
-              ? 'ჩვენი მხარდაჭერის გუნდი ყოველთვის მზადაა დაგეხმაროს.'
-              : l === 'ru'
-              ? 'Наша команда поддержки всегда готова помочь.'
-              : 'Our support team is always ready to help.'}
-          </p>
-          <a
-            href="mailto:support@waygo.ge"
-            className="inline-flex items-center gap-2 bg-primary-container text-white px-6 py-3 rounded-xl font-bold text-label-bold hover:bg-primary transition-colors"
-          >
-            <span className="material-symbols-outlined text-[18px]">mail</span>
-            support@waygo.ge
-          </a>
-        </div>
-
-      </div>
+      </section>
     </main>
   );
 }
