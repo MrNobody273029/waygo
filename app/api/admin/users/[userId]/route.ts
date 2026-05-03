@@ -25,7 +25,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { userId: st
   const user = await prisma.profile.findUnique({ where: { id: params.userId } });
   if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
+  const PROTECTED_EMAIL = 'admin@waygo.ge';
   const data = body.data;
+
+  // Permanently protect the super-admin account from role/login changes
+  if (user.email === PROTECTED_EMAIL && (data.action === 'set_role' || data.action === 'toggle_email_verified')) {
+    return NextResponse.json({ error: 'Cannot modify the super-admin account' }, { status: 403 });
+  }
 
   if (data.action === 'set_role') {
     await prisma.profile.update({ where: { id: params.userId }, data: { role: data.role } });

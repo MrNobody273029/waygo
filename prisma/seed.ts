@@ -11,6 +11,8 @@ async function main() {
     update: {
       fullName: 'WayGo Admin',
       passwordHash: hash,
+      role: 'ADMIN',          // always enforced — must not be changed
+      emailVerified: true,
       isVerified: true,
       hostVerified: true,
       verificationStatus: 'APPROVED',
@@ -23,6 +25,7 @@ async function main() {
       country: 'GE',
       passwordHash: hash,
       role: 'ADMIN',
+      emailVerified: true,
       isVerified: true,
       hostVerified: true,
       verificationStatus: 'APPROVED',
