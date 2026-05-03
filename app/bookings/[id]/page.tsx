@@ -40,9 +40,23 @@ export default async function BookingDetailPage({ params }: { params: { id: stri
 
   if (!booking || booking.guestId !== profileId) redirect('/dashboard');
 
+  const existingReview = await prisma.review.findFirst({
+    where: { bookingId: params.id, reviewerId: profileId },
+    select: { rating: true, comment: true },
+  });
+
+  const hostProfile = booking.status === 'completed'
+    ? await prisma.profile.findFirst({
+        where: { cars: { some: { bookings: { some: { id: params.id } } } } },
+        select: { fullName: true, rating: true, reviewCount: true },
+      })
+    : null;
+
   return (
     <BookingDetailContent
       guestEmail={guestEmail}
+      existingReview={existingReview ?? null}
+      hostProfile={hostProfile ?? null}
       booking={{
         id: booking.id,
         carBrand: booking.carBrand,

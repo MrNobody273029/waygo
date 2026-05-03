@@ -644,6 +644,104 @@ export function bookingConfirmationEmail(data: BookingEmailData): { html: string
   return bookingSubmittedEmail(data);
 }
 
+// ─── 7b. CAR RETURNED — HOST REVIEW REQUEST ────────────────────
+
+interface CarReturnedEmailData {
+  hostName: string;
+  hostLang: 'en' | 'ka' | 'ru';
+  guestName: string;
+  car: { brand: string; model: string; year: number };
+  booking: { id: string; startDate: Date; endDate: Date };
+  reviewUrl: string;
+  siteUrl: string;
+}
+
+const CR = {
+  ka: {
+    subject:  (g: string, b: string, m: string) => `🔄 ${g}-მ მანქანა დაბრუნა — ${b} ${m}`,
+    badge:    'მანქანა დაბრუნდა',
+    greeting: (n: string) => `გამარჯობა, ${n}!`,
+    intro:    (g: string) => `<strong>${g}</strong>-მ თქვენი მანქანა დაბრუნა. გამოცდილება კარგი იყო? გთხოვთ, შეაფასოთ სტუმარი — ეს ეხმარება მთელ საზოგადოებას.`,
+    carLabel: 'მანქანა',
+    datesLabel: 'ვადები',
+    cta:      'სტუმრის შეფასება',
+    ctaNote:  'შეფასება ნებაყოფლობითია, მაგრამ ძალიან ფასეულია.',
+    footNote: 'ეს ავტომატური შეტყობინებაა — გთხოვთ პასუხი არ გამოაგზავნოთ.',
+    copy:     `© ${new Date().getFullYear()} WAYGO.ge`,
+  },
+  en: {
+    subject:  (g: string, b: string, m: string) => `🔄 ${g} returned your car — ${b} ${m}`,
+    badge:    'Car Returned',
+    greeting: (n: string) => `Hello, ${n}!`,
+    intro:    (g: string) => `<strong>${g}</strong> has returned your car. How did it go? Please take a moment to rate your guest — it helps the whole community.`,
+    carLabel: 'Vehicle',
+    datesLabel: 'Rental Dates',
+    cta:      'Rate the Guest',
+    ctaNote:  'Reviews are optional but greatly appreciated.',
+    footNote: 'This is an automated message — please do not reply.',
+    copy:     `© ${new Date().getFullYear()} WAYGO.ge`,
+  },
+  ru: {
+    subject:  (g: string, b: string, m: string) => `🔄 ${g} вернул(а) автомобиль — ${b} ${m}`,
+    badge:    'Автомобиль возвращён',
+    greeting: (n: string) => `Здравствуйте, ${n}!`,
+    intro:    (g: string) => `<strong>${g}</strong> вернул(а) ваш автомобиль. Как прошла поездка? Оцените гостя — это поможет всему сообществу.`,
+    carLabel: 'Автомобиль',
+    datesLabel: 'Даты аренды',
+    cta:      'Оценить гостя',
+    ctaNote:  'Отзывы необязательны, но очень ценны.',
+    footNote: 'Это автоматическое уведомление — пожалуйста, не отвечайте.',
+    copy:     `© ${new Date().getFullYear()} WAYGO.ge`,
+  },
+};
+
+export function carReturnedReviewEmail(data: CarReturnedEmailData): { html: string; subject: string } {
+  const lang = data.hostLang;
+  const s = CR[lang] ?? CR.en;
+  const subject = s.subject(data.guestName, data.car.brand, data.car.model);
+
+  const primarySection = `
+  <div style="text-align:center;margin:0 0 28px;">
+    <span style="display:inline-block;background:#dcfce7;color:#166534;font-weight:800;font-size:11px;letter-spacing:2.5px;padding:7px 22px;border-radius:100px;text-transform:uppercase;">${s.badge}</span>
+  </div>
+  <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.3;">${s.greeting(data.hostName)}</h1>
+  <p style="font-size:15px;color:#475569;margin:0 0 28px;line-height:1.8;">${s.intro(data.guestName)}</p>
+  <div style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;padding:20px 24px;margin-bottom:28px;">
+    <p style="font-size:18px;font-weight:800;color:#1e293b;margin:0 0 8px;">${data.car.brand} ${data.car.model} &middot; ${data.car.year}</p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      ${row(s.datesLabel, `${fmtDate(data.booking.startDate, lang)} → ${fmtDate(data.booking.endDate, lang)}`, true, true)}
+    </table>
+  </div>
+  <div style="text-align:center;margin-bottom:10px;">
+    <a href="${data.reviewUrl}" style="display:inline-block;background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#ffffff;padding:18px 52px;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none;letter-spacing:0.4px;">⭐ ${s.cta}</a>
+  </div>
+  <p style="text-align:center;font-size:12px;color:#94a3b8;margin:0 0 8px;">${s.ctaNote}</p>
+  `;
+
+  const needsEn = lang !== 'en';
+  const enSection = needsEn ? `
+  <div style="text-align:center;margin:0 0 28px;">
+    <span style="display:inline-block;background:#dcfce7;color:#166534;font-weight:800;font-size:11px;letter-spacing:2.5px;padding:7px 22px;border-radius:100px;text-transform:uppercase;">${CR.en.badge}</span>
+  </div>
+  <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.3;">${CR.en.greeting(data.hostName)}</h1>
+  <p style="font-size:15px;color:#475569;margin:0 0 28px;line-height:1.8;">${CR.en.intro(data.guestName)}</p>
+  <div style="text-align:center;margin-bottom:10px;">
+    <a href="${data.reviewUrl}" style="display:inline-block;background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#ffffff;padding:18px 52px;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none;letter-spacing:0.4px;">⭐ ${CR.en.cta}</a>
+  </div>
+  ` : '';
+
+  const html = emailShell(lang,
+    primarySection + (needsEn ? `
+      <div style="border-top:2px dashed #e2e8f0;margin:8px 0 32px;"></div>
+      <p style="font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#cbd5e1;text-align:center;margin:0 0 32px;">🇬🇧 &nbsp;English Version</p>
+      ${enSection}
+    ` : ''),
+    s.footNote, s.copy
+  );
+
+  return { html, subject };
+}
+
 // ─── 7. OTP EMAIL (verify email + password reset) ─────────────
 
 interface OtpEmailData {

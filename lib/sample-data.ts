@@ -149,7 +149,7 @@ export type DbCarWithOwner = {
   steeringWheel: string;
   estimatedValueUsd: number | null;
   depositGel: number;
-  owner: { fullName: string; isVerified: boolean; rating: number } | null;
+  owner: { fullName: string; isVerified: boolean; rating: number; reviewCount: number } | null;
 };
 
 export function dbCarToUiCar(c: DbCarWithOwner): Car {
@@ -160,8 +160,8 @@ export function dbCarToUiCar(c: DbCarWithOwner): Car {
     year: c.year,
     location: c.location,
     dailyPrice: c.dailyPrice,
-    rating: c.owner?.rating ?? 5,
-    trips: 0,
+    rating: c.owner?.rating ?? 0,
+    trips: c.owner?.reviewCount ?? 0,
     type: c.carType,
     transmission: c.transmission as 'Automatic' | 'Manual',
     fuelType: c.fuelType,

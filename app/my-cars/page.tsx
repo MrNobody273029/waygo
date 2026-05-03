@@ -65,7 +65,7 @@ export default async function MyCarsPage() {
         endDate: true,
         totalPrice: true,
         hostApprovalDeadline: true,
-        guest: { select: { fullName: true, lang: true } },
+        guest: { select: { fullName: true, lang: true, rating: true, reviewCount: true } },
       },
       orderBy: { createdAt: 'asc' },
     }),
@@ -83,6 +83,8 @@ export default async function MyCarsPage() {
     hostApprovalDeadline: b.hostApprovalDeadline?.toISOString() ?? null,
     guestName: b.guest.fullName,
     guestLang: b.guest.lang ?? 'en',
+    guestRating: b.guest.rating ?? 0,
+    guestReviewCount: b.guest.reviewCount ?? 0,
   }));
 
   return (

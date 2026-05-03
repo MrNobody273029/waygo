@@ -86,7 +86,10 @@ model Profile {
   lang                             String             @default("en")
   verificationRejectionComment     String?
   hostVerificationRejectionComment String?
-  rating                           Float              @default(5)
+  rating                           Float              @default(0)
+  reviewCount                      Int                @default(0)
+  reviewsGiven                     Review[]           @relation("ReviewsGiven")
+  reviewsReceived                  Review[]           @relation("ReviewsReceived")
   emailVerified                    Boolean            @default(false)
   emailVerificationCode            String?
   emailVerificationExpiry          DateTime?
@@ -166,6 +169,7 @@ model Booking {
   transactions     Transaction[]
   conditionReports ConditionReport[]
   availability     CarAvailability[]
+  reviews          Review[]
   createdAt        DateTime          @default(now())
 }
 
@@ -209,6 +213,22 @@ model ConditionReport {
   photoUrls String[]
   notes     String?
   createdAt DateTime @default(now())
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  bookingId  String
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  reviewerId String
+  reviewer   Profile  @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+  revieweeId String
+  reviewee   Profile  @relation("ReviewsReceived", fields: [revieweeId], references: [id], onDelete: Cascade)
+  role       String   // "guest" = guest reviewing host, "host" = host reviewing guest
+  rating     Int      // 1–5
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  @@unique([bookingId, reviewerId])
 }
 
 model AdminEmail {

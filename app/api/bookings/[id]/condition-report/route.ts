@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { Resend } from 'resend';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { carReturnedReviewEmail } from '@/lib/email';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+const SITE_URL = process.env.NEXTAUTH_URL ?? 'https://waygo.ge';
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -20,7 +25,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   const booking = await prisma.booking.findUnique({
     where: { id: params.id },
-    select: { id: true, guestId: true, status: true, endDate: true },
+    select: {
+      id: true, guestId: true, status: true, endDate: true,
+      carBrand: true, carModel: true, carYear: true, startDate: true,
+      car: { select: { ownerId: true, owner: { select: { email: true, fullName: true, lang: true } } } },
+    },
   });
 
   if (!booking) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -50,6 +59,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: 'Report already submitted' }, { status: 400 });
   }
 
+  const guestProfile = await prisma.profile.findUnique({
+    where: { id: booking.guestId },
+    select: { fullName: true },
+  });
+
   await prisma.$transaction([
     prisma.conditionReport.create({
       data: { bookingId: params.id, phase, photoUrls },
@@ -59,6 +73,24 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       data: { status: phase === 'pickup' ? 'confirmed' : 'completed' },
     }),
   ]);
+
+  // On return completion: email host to review the guest — fire and forget
+  if (phase === 'return' && booking.car?.owner?.email) {
+    const validLangs = ['en', 'ka', 'ru'];
+    const hostLang = validLangs.includes(booking.car.owner.lang)
+      ? (booking.car.owner.lang as 'en' | 'ka' | 'ru')
+      : 'en';
+    const { html, subject } = carReturnedReviewEmail({
+      hostName: booking.car.owner.fullName,
+      hostLang,
+      guestName: guestProfile?.fullName ?? 'Guest',
+      car: { brand: booking.carBrand, model: booking.carModel, year: booking.carYear },
+      booking: { id: booking.id, startDate: booking.startDate, endDate: booking.endDate },
+      reviewUrl: `${SITE_URL}/review/${booking.id}`,
+      siteUrl: SITE_URL,
+    });
+    resend.emails.send({ from: 'WAYGO <info@waygo.ge>', to: booking.car.owner.email, subject, html }).catch(console.error);
+  }
 
   return NextResponse.json({ ok: true });
 }

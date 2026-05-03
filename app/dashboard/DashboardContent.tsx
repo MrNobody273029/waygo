@@ -21,11 +21,12 @@ interface Props {
   upcomingTrips: number;
   memberSince: string;
   rating: number;
+  reviewCount: number;
   verificationStatus: string;
   verificationRejectionComment: string | null;
 }
 
-export function DashboardContent({ name, email, bookings, totalSpent, upcomingTrips, memberSince, rating, verificationStatus, verificationRejectionComment }: Props) {
+export function DashboardContent({ name, email, bookings, totalSpent, upcomingTrips, memberSince, rating, reviewCount, verificationStatus, verificationRejectionComment }: Props) {
   const { t } = useLang();
   const firstName = name.split(' ')[0];
   const [showKYC, setShowKYC] = useState(false);
@@ -196,7 +197,14 @@ export function DashboardContent({ name, email, bookings, totalSpent, upcomingTr
                     <span className="material-symbols-outlined text-[16px]">star</span>
                     {t.dashboard.rating}
                   </span>
-                  <span className="font-extrabold text-label-bold text-on-background">{rating.toFixed(1)}</span>
+                  {reviewCount === 0 ? (
+                    <span className="text-label-sm font-bold text-slate-400">{t.reviews.newBadge}</span>
+                  ) : (
+                    <span className="flex items-center gap-1.5">
+                      <span className="font-extrabold text-label-bold text-amber-700">{rating.toFixed(1)}</span>
+                      <span className="text-[11px] text-slate-400">({t.reviews.reviewsText(reviewCount)})</span>
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

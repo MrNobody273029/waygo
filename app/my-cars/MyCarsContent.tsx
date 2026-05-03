@@ -37,6 +37,8 @@ export interface HostRequest {
   hostApprovalDeadline: string | null;
   guestName: string;
   guestLang: string;
+  guestRating: number;
+  guestReviewCount: number;
   carId: string | null;
 }
 
@@ -352,9 +354,22 @@ export function MyCarsContent({
                           {new Date(req.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                           {' · '}{gel(req.totalPrice)}
                         </p>
-                        <p className="text-label-sm text-secondary mt-0.5 flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[13px]">person</span>
-                          {req.guestName}
+                        <p className="text-label-sm text-secondary mt-0.5 flex items-center gap-2">
+                          <span className="flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[13px]">person</span>
+                            {req.guestName}
+                          </span>
+                          {req.guestReviewCount === 0 ? (
+                            <span className="inline-flex items-center gap-1 bg-surface-container px-2 py-0.5 rounded-md text-[10px] font-bold text-slate-500">
+                              <span className="material-symbols-outlined text-[11px]">star</span>
+                              {t.reviews.newBadge}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-md text-[10px] font-bold text-amber-700">
+                              <span className="material-symbols-outlined text-[11px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                              {req.guestRating.toFixed(1)} · {t.reviews.reviewsText(req.guestReviewCount)}
+                            </span>
+                          )}
                         </p>
                         {isExpired ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-error mt-1">

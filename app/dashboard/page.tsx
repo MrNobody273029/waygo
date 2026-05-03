@@ -15,6 +15,7 @@ export default async function DashboardPage() {
       fullName: true,
       email: true,
       rating: true,
+      reviewCount: true,
       verificationStatus: true,
       verificationRejectionComment: true,
       createdAt: true,
@@ -57,7 +58,8 @@ export default async function DashboardPage() {
       totalSpent={totalSpent}
       upcomingTrips={upcoming}
       memberSince={profile?.createdAt ? new Date(profile.createdAt).getFullYear().toString() : '2025'}
-      rating={profile?.rating ?? 5}
+      rating={profile?.rating ?? 0}
+      reviewCount={profile?.reviewCount ?? 0}
       verificationStatus={profile?.verificationStatus ?? 'UNVERIFIED'}
       verificationRejectionComment={profile?.verificationRejectionComment ?? null}
     />

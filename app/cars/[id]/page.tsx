@@ -11,7 +11,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const car = await prisma.car.findUnique({
     where: { id: params.id },
-    include: { owner: { select: { fullName: true, isVerified: true, rating: true } } },
+    include: { owner: { select: { fullName: true, isVerified: true, rating: true, reviewCount: true } } },
   });
   if (!car) return { title: 'Car Not Found' };
   const c = dbCarToUiCar(car);
@@ -28,7 +28,7 @@ export default async function CarDetail({ params }: { params: { id: string } }) 
   const [car, availRows] = await Promise.all([
     prisma.car.findUnique({
       where: { id: params.id },
-      include: { owner: { select: { fullName: true, isVerified: true, rating: true } } },
+      include: { owner: { select: { fullName: true, isVerified: true, rating: true, reviewCount: true } } },
     }),
     prisma.carAvailability.findMany({
       where: {

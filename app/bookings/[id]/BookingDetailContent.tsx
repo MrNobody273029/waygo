@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useLang } from '@/components/lang-provider';
 import { gel } from '@/lib/utils';
 import { calculateCancellation } from '@/lib/constants';
+import { RatingBadge } from '@/app/review/[bookingId]/ReviewContent';
 
 interface ConditionReport {
   id: string;
@@ -38,6 +39,8 @@ interface Booking {
 interface Props {
   booking: Booking;
   guestEmail: string;
+  existingReview: { rating: number; comment: string | null } | null;
+  hostProfile: { fullName: string; rating: number; reviewCount: number } | null;
 }
 
 const PHOTO_SLOTS = 7;
@@ -230,7 +233,121 @@ function PhotoGrid({
   );
 }
 
-export function BookingDetailContent({ booking, guestEmail }: Props) {
+function GuestReviewSection({ bookingId, existingReview, hostProfile }: {
+  bookingId: string;
+  existingReview: { rating: number; comment: string | null } | null;
+  hostProfile: { fullName: string; rating: number; reviewCount: number } | null;
+}) {
+  const { t } = useLang();
+  const r = t.reviews;
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hoverRating, setHoverRating] = useState(0);
+
+  const starLabels = [r.star1, r.star2, r.star3, r.star4, r.star5];
+
+  async function handleSubmit() {
+    if (rating === 0) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating, comment: comment.trim() || undefined, role: 'guest' }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error === 'Already reviewed' ? r.alreadyReviewed : (data.error ?? 'error'));
+      } else {
+        setSubmitted(true);
+      }
+    } catch { setError('error'); }
+    finally { setSubmitting(false); }
+  }
+
+  const displayRating = existingReview?.rating ?? (submitted ? rating : 0);
+  const isDone = !!(existingReview || submitted);
+
+  return (
+    <section id="review-section" className="rounded-2xl border border-outline-variant/40 bg-white shadow-card p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50">
+          <span className="material-symbols-outlined text-amber-500 text-[20px]">star</span>
+        </div>
+        <div>
+          <h2 className="font-extrabold text-h3 text-on-background">{r.sectionTitle}</h2>
+          {hostProfile && (
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-label-sm text-secondary">{hostProfile.fullName}</span>
+              <RatingBadge rating={hostProfile.rating} count={hostProfile.reviewCount} newBadge={r.newBadge} reviewsText={r.reviewsText} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {isDone ? (
+        <div className="flex flex-col items-center gap-3 py-4 text-center">
+          <span className="material-symbols-outlined text-tertiary text-[36px]">task_alt</span>
+          <p className="font-bold text-label-bold text-on-background">{r.successTitle}</p>
+          <p className="text-label-sm text-secondary">{r.successSub}</p>
+          {displayRating > 0 && (
+            <div className="flex gap-1 mt-1">
+              {[1,2,3,4,5].map(n => (
+                <span key={n} className={`material-symbols-outlined text-[24px] ${n <= displayRating ? 'text-amber-400' : 'text-slate-200'}`}
+                  style={{ fontVariationSettings: n <= displayRating ? "'FILL' 1" : "'FILL' 0" }}>star</span>
+              ))}
+            </div>
+          )}
+          {existingReview?.comment && (
+            <p className="text-label-sm text-secondary italic">"{existingReview.comment}"</p>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <p className="text-label-sm text-secondary">{r.subtitle}</p>
+          <div className="flex flex-col items-center gap-2 py-4 rounded-xl bg-surface-container-low">
+            <div className="flex items-center gap-2">
+              {[1,2,3,4,5].map(n => (
+                <button key={n} type="button"
+                  onClick={() => setRating(n)}
+                  onMouseEnter={() => setHoverRating(n)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  className="cursor-pointer group">
+                  <span className={`material-symbols-outlined text-[30px] transition-all group-hover:scale-110 ${n <= (hoverRating || rating) ? 'text-amber-400' : 'text-slate-200'}`}
+                    style={{ fontVariationSettings: n <= (hoverRating || rating) ? "'FILL' 1" : "'FILL' 0" }}>star</span>
+                </button>
+              ))}
+            </div>
+            {(hoverRating || rating) > 0 && (
+              <span className="text-[11px] font-bold text-amber-600">{starLabels[(hoverRating || rating) - 1]}</span>
+            )}
+          </div>
+          <textarea
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            placeholder={r.commentPlaceholder}
+            rows={2}
+            maxLength={500}
+            className="w-full rounded-xl border border-outline-variant px-3.5 py-3 text-sm font-semibold text-on-background outline-none focus:border-primary focus:ring-2 focus:ring-primary-fixed placeholder:text-slate-400 transition resize-none"
+          />
+          {error && <p className="text-label-sm text-error font-semibold">{error}</p>}
+          <button onClick={handleSubmit} disabled={rating === 0 || submitting}
+            className="w-full rounded-xl bg-amber-500 py-3 font-bold text-label-bold text-white hover:bg-amber-600 transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2">
+            {submitting
+              ? <><span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span>{r.submitting}</>
+              : <><span className="material-symbols-outlined text-[16px]">star</span>{r.submit}</>}
+          </button>
+        </div>
+      )}
+    </section>
+  );
+}
+
+export function BookingDetailContent({ booking, guestEmail, existingReview, hostProfile }: Props) {
   const { t } = useLang();
   const router = useRouter();
   const bd = t.bookingDetail;
@@ -547,6 +664,14 @@ export function BookingDetailContent({ booking, guestEmail }: Props) {
                     </div>
                   )}
                 </section>
+              )}
+              {/* Review section — appears after booking is completed */}
+              {booking.status === 'completed' && (
+                <GuestReviewSection
+                  bookingId={booking.id}
+                  existingReview={existingReview}
+                  hostProfile={hostProfile}
+                />
               )}
             </div>
 

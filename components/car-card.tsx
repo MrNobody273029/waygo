@@ -73,10 +73,17 @@ export function CarCard({ car }: { car: Car }) {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg shrink-0">
-            <span className="material-symbols-outlined text-amber-500 text-[15px]">star</span>
-            <span className="font-bold text-label-bold text-amber-700">{car.rating}</span>
-          </div>
+          {car.trips === 0 ? (
+            <div className="flex items-center gap-1 bg-surface-container px-2.5 py-1 rounded-lg shrink-0">
+              <span className="material-symbols-outlined text-slate-400 text-[15px]">star</span>
+              <span className="font-bold text-label-bold text-slate-500">{t.reviews.newBadge}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg shrink-0">
+              <span className="material-symbols-outlined text-amber-500 text-[15px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+              <span className="font-bold text-label-bold text-amber-700">{car.rating.toFixed(1)}</span>
+            </div>
+          )}
         </div>
 
         {/* Specs */}

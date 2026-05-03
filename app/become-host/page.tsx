@@ -572,6 +572,7 @@ export default function BecomeHost() {
               <select value={advanceNotice} onChange={e => setAdvanceNotice(e.target.value)} className={sel}>
                 {['1','2','6','12','24','48'].map(h => <option key={h} value={h}>{h}h</option>)}
               </select>
+              <p className="mt-1.5 text-label-sm text-slate-400">{t.becomeHost.advanceNoticeHint}</p>
             </div>
           </div>
           {dailyPrice && Number(dailyPrice) > 0 && (

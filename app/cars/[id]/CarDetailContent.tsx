@@ -125,15 +125,18 @@ export function CarDetailContent({ car, availableDates }: { car: Car; availableD
               </div>
               <h1 className="text-[22px] md:text-h1 font-bold text-on-background">{car.brand} {car.model} {car.year}</h1>
               <p className="text-secondary text-body-md mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[17px] text-amber-500">star</span>
-                  {car.rating} {t.carDetail.rating}
-                </span>
-                <span className="text-slate-300">·</span>
-                <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[17px]">route</span>
-                  {car.trips} {t.carDetail.trips}
-                </span>
+                {car.trips > 0 ? (
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[17px] text-amber-500" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                    <span className="font-bold text-amber-700">{car.rating.toFixed(1)}</span>
+                    <span className="text-secondary">({t.reviews.reviewsText(car.trips)})</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[17px] text-slate-400">star</span>
+                    <span className="text-secondary text-label-sm">{t.reviews.noReviews}</span>
+                  </span>
+                )}
                 <span className="text-slate-300">·</span>
                 <span className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-[17px]">location_on</span>
