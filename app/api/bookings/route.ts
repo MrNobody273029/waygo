@@ -77,7 +77,9 @@ export async function POST(req: Request) {
 
   const hostApprovalDeadline = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-  const booking = await prisma.$transaction(async (tx) => {
+  let booking: Awaited<ReturnType<typeof prisma.booking.create>>;
+  try {
+   booking = await prisma.$transaction(async (tx) => {
     const b = await tx.booking.create({
       data: {
         guestId,
@@ -126,8 +128,8 @@ export async function POST(req: Request) {
       },
     });
 
-    // Reserve the availability dates
-    await tx.carAvailability.updateMany({
+    // Reserve availability — count must match to detect concurrent bookings
+    const reserved = await tx.carAvailability.updateMany({
       where: {
         carId: input.carId,
         date: { in: requestedDates.map(d => new Date(d)) },
@@ -136,8 +138,18 @@ export async function POST(req: Request) {
       data: { bookingId: b.id },
     });
 
+    if (reserved.count !== requestedDates.length) {
+      throw Object.assign(new Error('dates_unavailable'), { code: 'DATES_TAKEN' });
+    }
+
     return b;
   });
+  } catch (err: any) {
+    if (err?.code === 'DATES_TAKEN') {
+      return NextResponse.json({ error: 'dates_unavailable' }, { status: 409 });
+    }
+    throw err;
+  }
 
   // Send emails — fire and forget
   const validLangs = ['en', 'ka', 'ru'];

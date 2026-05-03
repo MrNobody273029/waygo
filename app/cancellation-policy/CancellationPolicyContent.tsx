@@ -322,7 +322,7 @@ export function CancellationPolicyContent() {
                 : lang === 'ru'
                 ? 'Свяжитесь с нами: '
                 : 'Contact us at '}
-              <a href="mailto:hello@waygo.ge" className="text-primary font-semibold hover:underline">hello@waygo.ge</a>
+              <a href="mailto:support@waygo.ge" className="text-primary font-semibold hover:underline">support@waygo.ge</a>
             </p>
           </div>
         </div>

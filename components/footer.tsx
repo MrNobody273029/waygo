@@ -1,15 +1,26 @@
 'use client';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useLang } from '@/components/lang-provider';
 
 export function Footer() {
   const { t } = useLang();
+  const router = useRouter();
+
+  const policies = [
+    { text: t.footer.p1, href: '/safety' },
+    { text: t.footer.p2, href: '/insurance-terms' },
+    { text: t.footer.p3, href: '/host-rules' },
+    { text: t.footer.p4, href: '/guest-rules' },
+    { text: (t.footer as any).p5, href: '/how-it-works' },
+    { text: t.bookingDetail.cancelPolicyLink, href: '/cancellation-policy' },
+  ];
 
   return (
     <footer className="w-full border-t border-slate-200 bg-slate-50 pb-20 md:pb-0">
       <div className="max-w-screen-2xl mx-auto px-4 md:px-12 py-10 md:py-16">
 
-        {/* Brand — always full width on mobile, 1 col on desktop */}
+        {/* Brand — mobile only */}
         <div className="mb-8 md:mb-0 md:contents">
           <div className="md:hidden">
             <span className="text-lg font-black text-on-background">
@@ -21,7 +32,7 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Link columns — 2-col grid on mobile, 4-col on desktop */}
+        {/* Link columns */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
 
           {/* Brand — desktop only */}
@@ -38,8 +49,15 @@ export function Footer() {
           <div>
             <h5 className="font-bold text-[13px] md:text-label-bold text-on-background mb-3 md:mb-4">{t.footer.locTitle}</h5>
             <ul className="space-y-2 text-[12px] md:text-label-sm text-slate-500">
-              {[t.footer.loc1, t.footer.loc2, t.footer.loc3, t.footer.loc4].map(l => (
-                <li key={l} className="hover:text-primary cursor-pointer transition-colors">{l}</li>
+              {[t.footer.loc1, t.footer.loc2, t.footer.loc3, t.footer.loc4].map(city => (
+                <li key={city}>
+                  <Link
+                    href={`/cars?city=${encodeURIComponent(city)}`}
+                    className="hover:text-primary transition-colors"
+                  >
+                    {city}
+                  </Link>
+                </li>
               ))}
             </ul>
           </div>
@@ -48,14 +66,13 @@ export function Footer() {
           <div>
             <h5 className="font-bold text-[13px] md:text-label-bold text-on-background mb-3 md:mb-4">{t.footer.policyTitle}</h5>
             <ul className="space-y-2 text-[12px] md:text-label-sm text-slate-500">
-              {[t.footer.p1, t.footer.p2, t.footer.p3, t.footer.p4].map(p => (
-                <li key={p} className="hover:text-primary cursor-pointer transition-colors">{p}</li>
+              {policies.map(({ text, href }) => (
+                <li key={href}>
+                  <Link href={href} className="hover:text-primary transition-colors">
+                    {text}
+                  </Link>
+                </li>
               ))}
-              <li>
-                <Link href="/cancellation-policy" className="hover:text-primary transition-colors">
-                  {t.bookingDetail.cancelPolicyLink}
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -64,7 +81,8 @@ export function Footer() {
             <h5 className="font-bold text-[13px] md:text-label-bold text-on-background mb-3 md:mb-4">{t.footer.contactTitle}</h5>
             <ul className="space-y-2 text-[12px] md:text-label-sm text-slate-500">
               <li className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[15px] md:text-[16px]">mail</span> hello@waygo.ge
+                <span className="material-symbols-outlined text-[15px] md:text-[16px]">mail</span>
+                <a href="mailto:support@waygo.ge" className="hover:text-primary transition-colors">support@waygo.ge</a>
               </li>
               <li className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[15px] md:text-[16px]">call</span> +995 32 2XX XXX

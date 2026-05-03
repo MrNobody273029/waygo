@@ -24,10 +24,10 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
 
   if (!booking) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  // Allow the car owner OR anyone when deadline has passed (auto-reject)
-  const isOwner = booking.car?.ownerId === userId;
-  const isExpired = booking.hostApprovalDeadline && booking.hostApprovalDeadline < new Date();
-  if (!isOwner && !isExpired) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  // Only the car owner can reject
+  if (!booking.car || booking.car.ownerId !== userId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   if (booking.status !== 'awaiting_host') {
     return NextResponse.json({ error: 'Booking is not awaiting host approval' }, { status: 400 });

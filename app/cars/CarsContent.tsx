@@ -12,16 +12,18 @@ import { VerificationPendingPopup } from '@/components/verification-pending-popu
 export function CarsContent({
   cars,
   showKycOnMount,
+  initialCity = '',
 }: {
   cars: Car[];
   showKycOnMount: boolean;
+  initialCity?: string;
 }) {
   const { t } = useLang();
   const router = useRouter();
   const { data: session, status } = useSession();
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
-  const [location, setLocation] = useState('');
+  const [location, setLocation] = useState(initialCity);
   const [showKYC, setShowKYC] = useState(false);
   const [showPending, setShowPending] = useState(false);
   const [rejectionComment, setRejectionComment] = useState<string | null>(null);

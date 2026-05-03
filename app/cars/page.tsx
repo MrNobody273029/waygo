@@ -5,7 +5,7 @@ import { CarsContent } from './CarsContent';
 export default async function CarsPage({
   searchParams,
 }: {
-  searchParams: { welcome?: string };
+  searchParams: { welcome?: string; city?: string };
 }) {
   const dbCars = await prisma.car.findMany({
     where: { isActive: true },
@@ -13,5 +13,11 @@ export default async function CarsPage({
     orderBy: { createdAt: 'desc' },
   });
   const cars = dbCars.map(dbCarToUiCar);
-  return <CarsContent cars={cars} showKycOnMount={searchParams.welcome === '1'} />;
+  return (
+    <CarsContent
+      cars={cars}
+      showKycOnMount={searchParams.welcome === '1'}
+      initialCity={searchParams.city ?? ''}
+    />
+  );
 }

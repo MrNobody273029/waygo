@@ -39,10 +39,16 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: 'Booking is not awaiting host approval' }, { status: 400 });
   }
 
-  await prisma.booking.update({
-    where: { id: params.id },
-    data: { status: 'pending', hostApprovalDeadline: null },
-  });
+  await prisma.$transaction([
+    prisma.booking.update({
+      where: { id: params.id },
+      data: { status: 'pending', hostApprovalDeadline: null },
+    }),
+    prisma.insurancePolicy.updateMany({
+      where: { bookingId: params.id, status: 'inactive' },
+      data: { status: 'active' },
+    }),
+  ]);
 
   // Send confirmation email to guest — fire and forget
   const { guest, car, insurancePolicy } = booking;

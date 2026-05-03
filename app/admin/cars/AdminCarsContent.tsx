@@ -1,4 +1,6 @@
 'use client';
+import { useState } from 'react';
+import Link from 'next/link';
 import { CarFront } from 'lucide-react';
 import { useLang } from '@/components/lang-provider';
 import { gel } from '@/lib/utils';
@@ -28,6 +30,20 @@ type Car = {
 
 export function AdminCarsContent({ cars }: { cars: Car[] }) {
   const { t } = useLang();
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  const filtered = cars.filter(c => {
+    if (statusFilter === 'active' && !c.isActive) return false;
+    if (statusFilter === 'inactive' && c.isActive) return false;
+    if (statusFilter === 'pending' && c.listingStatus !== 'PENDING') return false;
+    if (statusFilter === 'rejected' && c.listingStatus !== 'REJECTED') return false;
+    if (search) {
+      const q = search.toLowerCase();
+      if (!c.brand.toLowerCase().includes(q) && !c.model.toLowerCase().includes(q) && !c.owner.fullName.toLowerCase().includes(q) && !(c.plateNumber ?? '').toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -36,11 +52,32 @@ export function AdminCarsContent({ cars }: { cars: Car[] }) {
         <p className="mt-1 text-sm text-slate-500">{cars.length} {t.admin.listedVehicles}</p>
       </div>
 
+      <div className="flex flex-col sm:flex-row gap-3">
+        <input
+          type="text"
+          placeholder="Search by car, owner or plate…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-primary transition"
+        />
+        <div className="flex gap-2 flex-wrap">
+          {['all', 'active', 'inactive', 'pending', 'rejected'].map(s => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={`rounded-xl border px-3 py-2 text-xs font-bold transition cursor-pointer capitalize ${
+                statusFilter === s ? 'bg-slate-900 text-white border-slate-900' : 'border-slate-200 text-slate-600 hover:border-slate-400'
+              }`}
+            >{s === 'all' ? 'All' : s}</button>
+          ))}
+        </div>
+      </div>
+
       <div className="rounded-3xl border bg-white shadow-soft overflow-hidden">
-        {cars.length === 0 ? (
+        {filtered.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-slate-400">
             <CarFront size={40} className="mb-3" />
-            <p className="font-semibold">{t.admin.noCarsYet}</p>
+            <p className="font-semibold">{search || statusFilter !== 'all' ? 'No cars match your filters' : t.admin.noCarsYet}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -57,11 +94,12 @@ export function AdminCarsContent({ cars }: { cars: Car[] }) {
                   <th className="px-5 py-3 text-left">{t.admin.bookings}</th>
                   <th className="px-5 py-3 text-left">{t.admin.status}</th>
                   <th className="px-5 py-3 text-left">{t.admin.listed}</th>
+                  <th className="px-5 py-3 text-left"></th>
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {cars.map(c => (
-                  <tr key={c.id} className="hover:bg-slate-50">
+                {filtered.map(c => (
+                  <tr key={c.id} className="hover:bg-slate-50 cursor-pointer" onClick={() => window.location.href = `/admin/cars/${c.id}`}>
                     <td className="px-5 py-4">
                       <p className="font-bold">{c.brand} {c.model}</p>
                       <p className="text-xs text-slate-500">{c.year} · {c.plateNumber}</p>
@@ -108,6 +146,9 @@ export function AdminCarsContent({ cars }: { cars: Car[] }) {
                     </td>
                     <td className="px-5 py-4 text-xs text-slate-500">
                       {new Date(c.createdAt).toLocaleDateString('en-GB')}
+                    </td>
+                    <td className="px-5 py-4" onClick={e => e.stopPropagation()}>
+                      <Link href={`/admin/cars/${c.id}`} className="text-xs font-bold text-primary hover:underline">View →</Link>
                     </td>
                   </tr>
                 ))}

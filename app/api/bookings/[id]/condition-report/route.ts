@@ -13,7 +13,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: 'Invalid phase' }, { status: 400 });
   }
 
-  if (!Array.isArray(photoUrls) || photoUrls.length !== 7) {
+  if (!Array.isArray(photoUrls) || photoUrls.length !== 7 ||
+      photoUrls.some((u: unknown) => typeof u !== 'string' || !u.trim())) {
     return NextResponse.json({ error: '7 photos required' }, { status: 400 });
   }
 

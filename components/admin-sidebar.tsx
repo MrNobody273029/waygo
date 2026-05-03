@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { useLang } from '@/components/lang-provider';
-import { LayoutDashboard, Users, CalendarDays, Car, LogOut, ExternalLink, ShieldCheck, Mail } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarDays, Car, LogOut, ExternalLink, ShieldCheck, Mail, CreditCard } from 'lucide-react';
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -11,12 +11,13 @@ export function AdminSidebar() {
   const { t } = useLang();
 
   const navItems = [
-    { href: '/admin',               icon: LayoutDashboard, label: t.admin.overview,    exact: true },
-    { href: '/admin/users',         icon: Users,           label: t.admin.users },
-    { href: '/admin/bookings',      icon: CalendarDays,    label: t.admin.bookings },
-    { href: '/admin/cars',          icon: Car,             label: t.admin.cars },
-    { href: '/admin/verifications', icon: ShieldCheck,     label: 'Verify' },
-    { href: '/admin/emails',        icon: Mail,            label: 'Emails' },
+    { href: '/admin',                icon: LayoutDashboard, label: t.admin.overview,    exact: true },
+    { href: '/admin/users',          icon: Users,           label: t.admin.users },
+    { href: '/admin/bookings',       icon: CalendarDays,    label: t.admin.bookings },
+    { href: '/admin/cars',           icon: Car,             label: t.admin.cars },
+    { href: '/admin/transactions',   icon: CreditCard,      label: 'Transactions' },
+    { href: '/admin/verifications',  icon: ShieldCheck,     label: 'Verify' },
+    { href: '/admin/emails',         icon: Mail,            label: 'Emails' },
   ];
 
   function isActive(href: string, exact?: boolean) {
