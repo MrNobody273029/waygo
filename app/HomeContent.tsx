@@ -3,13 +3,23 @@ import { HeroSearch } from '@/components/hero-search';
 import { CarCard } from '@/components/car-card';
 import { useLang } from '@/components/lang-provider';
 import type { Car } from '@/lib/sample-data';
+import Image from "next/image";
 
 export function HomeContent({ featuredCars }: { featuredCars: Car[] }) {
   const { t } = useLang();
 
-  return (
-    <main className="pt-[62px] md:pt-[73px]">
-      <HeroSearch />
+return (
+  <main className="pt-[62px] md:pt-[73px]">
+    <Image
+      src="/home-photo.png"
+      alt="Home banner"
+      width={1983}
+      height={793}
+      className="w-full h-auto block"
+      priority
+    />
+
+    <HeroSearch />
 
       {/* Featured cars */}
       <section className="max-w-screen-2xl mx-auto px-4 md:px-12 py-10 md:py-20 bg-surface">
@@ -93,5 +103,7 @@ export function HomeContent({ featuredCars }: { featuredCars: Car[] }) {
         </div>
       </section>
     </main>
+        
+
   );
 }
