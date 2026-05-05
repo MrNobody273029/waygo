@@ -35,10 +35,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
  <Providers>
-  <div
-className="min-h-screen bg-no-repeat bg-top bg-[length:100%_auto]"
-    style={{ backgroundImage: "url('/homebk.png')" }}
-  >
+<div className="min-h-screen bg-no-repeat bg-top bg-cover
+  bg-[url('/homebk-m.png')]
+  md:bg-[url('/homebk.png')]">
     <div className="min-h-screen bg-black/45">
       <Navbar />
       {children}
