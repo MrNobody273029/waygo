@@ -34,12 +34,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <Providers>
-          <Navbar />
-          {children}
-          <Footer />
-          <MobileNav />
-        </Providers>
+ <Providers>
+  <div
+className="min-h-screen bg-no-repeat bg-top bg-[length:100%_auto]"
+    style={{ backgroundImage: "url('/homebk.png')" }}
+  >
+    <div className="min-h-screen bg-black/45">
+      <Navbar />
+      {children}
+      <Footer />
+    </div>
+  </div>
+
+  <MobileNav />
+</Providers>
       </body>
     </html>
   );

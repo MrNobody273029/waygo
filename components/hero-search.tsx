@@ -16,8 +16,8 @@ export function HeroSearch() {
   }
 
   return (
-    <section className="relative min-h-[600px] md:min-h-[660px] flex items-center justify-center bg-hero-mesh px-4 md:px-12 pt-8 pb-24 md:py-24 overflow-hidden">
-      <div className="relative z-10 max-w-5xl w-full text-center">
+<section className="relative min-h-[600px] md:min-h-[660px] flex items-center justify-center px-4 md:px-12 pt-8 pb-24 md:py-24 overflow-hidden">
+        <div className="relative z-10 max-w-5xl w-full text-center">
 
         {/* Badge */}
         <p className="inline-flex items-center gap-1.5 rounded-full bg-primary-fixed/60 px-3 py-1.5 md:px-4 md:py-2 text-[12px] md:text-label-bold font-semibold text-primary mb-3 md:mb-5">
@@ -31,7 +31,7 @@ export function HeroSearch() {
         </h1>
 
         {/* Subtitle */}
-        <p className="text-[14px] md:text-body-lg text-secondary mb-7 md:mb-12 max-w-2xl mx-auto">
+<p className="text-[14px] md:text-body-lg text-slate-900/80 mb-7 md:mb-12 max-w-2xl mx-auto">
           {t.hero.sub}
         </p>
 

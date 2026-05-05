@@ -9,27 +9,29 @@ export function HomeContent({ featuredCars }: { featuredCars: Car[] }) {
   const { t } = useLang();
 
 return (
-  <main className="pt-[62px] md:pt-[73px]">
-    <Image
-      src="/home-photo.png"
-      alt="Home banner"
-      width={1983}
-      height={793}
-      className="w-full h-auto block"
-      priority
-    />
+<main>{/* 
+<Image
+  src="/home-photo.png"
+  alt="Home banner"
+  width={1983}
+  height={793}
+  className="w-full h-auto block"
+  priority
+/>
+*/}
 
     <HeroSearch />
+    
 
       {/* Featured cars */}
-      <section className="max-w-screen-2xl mx-auto px-4 md:px-12 py-10 md:py-20 bg-surface">
-        <div className="flex justify-between items-end mb-5 md:mb-10">
+<section className="max-w-screen-2xl mx-auto px-4 md:px-12 py-10 md:py-20">
+          <div className="flex justify-between items-end mb-5 md:mb-10">
           <div>
-            <p className="text-[12px] md:text-label-bold font-semibold text-primary mb-1">{t.home.sectionBadge}</p>
-            <h2 className="text-[26px] md:text-h1 font-bold text-on-background leading-tight">{t.home.sectionTitle}</h2>
-            <p className="text-secondary text-[13px] md:text-body-md mt-1 md:mt-2">{t.home.sectionSub}</p>
+<p className="text-[12px] md:text-label-bold font-semibold text-white/90 mb-1 drop-shadow-md">{t.home.sectionBadge}</p>
+<h2 className="text-[26px] md:text-h1 font-bold text-white leading-tight drop-shadow-lg">{t.home.sectionTitle}</h2>
+<p className="text-white/80 text-[13px] md:text-body-md mt-1 md:mt-2 drop-shadow-md">{t.home.sectionSub}</p>
           </div>
-          <a href="/cars" className="hidden md:flex items-center gap-1 text-primary font-bold text-label-bold hover:underline shrink-0">
+<a href="/cars" className="hidden md:flex items-center gap-1 text-white font-bold text-label-bold hover:underline shrink-0 drop-shadow-md">
             {t.home.viewAll}
             <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
           </a>

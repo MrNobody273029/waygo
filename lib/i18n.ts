@@ -77,8 +77,8 @@ export const translations = {
     },
     hero: {
       badge: 'Insurance-first car sharing for Georgia',
-      title1: 'Drive the Freedom',
-      title2: 'of Georgia',
+      title1: 'Explore Georgia with ',
+      title2: 'Waygo',
       sub: 'Experience premium car sharing with local hosts. Secure, verified, and fully insured for your peace of mind.',
       locationLabel: 'Location',
       pickupLabel: 'Pick-up Date',
@@ -710,8 +710,8 @@ export const translations = {
     },
     hero: {
       badge: 'დაზღვევაზე დაფუძნებული მანქანების გაქირავება',
-      title1: 'იმოგზაურე თავისუფლად',
-      title2: 'მთელ საქართველოში',
+      title1: 'აღმოაჩინე საქართველო',
+      title2: 'Waygo-სთან ერთად',
       sub: 'განიცადე პრემიუმ car sharing ლოკალური ჰოსტებით. უსაფრთხო, ვერიფიცირებული და სრულად დაზღვეული.',
       locationLabel: 'ადგილი',
       pickupLabel: 'აყვანის თარიღი',
@@ -1343,8 +1343,8 @@ export const translations = {
     },
     hero: {
       badge: 'Аренда автомобилей в Грузии с полной страховкой',
-      title1: 'Путешествуй свободно',
-      title2: 'по Грузии',
+      title1: 'Исследуйте Грузию с',
+      title2: 'Waygo',
       sub: 'Опыт премиум каршеринга с местными хостами. Безопасно, проверено и полностью застраховано.',
       locationLabel: 'Местонахождение',
       pickupLabel: 'Дата получения',
