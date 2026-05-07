@@ -13,14 +13,29 @@ export function AdminSidebar() {
   const [supportCount, setSupportCount] = useState(0);
 
 useEffect(() => {
-  fetch('/api/admin/support-conversations/count')
-    .then(r => r.ok ? r.json() : null)
-    .then(data => {
-      if (typeof data?.escalatedCount === 'number') {
+  let alive = true;
+
+  async function loadCount() {
+    try {
+      const r = await fetch('/api/admin/support-conversations/count', {
+        cache: 'no-store',
+      });
+      const data = r.ok ? await r.json() : null;
+
+      if (alive && typeof data?.escalatedCount === 'number') {
         setSupportCount(data.escalatedCount);
       }
-    })
-    .catch(() => {});
+    } catch {}
+  }
+
+  loadCount();
+
+  const id = window.setInterval(loadCount, 15000);
+
+  return () => {
+    alive = false;
+    window.clearInterval(id);
+  };
 }, []);
 
   const navItems = [

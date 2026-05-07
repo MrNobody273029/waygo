@@ -48,6 +48,7 @@ await prisma.supportConversation.update({
   data: {
     status: 'escalated',
     escalated: false,
+    updatedAt: new Date(),
   },
 });
 

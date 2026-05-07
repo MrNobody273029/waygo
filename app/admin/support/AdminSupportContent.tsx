@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { MessageCircle, Send, XCircle, ChevronDown, ChevronRight, User, Bot, Shield, Clock } from 'lucide-react';
+import { MessageCircle, Send, XCircle, ChevronDown, ChevronRight, User, Bot, Shield, Clock, Search } from 'lucide-react';
 
 type SupportMessage = {
   id: string;
@@ -40,6 +40,7 @@ type UserGroup = {
 
 function formatDate(value: string) {
   return new Date(value).toLocaleString('ka-GE', {
+    timeZone: 'Asia/Tbilisi',
     year: 'numeric',
     month: 'short',
     day: '2-digit',
@@ -50,6 +51,7 @@ function formatDate(value: string) {
 
 function shortDate(value: string) {
   return new Date(value).toLocaleDateString('ka-GE', {
+    timeZone: 'Asia/Tbilisi',
     month: 'short',
     day: '2-digit',
   });
@@ -82,7 +84,7 @@ export function AdminSupportContent({
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [closing, setClosing] = useState(false);
-
+const [search, setSearch] = useState('');
   const groups = useMemo<UserGroup[]>(() => {
     const map = new Map<string, UserGroup>();
 
@@ -116,17 +118,35 @@ export function AdminSupportContent({
 
       const group = map.get(key)!;
       group.conversations.push(c);
-      if (c.escalated || c.status === 'escalated') group.escalatedCount += 1;
+if (c.escalated) group.escalatedCount += 1;
     });
 
-    return Array.from(map.values()).map(g => ({
-      ...g,
-      conversations: g.conversations.sort((a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      ),
-    }));
+return Array.from(map.values())
+  .map(g => ({
+    ...g,
+    conversations: g.conversations.sort((a, b) =>
+      Number(b.escalated || b.status === 'escalated') -
+        Number(a.escalated || a.status === 'escalated') ||
+      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    ),
+  }))
+  .sort((a, b) =>
+    b.escalatedCount - a.escalatedCount ||
+    new Date(b.conversations[0]?.updatedAt ?? 0).getTime() -
+      new Date(a.conversations[0]?.updatedAt ?? 0).getTime()
+  );
   }, [conversations]);
+  const filteredGroups = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return groups;
 
+    return groups.filter(group => {
+      const name = group.name.toLowerCase();
+      const email = group.email.toLowerCase();
+
+      return name.includes(q) || email.includes(q);
+    });
+  }, [groups, search]);
   const selectedConversation =
     conversations.find(c => c.id === selectedConversationId) ?? null;
 
@@ -156,7 +176,7 @@ export function AdminSupportContent({
             ? {
                 ...c,
                 status: 'escalated',
-                escalated: true,
+                escalated: false,
                 updatedAt: new Date().toISOString(),
                 messages: [
                   ...c.messages,
@@ -255,7 +275,7 @@ export function AdminSupportContent({
           <div className="rounded-2xl border bg-white px-4 py-3 shadow-soft">
             <p className="text-xs font-bold text-slate-400">გასახსნელი</p>
             <p className="text-2xl font-black text-red-600">
-              {conversations.filter(c => c.escalated || c.status === 'escalated').length}
+{conversations.filter(c => c.escalated).length}
             </p>
           </div>
         </div>
@@ -274,8 +294,26 @@ export function AdminSupportContent({
       ) : (
         <div className="grid gap-4 xl:grid-cols-[390px_1fr]">
           <div className="space-y-3">
-            {groups.map(group => {
-              const isOpen = openUsers[group.key] ?? group.escalatedCount > 0;
+            <div className="rounded-3xl border bg-white p-3 shadow-soft">
+
+  <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+    <Search size={17} className="text-slate-400" />
+    <input
+      value={search}
+      onChange={e => setSearch(e.target.value)}
+      placeholder="ძებნა სახელით ან ელფოსტით..."
+      className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400"
+    />
+  </div>
+            </div>
+
+            {filteredGroups.length === 0 ? (
+              <div className="rounded-3xl border bg-white p-6 text-center text-sm font-semibold text-slate-500 shadow-soft">
+                შედეგი ვერ მოიძებნა.
+              </div>
+            ) : (
+              filteredGroups.map(group => {
+                  const isOpen = openUsers[group.key] ?? group.escalatedCount > 0;
               const latest = group.conversations[0];
 
               return (
@@ -371,7 +409,8 @@ export function AdminSupportContent({
                   )}
                 </div>
               );
-            })}
+              })
+            )}
           </div>
 
           <div className="min-h-[620px] overflow-hidden rounded-3xl border bg-white shadow-soft">
