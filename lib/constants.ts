@@ -1,5 +1,8 @@
 export const DEPOSIT_GEL = 250;
-export const PLATFORM_FEE_RATE = 0.05;
+export const PLATFORM_FEE_RATE = 0.05; // kept for legacy calcs
+export const STANDARD_COMMISSION = 0.10; // regular host: keeps 90%
+export const PREMIUM_COMMISSION = 0.05;  // premium host: keeps 95%
+export const PREMIUM_HOST_CUTOFF = new Date('2025-06-16T00:00:00Z'); // end of June 15
 
 export const insurancePlans = {
   basic:    { label: 'Basic',    dailyPrice: 0,  deductible: 1000, description: 'Included protection for budget trips.' },

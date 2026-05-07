@@ -1,6 +1,22 @@
+import type { Metadata } from 'next';
 import { prisma } from '@/lib/db';
 import { dbCarToUiCar } from '@/lib/sample-data';
 import { CarsContent } from './CarsContent';
+import { absoluteUrl } from '@/lib/seo';
+
+export const metadata: Metadata = {
+  title: 'Rent a Car in Georgia — Browse Verified Local Cars',
+  description:
+    'Browse verified cars for rent across Georgia. Filter by city, dates, type, and price. Instant booking with insurance and 250 GEL deposit protection on WAYGO.ge.',
+  alternates: { canonical: absoluteUrl('/cars') },
+  openGraph: {
+    title: 'Rent a Car in Georgia — Browse Verified Local Cars',
+    description:
+      'Browse verified cars for rent across Georgia. Filter by city, dates, type, and price. Instant booking with insurance included.',
+    url: absoluteUrl('/cars'),
+    type: 'website',
+  },
+};
 
 function getDatesInRange(start: string, end: string): Date[] {
   const dates: Date[] = [];
@@ -19,7 +35,8 @@ export default async function CarsPage({
   searchParams: {
     welcome?: string; city?: string; start?: string; end?: string;
     type?: string; transmission?: string; maxPrice?: string;
-    fuel?: string; seats?: string; brand?: string;
+    fuel?: string; seats?: string; brand?: string; model?: string;
+    features?: string;
   };
 }) {
   const { start, end } = searchParams;
@@ -52,6 +69,7 @@ export default async function CarsPage({
   const dbCars = await prisma.car.findMany({
     where: {
       isActive: true,
+      listingStatus: 'APPROVED',
       ...(availableCarIds !== null ? { id: { in: Array.from(availableCarIds) } } : {}),
     },
     include: {
@@ -61,6 +79,10 @@ export default async function CarsPage({
   });
 
   const cars = dbCars.map(dbCarToUiCar);
+
+  const initialFeatures = searchParams.features
+    ? searchParams.features.split(',').map(f => f.trim()).filter(Boolean)
+    : [];
 
   return (
     <CarsContent
@@ -75,6 +97,8 @@ export default async function CarsPage({
       initialFuel={searchParams.fuel ?? ''}
       initialSeats={searchParams.seats ? Number(searchParams.seats) : 0}
       initialBrand={searchParams.brand ?? ''}
+      initialModel={searchParams.model ?? ''}
+      initialFeatures={initialFeatures}
     />
   );
 }

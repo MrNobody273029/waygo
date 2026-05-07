@@ -6,6 +6,7 @@ import { KYCModal } from '@/components/kyc-modal';
 import { VerificationPendingPopup } from '@/components/verification-pending-popup';
 import { AvailabilityCalendarModal } from '@/components/availability-calendar';
 import { gel } from '@/lib/utils';
+import { STANDARD_COMMISSION, PREMIUM_COMMISSION } from '@/lib/constants';
 
 type CarListingStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
@@ -24,6 +25,7 @@ interface HostCar {
   createdAt: Date;
   listingStatus: CarListingStatus;
   listingRejectionComment: string | null;
+  trips: number;
 }
 
 export interface HostRequest {
@@ -51,6 +53,7 @@ interface Props {
   hostSelfieUrl: string | null;
   hostVerificationRejectionComment: string | null;
   pendingRequests: HostRequest[];
+  isPremiumHost: boolean;
 }
 
 export function MyCarsContent({
@@ -62,6 +65,7 @@ export function MyCarsContent({
   hostSelfieUrl,
   hostVerificationRejectionComment,
   pendingRequests: initialRequests,
+  isPremiumHost,
 }: Props) {
   const { t } = useLang();
   const router = useRouter();
@@ -114,14 +118,25 @@ export function MyCarsContent({
     await handleReject(rejectTarget.id, rejectComment);
   }
 
+  const commission = isPremiumHost ? PREMIUM_COMMISSION : STANDARD_COMMISSION;
+  const hostSharePct = Math.round((1 - commission) * 100);
+
   function HostVerBanner() {
     if (hostVerified) {
       return (
         <div className="flex items-center gap-3 rounded-2xl border border-tertiary/20 bg-tertiary-fixed/20 px-5 py-4 mb-6">
           <span className="material-symbols-outlined text-tertiary text-[22px]">verified</span>
-          <div>
-            <p className="font-bold text-label-bold text-on-background">{t.myCars.hostVerApproved}</p>
-            <p className="text-label-sm text-secondary">Your host identity is confirmed. You can list and manage cars.</p>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="font-bold text-label-bold text-on-background">{t.myCars.hostVerApproved}</p>
+              {isPremiumHost && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 px-2.5 py-0.5 text-[10px] font-black uppercase">
+                  <span className="material-symbols-outlined text-[11px]">star</span>
+                  Premium Host · 95%
+                </span>
+              )}
+            </div>
+            <p className="text-label-sm text-secondary">Your host identity is confirmed. You earn {hostSharePct}% of each rental.</p>
           </div>
         </div>
       );
@@ -354,6 +369,11 @@ export function MyCarsContent({
                           {new Date(req.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                           {' · '}{gel(req.totalPrice)}
                         </p>
+                        <p className="text-label-sm font-bold text-tertiary mt-0.5 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[13px]">payments</span>
+                          {gel(Math.round(req.totalPrice * (1 - commission)))}
+                          <span className="text-[10px] font-normal text-secondary">({hostSharePct}% {isPremiumHost ? '· Premium' : ''})</span>
+                        </p>
                         <p className="text-label-sm text-secondary mt-0.5 flex items-center gap-2">
                           <span className="flex items-center gap-1">
                             <span className="material-symbols-outlined text-[13px]">person</span>
@@ -468,6 +488,12 @@ export function MyCarsContent({
                         <span className="material-symbols-outlined text-[14px]">person</span>
                         {car.seats}
                       </span>
+                      {car.trips > 0 && (
+                        <span className="flex items-center gap-1 text-tertiary font-bold">
+                          <span className="material-symbols-outlined text-[14px]">directions_car</span>
+                          {car.trips} trips
+                        </span>
+                      )}
                     </div>
 
                     {car.listingStatus === 'REJECTED' && car.listingRejectionComment && (

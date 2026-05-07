@@ -1,1 +1,34 @@
-import { MetadataRoute } from 'next';export default function robots():MetadataRoute.Robots{return {rules:{userAgent:'*',allow:'/'},sitemap:`${process.env.NEXT_PUBLIC_APP_URL||'http://localhost:3000'}/sitemap.xml`}}
+import type { MetadataRoute } from 'next';
+import { getSiteUrl } from '@/lib/seo';
+
+export default function robots(): MetadataRoute.Robots {
+  const base = getSiteUrl();
+  return {
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: [
+          '/admin/',
+          '/dashboard',
+          '/my-cars',
+          '/host-rentals',
+          '/become-host',
+          '/bookings/',
+          '/checkout/',
+          '/api/',
+          '/login',
+          '/register',
+        ],
+      },
+      { userAgent: 'GPTBot', allow: '/' },
+      { userAgent: 'OAI-SearchBot', allow: '/' },
+      { userAgent: 'PerplexityBot', allow: '/' },
+      { userAgent: 'Claude-Web', allow: '/' },
+      { userAgent: 'Googlebot', allow: '/' },
+      { userAgent: 'Bingbot', allow: '/' },
+    ],
+    sitemap: `${base}/sitemap.xml`,
+    host: base,
+  };
+}

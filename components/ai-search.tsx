@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLang } from '@/components/lang-provider';
+import { GEORGIAN_CITIES_EN } from '@/lib/cities';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -51,8 +52,6 @@ const SUGGESTIONS = {
     '7 мест для семьи',
   ],
 };
-
-const CITIES = ['Tbilisi', 'Batumi', 'Kutaisi', 'Borjomi'];
 
 const TYPE_ICONS: Record<string, string> = {
   Economy: 'directions_car', Compact: 'directions_car', Sedan: 'drive_eta',
@@ -137,19 +136,16 @@ export function AISearch() {
   const containerRef = useRef<HTMLDivElement>(null);
   const followUpRef = useRef<HTMLInputElement>(null);
 
-  // Rotate placeholder
   useEffect(() => {
     const id = setInterval(() => setPlaceholderIdx(i => (i + 1) % suggestions.length), 3200);
     return () => clearInterval(id);
   }, [suggestions.length]);
 
-  // Auto-focus when expanded
   useEffect(() => {
     if (state === 'expanded') textareaRef.current?.focus();
     if (state === 'question') setTimeout(() => followUpRef.current?.focus(), 50);
   }, [state]);
 
-  // Click-outside to collapse (only when empty)
   useEffect(() => {
     function onOutside(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -198,6 +194,7 @@ export function AISearch() {
     if (f.fuelType) p.set('fuel', f.fuelType);
     if (f.minSeats) p.set('seats', String(f.minSeats));
     if (f.brand) p.set('brand', f.brand);
+    if (f.features && f.features.length > 0) p.set('features', f.features.join(','));
     router.push(`/cars${p.toString() ? '?' + p.toString() : ''}`);
     setState('idle');
     setQuery('');
@@ -232,15 +229,12 @@ export function AISearch() {
           onClick={() => setState('expanded')}
           className="w-full group flex items-center gap-3 bg-white border border-slate-200 hover:border-primary/40 rounded-2xl px-4 py-3.5 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         >
-          {/* AI Badge */}
           <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-purple-600 shrink-0 shadow-sm">
             <span className="material-symbols-outlined text-white text-[16px]">auto_awesome</span>
           </div>
-          {/* Placeholder */}
           <span className="flex-1 text-left text-label-bold text-slate-400 font-medium truncate transition-opacity">
             {placeholder}
           </span>
-          {/* Label */}
           <span className="hidden md:flex items-center gap-1.5 shrink-0 text-[11px] font-bold text-primary bg-primary-fixed/20 px-2.5 py-1 rounded-full">
             <span className="material-symbols-outlined text-[12px]">auto_awesome</span>
             {ui.badge}
@@ -281,7 +275,6 @@ export function AISearch() {
     return (
       <div ref={containerRef} className="mb-6">
         <div className="bg-white border border-primary/20 rounded-2xl shadow-md overflow-hidden">
-          {/* Header */}
           <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-primary-fixed/20 to-transparent">
             <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-purple-600">
               <span className="material-symbols-outlined text-white text-[14px]">auto_awesome</span>
@@ -289,7 +282,6 @@ export function AISearch() {
             <span className="font-bold text-label-bold text-primary">{ui.understood}</span>
           </div>
 
-          {/* Chips */}
           <div className="px-4 py-3">
             {chips.length === 0 ? (
               <p className="text-label-sm text-secondary">{ui.empty}</p>
@@ -308,7 +300,6 @@ export function AISearch() {
             )}
           </div>
 
-          {/* Actions */}
           <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-slate-100 bg-surface-container-low/50">
             <button
               type="button"
@@ -334,7 +325,7 @@ export function AISearch() {
 
   // ── Question state ────────────────────────────────────────────────────────
   if (state === 'question' && result?.question) {
-    const isCityQ = /city|town|location|city|ქალაქ|город/i.test(result.question);
+    const isCityQ = /city|town|location|ქალაქ|город/i.test(result.question);
     return (
       <div ref={containerRef} className="mb-6">
         <div className="bg-white border border-amber-200 rounded-2xl shadow-md overflow-hidden">
@@ -351,10 +342,10 @@ export function AISearch() {
               {result.question}
             </p>
 
-            {/* City quick-select if detected as city question */}
+            {/* City quick-select — shows all Georgian cities */}
             {isCityQ && (
               <div className="flex flex-wrap gap-2 mb-3">
-                {CITIES.map(city => (
+                {GEORGIAN_CITIES_EN.map(city => (
                   <button
                     key={city}
                     type="button"
@@ -372,7 +363,6 @@ export function AISearch() {
               </div>
             )}
 
-            {/* Free-text answer */}
             <div className="flex gap-2">
               <input
                 ref={followUpRef}
@@ -411,7 +401,6 @@ export function AISearch() {
       <div className={`bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-200 ${
         error ? 'border border-error/40' : 'border border-primary/30 ring-2 ring-primary-fixed/20'
       }`}>
-        {/* Header row */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-purple-600 shadow-sm">
@@ -435,7 +424,6 @@ export function AISearch() {
           </div>
         </div>
 
-        {/* Input area */}
         <div className="px-4 pt-3 pb-2">
           {error && (
             <p className="text-label-sm text-error mb-2 flex items-center gap-1">
@@ -455,7 +443,6 @@ export function AISearch() {
           <p className="text-[11px] text-slate-400 mt-1">{ui.hint} · Enter ↵</p>
         </div>
 
-        {/* Submit */}
         <div className="flex items-center justify-end px-4 py-2.5 border-t border-slate-100 bg-surface-container-low/30">
           <button
             type="button"

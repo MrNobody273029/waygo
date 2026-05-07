@@ -8,12 +8,15 @@ import { useLang } from '@/components/lang-provider';
 import { KYCModal } from '@/components/kyc-modal';
 import { VerificationPendingPopup } from '@/components/verification-pending-popup';
 import { DateRangeCalendar } from '@/components/date-range-calendar';
+import { TermsModal } from '@/components/terms-modal';
+import { termsContent } from '@/lib/terms';
+import type { TermsLang } from '@/lib/terms';
 import type { AirportState } from '@/lib/sample-data';
 
 type DeliveryOption = { id: string; label: string; cost: number; icon: string };
 
 export function BookingWidget({ car, availableDates }: { car: any; availableDates?: string[] }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const { data: session } = useSession();
   const today = new Date().toISOString().split('T')[0];
   const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
@@ -26,6 +29,9 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
   const [end, setEnd] = useState(tomorrow);
   const [plan, setPlan] = useState<InsurancePlan>('standard');
   const [loading, setLoading] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const termsLang = (lang as TermsLang) in termsContent.title ? (lang as TermsLang) : 'en';
   const [showKYC, setShowKYC] = useState(false);
   const [showPending, setShowPending] = useState(false);
   const [rejectionComment, setRejectionComment] = useState<string | null>(null);
@@ -163,6 +169,7 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
     <>
       <KYCModal open={showKYC} onClose={() => setShowKYC(false)} onSuccess={() => setShowKYC(false)} verificationType="guest" rejectionComment={rejectionComment} />
       <VerificationPendingPopup open={showPending} onClose={() => setShowPending(false)} />
+      <TermsModal open={showTerms} onClose={() => setShowTerms(false)} onAccept={() => { setTermsAccepted(true); setShowTerms(false); }} />
 
       {showLoginPrompt && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
@@ -329,10 +336,26 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
           </div>
         </div>
 
+        <div className="mt-4 flex items-start gap-3 rounded-xl border border-outline-variant/40 bg-surface-container-low px-3.5 py-3">
+          <input
+            type="checkbox"
+            id="booking-terms"
+            checked={termsAccepted}
+            onChange={e => setTermsAccepted(e.target.checked)}
+            className="mt-0.5 w-4 h-4 accent-primary cursor-pointer shrink-0"
+          />
+          <label htmlFor="booking-terms" className="text-label-sm text-secondary cursor-pointer leading-relaxed select-none">
+            {termsContent.checkboxLabel[termsLang]}.{' '}
+            <button type="button" onClick={() => setShowTerms(true)} className="text-primary font-bold hover:underline cursor-pointer inline">
+              {termsContent.readMore[termsLang]} ↗
+            </button>
+          </label>
+        </div>
+
         <button
           onClick={book}
-          disabled={loading}
-          className="mt-5 w-full py-4 bg-primary-container text-white rounded-xl font-bold text-label-bold hover:bg-primary transition-colors active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
+          disabled={loading || !termsAccepted}
+          className="mt-3 w-full py-4 bg-primary-container text-white rounded-xl font-bold text-label-bold hover:bg-primary transition-colors active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
         >
           {loading ? (
             <><span className="material-symbols-outlined animate-spin text-[18px]">autorenew</span>{t.booking.processing}</>

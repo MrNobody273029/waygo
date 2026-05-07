@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useLang } from '@/components/lang-provider';
 import { CarBrandPicker, CarModelPicker, CarYearPicker } from '@/components/car-picker';
 import { gel } from '@/lib/utils';
+import { GEORGIAN_CITIES_EN } from '@/lib/cities';
 
 type AirportState = 'none' | 'free' | 'paid';
 
@@ -63,9 +64,9 @@ function AirportRow({ label, state, price, onStateChange, onPriceChange, t }: {
 
 function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <button type="button" role="switch" aria-checked={checked} onClick={() => onChange(!checked)}
+    <button type="button" role="switch" aria-checked={checked} onClick={e => { e.stopPropagation(); onChange(!checked); }}
       className={`relative w-12 h-6 rounded-full transition-colors shrink-0 cursor-pointer ${checked ? 'bg-primary' : 'bg-slate-200'}`}>
-      <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-7' : 'translate-x-1'}`} />
+      <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${checked ? 'translate-x-6' : 'translate-x-0'}`} />
     </button>
   );
 }
@@ -241,7 +242,9 @@ export function EditCarContent({ car }: { car: CarData }) {
             <label className="mb-1.5 block text-label-bold font-bold text-on-background">{t.becomeHost.locationPlaceholder}</label>
             <select value={baseCity} onChange={e => setBaseCity(e.target.value)} className={sel}>
               <option value="">— {t.becomeHost.locationPlaceholder} —</option>
-              {(t.common.cities as readonly string[]).map(c => <option key={c} value={c}>{c}</option>)}
+              {GEORGIAN_CITIES_EN.map((enName, i) => (
+                <option key={enName} value={enName}>{(t.common.cities as readonly string[])[i] ?? enName}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -430,7 +433,9 @@ export function EditCarContent({ car }: { car: CarData }) {
                 <label className="mb-1.5 block text-label-bold font-bold text-on-background">{t.becomeHost.cityLabel}</label>
                 <select value={deliveryCity} onChange={e => setDeliveryCity(e.target.value)} className={sel}>
                   <option value="">— {t.becomeHost.cityLabel} —</option>
-                  {(t.common.cities as readonly string[]).map(c => <option key={c} value={c}>{c}</option>)}
+                  {GEORGIAN_CITIES_EN.map((enName, i) => (
+                    <option key={enName} value={enName}>{(t.common.cities as readonly string[])[i] ?? enName}</option>
+                  ))}
                 </select>
               </div>
               <div>

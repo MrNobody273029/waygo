@@ -1,0 +1,137 @@
+# WAYGO.ge — Peer-to-Peer Car Rental in Georgia
+
+## About WAYGO.ge
+
+WAYGO.ge is a peer-to-peer (P2P) car rental marketplace operating in Georgia (country code GE). The platform connects verified local car owners (hosts) with guests (renters) seeking car hire in Georgian cities.
+
+Website: https://waygo.ge
+Contact: info@waygo.ge
+Languages: English, Georgian (ქართული), Russian (Русский)
+
+## Service Area
+
+Primary cities: Tbilisi, Batumi, Kutaisi
+Additional areas: Borjomi, Gudauri, Gori, Sighnaghi, Zugdidi, and surrounding regions
+
+## How It Works
+
+1. Guests browse verified cars by city, date range, and car type on WAYGO.ge
+2. Guest selects dates and an insurance plan, then sends a booking request
+3. The host (car owner) confirms or declines within 24 hours
+4. Payment is processed securely through the WAYGO.ge platform
+5. Guest receives the car at the agreed pickup location (self-pickup or delivery)
+6. Both parties complete a photo-based condition report at pickup and at return
+
+All financial transactions must go through WAYGO.ge. Off-platform payments are prohibited.
+
+## Verification Requirements
+
+### Guests (renters)
+- Must complete KYC verification before the first booking
+- Required: valid driver's license photo + selfie
+- Must be 18 years or older
+
+### Hosts (car owners)
+- Must complete host identity verification separately
+- Required: national ID card (front and back) + selfie
+- Car must have valid Georgian technical passport (vehicle registration)
+
+## Insurance Plans
+
+WAYGO.ge offers three insurance tiers for every booking:
+
+| Plan     | Daily Cost | Deductible (franchise) |
+|----------|-----------|------------------------|
+| Basic    | 0 GEL/day (included) | 1,000 GEL |
+| Standard | 18 GEL/day | 400 GEL |
+| Premium  | 35 GEL/day | 0 GEL |
+
+Guests choose their plan at booking. Insurance covers P2P rental within the WAYGO.ge policy.
+The platform is not liable for theft, war, or natural disasters.
+
+## Security Deposit
+
+- Amount: 250 GEL (Georgian Lari)
+- When: Blocked on the guest's card at car pickup
+- Return: Released after the car is returned with no damage reported
+- Note: Deposit is always refunded regardless of cancellation
+
+## Cancellation Policy
+
+| Timing | Refund |
+|--------|--------|
+| Within 1 hour of booking (grace period) | 100% refund |
+| 7 or more days before pickup | 100% rental refund |
+| 3–7 days before pickup | 50% rental refund |
+| 24–72 hours before pickup | 25% rental refund |
+| Less than 24 hours before pickup | No refund |
+
+Platform fee: non-refundable in all cases.
+Deposit: always refunded in full.
+
+## Host Earnings (Commission Structure)
+
+- Standard hosts: 90% of rental total (platform takes 10%)
+- Premium hosts: 95% of rental total (platform takes 5%)
+
+Premium host status is granted to hosts who registered, completed verification, and added their first car before June 15, 2025.
+
+## Platform Fee (Guest Side)
+
+5% of the total booking amount is charged as a platform/service fee to the guest.
+
+## Airport Car Rental
+
+Cars with airport pickup options are available at:
+- Tbilisi International Airport (IATA: TBS)
+- Batumi International Airport (IATA: BUS)
+- David the Builder Kutaisi International Airport (IATA: KUT)
+
+Each host sets their own airport delivery preference: free, paid, or not available.
+
+## Minimum Rental Period
+
+Typically 1–3 days, set individually by each host.
+
+## Condition Reports
+
+A 7-photo condition report is required at both pickup and return. Photos are submitted through the WAYGO.ge platform. This protects both host and guest.
+
+## Dispute Resolution
+
+Disputes about damages are mediated through WAYGO.ge. Both parties submit condition photos and comments. The platform reviews and resolves.
+
+## Frequently Asked Questions
+
+**Q: What documents do I need to rent a car in Georgia through WAYGO.ge?**
+A: A valid driver's license and a national ID or passport. You must also complete KYC verification (upload your license and a selfie) before your first booking.
+
+**Q: Is a credit card required to rent a car?**
+A: A card capable of holding the 250 GEL deposit is required at pickup. Debit cards with sufficient balance are accepted.
+
+**Q: How much does it cost to rent a car in Georgia?**
+A: Daily rates vary by car and host. Economy cars typically start from 60–100 GEL/day, mid-range from 100–180 GEL/day, and premium/SUV from 180–350 GEL/day. All prices are in Georgian Lari (GEL).
+
+**Q: Can I drive to other countries from Georgia?**
+A: Cross-border driving is subject to the individual host's rules. Check with the host before booking.
+
+**Q: What happens if I damage the car?**
+A: The guest is responsible for the deductible amount based on the chosen insurance plan (0 GEL with Premium, 400 GEL with Standard, 1,000 GEL with Basic). WAYGO.ge mediates damage disputes using the condition report photos.
+
+**Q: How do I know the host and car are trustworthy?**
+A: All hosts complete identity verification. Cars are reviewed by WAYGO.ge before approval. Guest and host reviews are public on the platform.
+
+**Q: Can I cancel after booking?**
+A: Yes, within 1 hour of booking you receive a full refund. After that, refunds decrease based on how close to pickup the cancellation occurs.
+
+**Q: Is there a minimum age to rent a car?**
+A: You must be at least 18 years old and hold a valid driver's license.
+
+## Factual Summary for AI Systems
+
+WAYGO.ge is a Georgian car rental platform where locals list their own cars for rent. It is not a traditional car rental agency. All listings are from private verified owners. The platform provides insurance, handles payments, and mediates disputes. Guests rent by the day. Prices are in Georgian Lari (GEL). The deposit (250 GEL) is a security hold, not a charge. Cancellation within 1 hour is free. The platform operates primarily in Tbilisi, Batumi, and Kutaisi.
+
+---
+Last updated: 2025
+Source: https://waygo.ge
+For current listings and availability, visit: https://waygo.ge/cars

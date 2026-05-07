@@ -2,17 +2,25 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLang } from '@/components/lang-provider';
+import { GEORGIAN_CITIES_EN } from '@/lib/cities';
 
 export function HeroSearch() {
   const router = useRouter();
   const { t } = useLang();
-  const [location, setLocation] = useState('');
+  const [city, setCity] = useState('');
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+
+  const citiesLocal = t.common.cities as readonly string[];
 
   function handleSearch() {
-    const params = new URLSearchParams({ location, start, end });
-    router.push(`/cars?${params.toString()}`);
+    const params = new URLSearchParams();
+    if (city) params.set('city', city);
+    if (start) params.set('start', start);
+    if (end) params.set('end', end);
+    if (maxPrice) params.set('maxPrice', maxPrice);
+    router.push(`/cars${params.toString() ? '?' + params.toString() : ''}`);
   }
 
   return (
@@ -50,14 +58,14 @@ export function HeroSearch() {
                 <div className="flex-1 min-w-0 text-left md:w-full">
                   <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold block mb-0.5">{t.hero.locationLabel}</span>
                   <select
-                    value={location}
-                    onChange={e => setLocation(e.target.value)}
+                    value={city}
+                    onChange={e => setCity(e.target.value)}
                     className="w-full border-none p-0 focus:ring-0 font-bold text-[14px] md:text-label-bold text-on-background bg-transparent cursor-pointer"
                   >
-                    <option value="">{t.hero.loc1}</option>
-                    <option>{t.hero.loc2}</option>
-                    <option>{t.hero.loc3}</option>
-                    <option>{t.hero.loc4}</option>
+                    <option value="">{t.hero.locationLabel}</option>
+                    {GEORGIAN_CITIES_EN.map((enName, i) => (
+                      <option key={enName} value={enName}>{citiesLocal[i] ?? enName}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -79,7 +87,7 @@ export function HeroSearch() {
               </div>
 
               {/* Drop-off */}
-              <div className="flex items-center gap-3 px-4 py-3.5 md:flex-1 md:flex-col md:items-start md:py-4">
+              <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-100 md:border-b-0 md:flex-1 md:flex-col md:items-start md:py-4">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 md:hidden">
                   <span className="material-symbols-outlined text-[18px] text-primary">event_available</span>
                 </div>
@@ -91,6 +99,30 @@ export function HeroSearch() {
                     onChange={e => setEnd(e.target.value)}
                     className="w-full border-none p-0 focus:ring-0 font-bold text-[14px] md:text-label-bold text-on-background bg-transparent"
                   />
+                </div>
+              </div>
+
+              {/* Max price */}
+              <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-100 md:border-b-0 md:flex-1 md:flex-col md:items-start md:py-4">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 md:hidden">
+                  <span className="material-symbols-outlined text-[18px] text-primary">monetization_on</span>
+                </div>
+                <div className="flex-1 min-w-0 text-left md:w-full">
+                  <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold block mb-0.5">{t.hero.priceLabel}</span>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      placeholder="∞"
+                      min={0}
+                      step={10}
+                      value={maxPrice}
+                      onChange={e => setMaxPrice(e.target.value)}
+                      className="w-full border-none p-0 focus:ring-0 font-bold text-[14px] md:text-label-bold text-on-background bg-transparent"
+                    />
+                    {maxPrice && (
+                      <span className="text-[11px] text-secondary shrink-0">₾/day</span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

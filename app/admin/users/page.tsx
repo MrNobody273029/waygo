@@ -14,6 +14,7 @@ export default async function AdminUsers() {
       country: true,
       role: true,
       isVerified: true,
+      birthDate: true,
       rating: true,
       createdAt: true,
       isSuspended: true,

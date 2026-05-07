@@ -4,8 +4,12 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useLang } from '@/components/lang-provider';
 import { CarBrandPicker, CarModelPicker, CarYearPicker } from '@/components/car-picker';
+import { GEORGIAN_CITIES_EN } from '@/lib/cities';
 import { KYCModal } from '@/components/kyc-modal';
 import { VerificationPendingPopup } from '@/components/verification-pending-popup';
+import { TermsModal } from '@/components/terms-modal';
+import { termsContent } from '@/lib/terms';
+import type { TermsLang } from '@/lib/terms';
 import { gel } from '@/lib/utils';
 
 type AirportState = 'none' | 'free' | 'paid';
@@ -55,9 +59,9 @@ function AirportRow({
 
 function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <button type="button" role="switch" aria-checked={checked} onClick={() => onChange(!checked)}
+    <button type="button" role="switch" aria-checked={checked} onClick={e => { e.stopPropagation(); onChange(!checked); }}
       className={`relative w-12 h-6 rounded-full transition-colors shrink-0 cursor-pointer ${checked ? 'bg-primary' : 'bg-slate-200'}`}>
-      <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-7' : 'translate-x-1'}`} />
+      <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${checked ? 'translate-x-6' : 'translate-x-0'}`} />
     </button>
   );
 }
@@ -124,7 +128,7 @@ function UploadZone({ label, url, onUpload, t }: {
 }
 
 export default function BecomeHost() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const router = useRouter();
   const { data: session, status, update } = useSession();
   const [activeStep, setActiveStep] = useState(0);
@@ -133,6 +137,9 @@ export default function BecomeHost() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [photosUploading, setPhotosUploading] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const termsLang = (lang as TermsLang) in termsContent.title ? (lang as TermsLang) : 'en';
 
   // Step 0 — Car details
   const [brand, setBrand] = useState('');
@@ -343,7 +350,9 @@ export default function BecomeHost() {
             <label className="mb-1.5 block text-label-bold font-bold text-on-background">{t.becomeHost.locationPlaceholder}</label>
             <select value={baseCity} onChange={e => setBaseCity(e.target.value)} className={sel}>
               <option value="">— {t.becomeHost.locationPlaceholder} —</option>
-              {(t.common.cities as readonly string[]).map(c => <option key={c} value={c}>{c}</option>)}
+              {GEORGIAN_CITIES_EN.map((enName, i) => (
+                <option key={enName} value={enName}>{(t.common.cities as readonly string[])[i] ?? enName}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -646,7 +655,9 @@ export default function BecomeHost() {
                 <select value={deliveryCity} onChange={e => setDeliveryCity(e.target.value)}
                   className="w-full rounded-xl border border-outline-variant bg-white px-4 py-3 text-label-bold outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-fixed cursor-pointer">
                   <option value="">— {t.becomeHost.cityLabel} —</option>
-                  {(t.common.cities as readonly string[]).map(c => <option key={c} value={c}>{c}</option>)}
+                  {GEORGIAN_CITIES_EN.map((enName, i) => (
+                    <option key={enName} value={enName}>{(t.common.cities as readonly string[])[i] ?? enName}</option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -849,6 +860,11 @@ export default function BecomeHost() {
 
   return (
     <main className="pt-[62px] md:pt-[73px] min-h-screen bg-surface">
+      <TermsModal
+        open={showTerms}
+        onClose={() => setShowTerms(false)}
+        onAccept={() => { setTermsAccepted(true); setShowTerms(false); }}
+      />
       <KYCModal
         open={showKYC}
         onClose={() => {
@@ -913,6 +929,28 @@ export default function BecomeHost() {
               </div>
             )}
 
+            {activeStep === steps.length - 1 && (
+              <div className="flex items-start gap-3 rounded-xl border border-outline-variant/40 bg-surface-container-low px-4 py-3">
+                <input
+                  type="checkbox"
+                  id="host-terms"
+                  checked={termsAccepted}
+                  onChange={e => setTermsAccepted(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 accent-primary cursor-pointer shrink-0"
+                />
+                <label htmlFor="host-terms" className="text-label-sm text-secondary cursor-pointer leading-relaxed select-none">
+                  {termsContent.checkboxLabel[termsLang]}.{' '}
+                  <button
+                    type="button"
+                    onClick={() => setShowTerms(true)}
+                    className="text-primary font-bold hover:underline cursor-pointer"
+                  >
+                    {termsContent.readMore[termsLang]} ↗
+                  </button>
+                </label>
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               {activeStep > 0 ? (
                 <button type="button" onClick={() => setActiveStep(s => s - 1)}
@@ -931,7 +969,7 @@ export default function BecomeHost() {
               ) : (
                 <div className="flex gap-3">
                   {availDates.size === 0 && (
-                    <button type="button" onClick={handleSubmit} disabled={submitting || !techPassportFront || !techPassportBack}
+                    <button type="button" onClick={handleSubmit} disabled={submitting || !techPassportFront || !techPassportBack || !termsAccepted}
                       className="rounded-xl border border-outline-variant px-5 py-3 font-bold text-label-bold text-secondary hover:bg-surface-container-low transition disabled:opacity-60 cursor-pointer">
                       {t.becomeHost.availabilitySkip}
                     </button>
@@ -939,7 +977,7 @@ export default function BecomeHost() {
                   <button
                     type="button"
                     onClick={handleSubmit}
-                    disabled={submitting || !techPassportFront || !techPassportBack}
+                    disabled={submitting || !techPassportFront || !techPassportBack || !termsAccepted}
                     className="flex items-center gap-2 rounded-xl bg-primary-container text-white px-8 py-3 font-bold text-label-bold hover:bg-primary transition-all active:scale-95 disabled:opacity-60 cursor-pointer"
                   >
                     {submitting ? (

@@ -1,8 +1,13 @@
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { HostRentalsContent } from './HostRentalsContent';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function HostRentalsPage() {
   const session = await getServerSession(authOptions);

@@ -17,7 +17,7 @@ const COPY = {
     title: 'WAYGO AI Support',
     subtitle: 'Ask about rentals, rules, insurance, bookings or your account.',
     welcome:
-      'Hello! I can help with WAYGO rules, rentals, insurance, cancellations and bookings. I cannot make changes, but I can explain and guide you.',
+      'Hello! I can help with WAYGO rules, rentals, insurance, cancellations and bookings.',
     input: 'Ask a question…',
     send: 'Send',
     thinking: 'Thinking…',
@@ -29,9 +29,9 @@ const COPY = {
     label: 'AI მხარდაჭერა',
     online: '24/7 ონლაინ',
     title: 'WAYGO AI მხარდაჭერა',
-    subtitle: 'მკითხე გაქირავებაზე, წესებზე, დაზღვევაზე, ჯავშნებზე ან ანგარიშზე.',
+    subtitle: '',
     welcome:
-      'გამარჯობა! შემიძლია დაგეხმარო WAYGO-ს წესებში, გაქირავებაში, დაზღვევაში, გაუქმებაში და ჯავშნებში. ცვლილებებს ვერ ვაკეთებ, მხოლოდ აგიხსნი და დაგაკვალიანებ.',
+      'გამარჯობა! შემიძლია დაგეხმარო WAYGO-ს წესებში, გაქირავებაში, დაზღვევაში, გაუქმებაში და ჯავშნებში.',
     input: 'დასვი კითხვა…',
     send: 'გაგზავნა',
     thinking: 'ვფიქრობ…',
@@ -45,7 +45,7 @@ const COPY = {
     title: 'WAYGO AI поддержка',
     subtitle: 'Спросите про аренду, правила, страховку, бронирования или аккаунт.',
     welcome:
-      'Здравствуйте! Я могу помочь с правилами WAYGO, арендой, страховкой, отменами и бронированиями. Я не могу вносить изменения, но могу объяснить и направить.',
+      'Здравствуйте! Я могу помочь с правилами WAYGO, арендой, страховкой, отменами и бронированиями.',
     input: 'Задайте вопрос…',
     send: 'Отправить',
     thinking: 'Думаю…',
@@ -71,6 +71,8 @@ export function AISupportChat() {
 
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const floatRef = useRef<HTMLButtonElement>(null);
 
   const isAdmin = pathname.startsWith('/admin');
 
@@ -93,6 +95,20 @@ export function AISupportChat() {
       behavior: 'smooth',
     });
   }, [open, messages, loading, needsEscalation, error]);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleOutside(e: MouseEvent) {
+      if (
+        panelRef.current && !panelRef.current.contains(e.target as Node) &&
+        floatRef.current && !floatRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [open]);
 
   if (isAdmin) return null;
 
@@ -167,7 +183,7 @@ export function AISupportChat() {
   return (
     <>
       {open && (
-        <div className="fixed inset-x-3 bottom-[92px] z-[80] mx-auto w-auto max-w-[430px] md:inset-auto md:right-6 md:bottom-28 md:w-[410px]">
+        <div ref={panelRef} className="fixed inset-x-3 bottom-[92px] z-[80] mx-auto w-auto max-w-[430px] md:inset-auto md:right-6 md:bottom-28 md:w-[410px]">
           <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_24px_80px_rgba(15,23,42,.22)]">
             <div className="relative bg-gradient-to-br from-primary via-primary-container to-[#6d28d9] px-5 pb-5 pt-5 text-white">
               <div className="absolute right-4 top-4 h-20 w-20 rounded-full bg-white/10 blur-2xl" />
@@ -179,18 +195,27 @@ export function AISupportChat() {
                   </div>
                   <div>
                     <p className="text-[17px] font-black leading-tight">{t.title}</p>
-                    <p className="mt-1 text-[12px] font-semibold text-white/80">{t.subtitle}</p>
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/90 transition hover:bg-white/20"
-                  aria-label="Close AI support"
-                >
-                  <span className="material-symbols-outlined text-[20px]">close</span>
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/90 transition hover:bg-white/20 cursor-pointer"
+                    aria-label="Minimize AI support"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">remove</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setOpen(false); setMessages([]); setConversationId(null); setNeedsEscalation(false); setError(false); }}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/90 transition hover:bg-white/20 cursor-pointer"
+                    aria-label="Close AI support"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">close</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -265,10 +290,11 @@ export function AISupportChat() {
       )}
 
       <button
+        ref={floatRef}
         type="button"
         onClick={() => setOpen(v => !v)}
         aria-label={t.label}
-        className="group fixed bottom-[86px] right-4 z-[79] flex items-center gap-2 rounded-full bg-gradient-to-r from-primary via-primary-container to-[#6d28d9] p-1.5 pr-4 text-white shadow-[0_16px_50px_rgba(0,74,198,.38)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_65px_rgba(0,74,198,.48)] active:scale-95 md:bottom-7 md:right-7"
+        className="group fixed bottom-[86px] right-4 z-[79] flex items-center gap-2 rounded-full bg-gradient-to-r from-primary via-primary-container to-[#6d28d9] p-1.5 pr-4 text-white shadow-[0_16px_50px_rgba(0,74,198,.38)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_65px_rgba(0,74,198,.48)] active:scale-95 cursor-pointer md:bottom-7 md:right-7"
       >
         <span className="relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-white/15 ring-1 ring-white/25 backdrop-blur">
           <span className="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-tertiary-fixed" />

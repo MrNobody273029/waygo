@@ -27,6 +27,7 @@ type FormState = {
   phone: string;
   idNumber: string;
   country: string;
+  birthDate: string;
   password: string;
   confirmPassword: string;
 };
@@ -106,6 +107,7 @@ export default function RegisterPage() {
     phone: '',
     idNumber: '',
     country: 'GE',
+    birthDate: '',
     password: '',
     confirmPassword: '',
   });
@@ -146,6 +148,7 @@ export default function RegisterPage() {
           phone: form.phone,
           idNumber: form.idNumber,
           country: form.country,
+          birthDate: form.birthDate,
           lang,
           password: form.password,
         }),
@@ -295,9 +298,27 @@ export default function RegisterPage() {
                   </Field>
                 </div>
 
-                <Field label={t.auth.idNumber}>
-                  <input type="text" value={form.idNumber} onChange={set('idNumber')} required className={ic} placeholder="01234567890" autoComplete="off" />
-                </Field>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label={t.auth.idNumber}>
+                    <input type="text" value={form.idNumber} onChange={set('idNumber')} required className={ic} placeholder="01234567890" autoComplete="off" />
+                  </Field>
+                  <Field label={t.auth.birthDate}>
+                    <div className="relative">
+                      <input
+                        type="date"
+                        value={form.birthDate}
+                        onChange={set('birthDate')}
+                        required
+                        max={new Date().toISOString().split('T')[0]}
+                        min="1900-01-01"
+                        className={`${ic} text-on-background`}
+                      />
+                      <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
+                        <span className="material-symbols-outlined text-[18px] text-slate-400">cake</span>
+                      </span>
+                    </div>
+                  </Field>
+                </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label={t.auth.password}>

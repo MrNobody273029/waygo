@@ -6,18 +6,6 @@ import { useLang } from '@/components/lang-provider';
 import { useState, useRef, useEffect } from 'react';
 import type { Lang } from '@/lib/i18n';
 
-function useUnreadCount(enabled: boolean) {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    if (!enabled) return;
-    fetch('/api/notifications')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.unreadCount) setCount(d.unreadCount); })
-      .catch(() => {});
-  }, [enabled]);
-  return count;
-}
-
 const LANG_OPTIONS: { value: Lang; label: string; flag: string }[] = [
   { value: 'en', label: 'English', flag: '🇬🇧' },
   { value: 'ka', label: 'ქართული', flag: '🇬🇪' },
@@ -51,11 +39,8 @@ export function Navbar() {
   const userRef = useRef<HTMLDivElement>(null);
 
   const role = (session?.user as any)?.role;
-  const hostVerified = (session?.user as any)?.hostVerified as boolean | undefined;
   const isVerified = (session?.user as any)?.isVerified as boolean | undefined;
   const initial = session?.user?.name?.[0]?.toUpperCase() ?? '?';
-  const isHost = role === 'HOST' || hostVerified === true;
-  const unreadCount = useUnreadCount(!!session && isHost);
 
   useEffect(() => {
     function handle(e: MouseEvent) {
@@ -80,19 +65,6 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-1 rounded-2xl bg-slate-100/80 px-1.5 py-1.5">
           <NavPill href="/cars">{t.nav.cars}</NavPill>
           {session && <NavPill href="/dashboard">{t.nav.dashboard}</NavPill>}
-          {session && isHost && (
-            <NavPill href="/host-rentals">
-              <span className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[14px]">handshake</span>
-                {t.nav.myRentals}
-                {unreadCount > 0 && (
-                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[9px] font-black text-white leading-none">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </span>
-            </NavPill>
-          )}
           {role === 'ADMIN' && (
             <NavPill href="/admin">
               <span className="flex items-center gap-1">
@@ -120,7 +92,7 @@ className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-white font-bold
                   <button
                     key={opt.value}
                     onClick={() => { setLang(opt.value); setLangOpen(false); }}
-                    className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-label-bold font-semibold transition ${
+                    className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-label-bold font-semibold transition cursor-pointer ${
                       lang === opt.value
                         ? 'bg-primary-fixed/40 text-primary'
                         : 'text-slate-700 hover:bg-slate-50'
@@ -171,21 +143,6 @@ className="flex items-center gap-2.5 border border-white/30 rounded-full pl-2 pr
                       <span className="material-symbols-outlined text-[18px] text-slate-500">dashboard</span>
                       {t.nav.dashboard}
                     </Link>
-                    {isHost && (
-                      <Link
-                        href="/host-rentals"
-                        className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-label-bold font-semibold hover:bg-surface-container-low transition"
-                        onClick={() => setUserOpen(false)}
-                      >
-                        <span className="material-symbols-outlined text-[18px] text-slate-500">handshake</span>
-                        <span className="flex-1">{t.nav.myRentals}</span>
-                        {unreadCount > 0 && (
-                          <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[9px] font-black text-white leading-none">
-                            {unreadCount > 9 ? '9+' : unreadCount}
-                          </span>
-                        )}
-                      </Link>
-                    )}
                     {role === 'ADMIN' && (
                       <Link
                         href="/admin"
@@ -199,7 +156,7 @@ className="flex items-center gap-2.5 border border-white/30 rounded-full pl-2 pr
                     <hr className="my-1 border-slate-100" />
                     <button
                       onClick={async () => { setUserOpen(false); await signOut({ redirect: false }); window.location.href = '/'; }}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-label-bold font-semibold text-error hover:bg-error-container/40 transition"
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-label-bold font-semibold text-error hover:bg-error-container/40 transition cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-[18px]">logout</span>
                       {t.nav.signOut}
@@ -223,7 +180,7 @@ className="flex items-center gap-2.5 border border-white/30 rounded-full pl-2 pr
 
           {/* Mobile hamburger */}
           <button
-            className="p-2 md:hidden text-slate-500 hover:text-primary transition-colors"
+            className="p-2 md:hidden text-slate-500 hover:text-primary transition-colors cursor-pointer"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             <span className="material-symbols-outlined">{mobileOpen ? 'close' : 'menu'}</span>
@@ -239,23 +196,12 @@ className="flex items-center gap-2.5 border border-white/30 rounded-full pl-2 pr
             {session ? (
               <>
                 <MobileLink href="/dashboard" onClick={() => setMobileOpen(false)}>{t.nav.dashboard}</MobileLink>
-                {isHost && (
-                  <a href="/host-rentals" onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-label-bold font-semibold text-slate-700 hover:bg-slate-50 transition">
-                    {t.nav.myRentals}
-                    {unreadCount > 0 && (
-                      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[9px] font-black text-white leading-none">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </span>
-                    )}
-                  </a>
-                )}
                 {role === 'ADMIN' && (
                   <MobileLink href="/admin" onClick={() => setMobileOpen(false)}>{t.nav.admin}</MobileLink>
                 )}
                 <button
                   onClick={async () => { setMobileOpen(false); await signOut({ redirect: false }); window.location.href = '/'; }}
-                  className="w-full text-left rounded-xl px-4 py-2.5 text-label-bold font-semibold text-error hover:bg-error-container/30 transition"
+                  className="w-full text-left rounded-xl px-4 py-2.5 text-label-bold font-semibold text-error hover:bg-error-container/30 transition cursor-pointer"
                 >
                   {t.nav.signOut}
                 </button>
@@ -273,7 +219,7 @@ className="flex items-center gap-2.5 border border-white/30 rounded-full pl-2 pr
                 <button
                   key={opt.value}
                   onClick={() => { setLang(opt.value); setMobileOpen(false); }}
-                  className={`w-full text-left rounded-xl px-4 py-2.5 text-label-bold font-semibold transition flex items-center gap-2 ${
+                  className={`w-full text-left rounded-xl px-4 py-2.5 text-label-bold font-semibold transition flex items-center gap-2 cursor-pointer ${
                     lang === opt.value ? 'text-primary bg-primary-fixed/30' : 'text-slate-500 hover:bg-slate-50'
                   }`}
                 >

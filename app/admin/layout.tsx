@@ -1,6 +1,11 @@
 export const dynamic = 'force-dynamic';
 
+import type { Metadata } from 'next';
 import { getServerSession } from 'next-auth';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { AdminSidebar } from '@/components/admin-sidebar';

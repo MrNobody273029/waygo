@@ -6,6 +6,8 @@ import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { MobileNav } from '@/components/mobile-nav';
 import { AISupportChat } from '@/components/ai-support-chat';
+import { JsonLd } from '@/components/JsonLd';
+import { jsonLdOrganization, jsonLdWebSite, getSiteUrl } from '@/lib/seo';
 
 const manrope = Manrope({
   subsets: ['latin'],
@@ -13,16 +15,43 @@ const manrope = Manrope({
   display: 'swap',
 });
 
+const SITE_URL = getSiteUrl();
+
 export const metadata: Metadata = {
-  title: { default: 'WAYGO.GE — Car Rental in Georgia', template: '%s | WAYGO.GE' },
-  description: 'Rent a car anywhere in Georgia. Verified local cars, flexible insurance, and deposit protection.',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'WAYGO.ge — Peer-to-Peer Car Rental in Georgia',
+    template: '%s | WAYGO.ge',
+  },
+  description:
+    'Rent verified local cars in Tbilisi, Batumi, and Kutaisi. Flexible insurance, 250 GEL deposit protection, and instant booking from trusted Georgian hosts.',
+  keywords: [
+    'car rental Georgia', 'rent a car Tbilisi', 'car hire Batumi',
+    'Kutaisi car rental', 'P2P car rental Georgia', 'WAYGO',
+    'car rental Tbilisi airport', 'car rental Batumi airport',
+  ],
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: SITE_URL,
+    siteName: 'WAYGO.ge',
+    title: 'WAYGO.ge — Peer-to-Peer Car Rental in Georgia',
+    description:
+      'Rent verified local cars in Tbilisi, Batumi, and Kutaisi from trusted Georgian hosts. Insurance included, 250 GEL deposit protection.',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'WAYGO.ge — Peer-to-Peer Car Rental in Georgia',
+    description:
+      'Rent verified local cars in Tbilisi, Batumi, and Kutaisi from trusted Georgian hosts.',
+  },
   icons: {
-    icon: [
-      { url: '/favicon.png', type: 'image/png' },
-    ],
+    icon: [{ url: '/favicon.png', type: 'image/png' }],
     shortcut: '/favicon.png',
     apple: '/favicon.png',
   },
+  robots: { index: true, follow: true },
+  alternates: { canonical: SITE_URL },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -35,19 +64,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
- <Providers>
-<div className="min-h-screen bg-no-repeat bg-top bg-cover
-  bg-[url('/homebk-m.png')]
-  md:bg-[url('/homebk.png')]">
-    <div className="min-h-screen bg-black/45">
-      <Navbar />
-      {children}
-      <Footer />
-    </div>
-  </div>
-<AISupportChat />
-  <MobileNav />
-</Providers>
+        <JsonLd data={[jsonLdOrganization(), jsonLdWebSite()]} />
+        <Providers>
+          <div className="min-h-screen bg-no-repeat bg-top bg-cover bg-[url('/homebk-m.png')] md:bg-[url('/homebk.png')]">
+            <div className="min-h-screen bg-black/45">
+              <Navbar />
+              {children}
+              <Footer />
+            </div>
+          </div>
+          <AISupportChat />
+          <MobileNav />
+        </Providers>
       </body>
     </html>
   );

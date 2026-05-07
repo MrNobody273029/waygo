@@ -1,8 +1,13 @@
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { MyCarsContent } from './MyCarsContent';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function MyCarsPage() {
   const session = await getServerSession(authOptions);
@@ -48,6 +53,7 @@ export default async function MyCarsPage() {
         idCardBack: true,
         hostSelfieUrl: true,
         hostVerificationRejectionComment: true,
+        isPremiumHost: true,
       },
     }),
     prisma.booking.findMany({
@@ -71,6 +77,15 @@ export default async function MyCarsPage() {
     }),
   ]);
 
+  const carIds = cars.map(c => c.id);
+  const tripCounts = await prisma.booking.groupBy({
+    by: ['carId'],
+    where: { carId: { in: carIds }, status: { in: ['completed', 'disputed'] } },
+    _count: { id: true },
+  });
+  const tripsMap: Record<string, number> = {};
+  for (const r of tripCounts) if (r.carId) tripsMap[r.carId] = r._count.id;
+
   const pendingRequests = pendingBookings.map(b => ({
     id: b.id,
     carId: b.carId,
@@ -87,9 +102,11 @@ export default async function MyCarsPage() {
     guestReviewCount: b.guest.reviewCount ?? 0,
   }));
 
+  const carsWithTrips = cars.map(c => ({ ...c, trips: tripsMap[c.id] ?? 0 }));
+
   return (
     <MyCarsContent
-      cars={cars as any}
+      cars={carsWithTrips as any}
       hostVerified={profile?.hostVerified ?? false}
       hostVerificationStatus={profile?.hostVerificationStatus ?? 'UNVERIFIED'}
       idCardFront={profile?.idCardFront ?? null}
@@ -97,6 +114,7 @@ export default async function MyCarsPage() {
       hostSelfieUrl={profile?.hostSelfieUrl ?? null}
       hostVerificationRejectionComment={profile?.hostVerificationRejectionComment ?? null}
       pendingRequests={pendingRequests}
+      isPremiumHost={profile?.isPremiumHost ?? false}
     />
   );
 }

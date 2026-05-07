@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db';
 import { dbCarToUiCar } from '@/lib/sample-data';
 import { Resend } from 'resend';
 import { adminNotificationLayout } from '@/lib/email';
+import { PREMIUM_HOST_CUTOFF } from '@/lib/constants';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const SITE_URL = process.env.NEXTAUTH_URL ?? 'https://waygo.ge';
@@ -16,7 +17,17 @@ export async function GET() {
     include: { owner: { select: { fullName: true, isVerified: true, rating: true, reviewCount: true } } },
     orderBy: { createdAt: 'desc' },
   });
-  return NextResponse.json(dbCars.map(dbCarToUiCar));
+
+  const carIds = dbCars.map(c => c.id);
+  const tripCounts = await prisma.booking.groupBy({
+    by: ['carId'],
+    where: { carId: { in: carIds }, status: { in: ['completed', 'disputed'] } },
+    _count: { id: true },
+  });
+  const tripsMap: Record<string, number> = {};
+  for (const r of tripCounts) if (r.carId) tripsMap[r.carId] = r._count.id;
+
+  return NextResponse.json(dbCars.map(c => dbCarToUiCar({ ...c, completedTrips: tripsMap[c.id] ?? 0 })));
 }
 
 export async function POST(req: NextRequest) {
@@ -81,6 +92,20 @@ export async function POST(req: NextRequest) {
     where: { id: userId },
     data: { role: 'HOST' },
   });
+
+  // Premium host eligibility: first car added before cutoff, verified guest + host
+  if (new Date() < PREMIUM_HOST_CUTOFF) {
+    const profile = await prisma.profile.findUnique({
+      where: { id: userId },
+      select: { isPremiumHost: true, isVerified: true, hostVerified: true },
+    });
+    if (profile && !profile.isPremiumHost && profile.isVerified && profile.hostVerified) {
+      const carCount = await prisma.car.count({ where: { ownerId: userId } });
+      if (carCount === 1) {
+        await prisma.profile.update({ where: { id: userId }, data: { isPremiumHost: true } });
+      }
+    }
+  }
 
   if (owner) {
     const carLabel = `${body.brand} ${body.model} ${body.year}`;

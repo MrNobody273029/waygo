@@ -2,10 +2,13 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLang } from '@/components/lang-provider';
+import { termsContent } from '@/lib/terms';
+import type { TermsLang } from '@/lib/terms';
 
 export function Footer() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const router = useRouter();
+  const termsLang = (lang as TermsLang) in termsContent.title ? (lang as TermsLang) : 'en';
 
   const policies = [
     { text: t.footer.p1, href: '/safety' },
@@ -13,6 +16,7 @@ export function Footer() {
     { text: t.footer.p3, href: '/host-rules' },
     { text: t.footer.p4, href: '/guest-rules' },
     { text: t.bookingDetail.cancelPolicyLink, href: '/cancellation-policy' },
+    { text: termsContent.title[termsLang], href: '/terms' },
   ];
 
   return (
@@ -48,13 +52,13 @@ export function Footer() {
           <div>
             <h5 className="font-bold text-[13px] md:text-label-bold text-white drop-shadow-md mb-3 md:mb-4">{t.footer.locTitle}</h5>
             <ul className="space-y-2 text-[12px] md:text-label-sm text-white/75">
-              {[t.footer.loc1, t.footer.loc2, t.footer.loc3, t.footer.loc4].map(city => (
-                <li key={city}>
+              {([['Tbilisi', t.footer.loc1], ['Batumi', t.footer.loc2], ['Kutaisi', t.footer.loc3]] as [string, string][]).map(([canonical, label]) => (
+                <li key={canonical}>
                   <Link
-                    href={`/cars?city=${encodeURIComponent(city)}`}
+                    href={`/cars?city=${canonical}`}
                     className="hover:text-primary transition-colors"
                   >
-                    {city}
+                    {label}
                   </Link>
                 </li>
               ))}
@@ -81,7 +85,7 @@ export function Footer() {
             <ul className="space-y-2 text-[12px] md:text-label-sm text-white/75">
               <li className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[15px] md:text-[16px]">mail</span>
-                <a href="mailto:support@waygo.ge" className="hover:text-primary transition-colors">support@waygo.ge</a>
+                <a href="mailto:info@waygo.ge" className="hover:text-primary transition-colors">info@waygo.ge</a>
               </li>
               <li className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[15px] md:text-[16px]">call</span> +995 32 2XX XXX

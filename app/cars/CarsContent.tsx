@@ -9,8 +9,10 @@ import { CarBrandPicker, CarModelPicker } from '@/components/car-picker';
 import { KYCModal } from '@/components/kyc-modal';
 import { VerificationPendingPopup } from '@/components/verification-pending-popup';
 import { AISearch } from '@/components/ai-search';
+import { GEORGIAN_CITIES_EN, normalizeCity, CITY_TO_AIRPORT } from '@/lib/cities';
 
-// Module-level constants
+// ── Constants ─────────────────────────────────────────────────────────────
+
 const CAR_TYPES = [
   'Economy', 'Compact', 'Sedan', 'SUV', 'Minivan',
   'Premium', 'Pickup', 'Coupe', 'Hatchback', 'Convertible',
@@ -27,28 +29,47 @@ const SEAT_OPTIONS = [
   { label: '7+', value: 7 },
 ] as const;
 
+// All features that can be stored on a car — must match become-host form exactly
 const FEATURES_LIST = [
-  'Air Conditioning',
-  'Bluetooth',
-  'GPS Navigation',
-  'Backup Camera',
-  'Heated Seats',
-  'Sunroof',
-  'AWD / 4WD',
+  { key: 'Air Conditioning', icon: 'ac_unit' },
+  { key: 'Bluetooth',        icon: 'bluetooth' },
+  { key: 'GPS Navigation',   icon: 'map' },
+  { key: 'Backup Camera',    icon: 'camera_rear' },
+  { key: 'Heated Seats',     icon: 'heat' },
+  { key: 'Sunroof',          icon: 'wb_sunny' },
+  { key: 'AWD / 4WD',        icon: 'settings_input_component' },
+  { key: 'USB Charging',     icon: 'usb' },
+  { key: 'Parking Sensors',  icon: 'sensors' },
+  { key: 'Electric Windows', icon: 'power' },
+  { key: 'ABS',              icon: 'emergency_heat' },
+  { key: 'Cruise Control',   icon: 'speed' },
+  { key: 'Roof Rack',        icon: 'luggage' },
+  { key: 'Child Seat',       icon: 'child_care' },
 ] as const;
 
 const CAR_TYPE_ICONS: Record<string, string> = {
-  Economy: 'directions_car',
-  Compact: 'directions_car',
-  Sedan: 'directions_car',
-  SUV: 'directions_car',
-  Minivan: 'airport_shuttle',
-  Premium: 'workspace_premium',
-  Pickup: 'local_shipping',
-  Coupe: 'speed',
-  Hatchback: 'directions_car',
-  Convertible: 'wb_sunny',
+  Economy: 'directions_car', Compact: 'directions_car', Sedan: 'drive_eta',
+  SUV: 'directions_car', Minivan: 'airport_shuttle', Premium: 'workspace_premium',
+  Pickup: 'local_shipping', Coupe: 'speed', Hatchback: 'directions_car', Convertible: 'wb_sunny',
 };
+
+// ── City matching ─────────────────────────────────────────────────────────
+
+function matchesCity(car: Car, filterCity: string): boolean {
+  if (!filterCity) return true;
+  // Normalise both sides to canonical English
+  const carCity = normalizeCity(car.location) ?? car.location;
+  if (carCity === filterCity) return true;
+  // Also match if the car delivers to that city's airport
+  const airportKey = CITY_TO_AIRPORT[filterCity];
+  if (airportKey) {
+    const state = car.airportDelivery[airportKey].state;
+    return state === 'free' || state === 'paid';
+  }
+  return false;
+}
+
+// ── Component ─────────────────────────────────────────────────────────────
 
 export function CarsContent({
   cars,
@@ -62,6 +83,8 @@ export function CarsContent({
   initialFuel = '',
   initialSeats = 0,
   initialBrand = '',
+  initialModel = '',
+  initialFeatures = [],
 }: {
   cars: Car[];
   showKycOnMount: boolean;
@@ -74,10 +97,13 @@ export function CarsContent({
   initialFuel?: string;
   initialSeats?: number;
   initialBrand?: string;
+  initialModel?: string;
+  initialFeatures?: string[];
 }) {
   const { t } = useLang();
   const router = useRouter();
   const { data: session, status } = useSession();
+  const citiesLocal = t.common.cities as readonly string[];
 
   // Basic filter state
   const [location, setLocation] = useState(initialCity);
@@ -85,15 +111,18 @@ export function CarsContent({
   const [endDate, setEndDate] = useState(initialEnd);
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice);
 
-  // Detailed filter state — initialized from URL params (set by AI search)
+  // Detailed filter state
   const [brand, setBrand] = useState(initialBrand);
-  const [model, setModel] = useState('');
+  const [model, setModel] = useState(initialModel);
   const [carType, setCarType] = useState(initialType);
   const [transmission, setTransmission] = useState(initialTransmission);
   const [fuelType, setFuelType] = useState(initialFuel);
   const [minSeats, setMinSeats] = useState(initialSeats);
-  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
-  const [showDetails, setShowDetails] = useState(false);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>(initialFeatures);
+
+  // Auto-open detailed panel if any detailed filter is preset from URL
+  const hasDetailedInit = !!(initialBrand || initialModel || initialType || initialTransmission || initialFuel || initialSeats > 0 || initialFeatures.length > 0);
+  const [showDetails, setShowDetails] = useState(hasDetailedInit);
 
   // KYC state
   const [showKYC, setShowKYC] = useState(false);
@@ -125,13 +154,21 @@ export function CarsContent({
     );
   }
 
+  // Serialize ALL current filter state to URL and navigate (triggers server-side date availability re-check)
   function handleSearch() {
     const params = new URLSearchParams();
     if (location) params.set('city', location);
     if (startDate) params.set('start', startDate);
     if (endDate) params.set('end', endDate);
-    const url = `/cars${params.toString() ? '?' + params.toString() : ''}`;
-    router.push(url);
+    if (maxPrice > 0) params.set('maxPrice', String(maxPrice));
+    if (carType) params.set('type', carType);
+    if (transmission) params.set('transmission', transmission);
+    if (fuelType) params.set('fuel', fuelType);
+    if (minSeats > 0) params.set('seats', String(minSeats));
+    if (brand) params.set('brand', brand);
+    if (model) params.set('model', model);
+    if (selectedFeatures.length > 0) params.set('features', selectedFeatures.join(','));
+    router.push(`/cars${params.toString() ? '?' + params.toString() : ''}`);
   }
 
   function handleClearFilters() {
@@ -156,10 +193,11 @@ export function CarsContent({
     selectedFeatures.length +
     (maxPrice > 0 ? 1 : 0);
 
+  // Client-side filtering
   const filtered = cars.filter(c => {
+    if (!matchesCity(c, location)) return false;
     if (brand && c.brand !== brand) return false;
     if (model && c.model !== model) return false;
-    if (location && c.location !== location) return false;
     if (maxPrice > 0 && c.dailyPrice > maxPrice) return false;
     if (carType && c.type !== carType) return false;
     if (transmission && c.transmission !== transmission) return false;
@@ -201,7 +239,8 @@ export function CarsContent({
         {/* Basic filter bar */}
         <div className="bg-white p-2 md:p-3 rounded-2xl shadow-card border border-slate-100 flex flex-col md:flex-row gap-3 mb-3">
           <div className="flex-1 grid grid-cols-2 md:grid-cols-4 md:divide-x divide-slate-100">
-            {/* Location */}
+
+            {/* Location — value is always English canonical name */}
             <div className="flex flex-col px-4 py-2.5">
               <span className="text-label-sm text-slate-400 uppercase tracking-wider mb-1">{t.cars.locationLabel}</span>
               <select
@@ -210,8 +249,8 @@ export function CarsContent({
                 className="border-none p-0 focus:ring-0 font-bold text-label-bold text-on-background bg-transparent cursor-pointer"
               >
                 <option value="">{t.cars.anyLocation}</option>
-                {(t.common.cities as readonly string[]).map(c => (
-                  <option key={c} value={c}>{c}</option>
+                {GEORGIAN_CITIES_EN.map((enName, i) => (
+                  <option key={enName} value={enName}>{citiesLocal[i] ?? enName}</option>
                 ))}
               </select>
             </div>
@@ -427,17 +466,19 @@ export function CarsContent({
             <div>
               <span className="text-label-sm text-slate-400 uppercase tracking-wider mb-2 block">{t.cars.featuresLabel}</span>
               <div className="flex flex-wrap gap-2">
-                {FEATURES_LIST.map(f => {
-                  const isActive = selectedFeatures.includes(f);
+                {FEATURES_LIST.map(({ key, icon }) => {
+                  const isActive = selectedFeatures.includes(key);
                   return (
                     <button
-                      key={f}
+                      key={key}
                       type="button"
-                      onClick={() => toggleFeature(f)}
+                      onClick={() => toggleFeature(key)}
                       className={`${pillBase} ${isActive ? pillActive : pillInactive}`}
                     >
-                      {isActive && <span className="material-symbols-outlined text-[13px]">check</span>}
-                      {f}
+                      <span className="material-symbols-outlined text-[13px]">
+                        {isActive ? 'check' : icon}
+                      </span>
+                      {key}
                     </button>
                   );
                 })}
@@ -449,8 +490,8 @@ export function CarsContent({
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
             <span className="material-symbols-outlined text-[64px] text-slate-300">directions_car</span>
-            <p className="text-h3 font-bold text-on-background">No cars found</p>
-            <p className="text-secondary text-body-md">Try adjusting your filters</p>
+            <p className="text-h3 font-bold text-on-background">{t.cars.noResults}</p>
+            <p className="text-secondary text-body-md">{t.cars.noResultsSub}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">

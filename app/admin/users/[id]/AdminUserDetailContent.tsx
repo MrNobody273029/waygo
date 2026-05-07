@@ -19,8 +19,19 @@ type User = {
   country: string; role: string; isVerified: boolean; emailVerified: boolean;
   verificationStatus: string; hostVerificationStatus: string;
   bio: string | null; rating: number | null; lang: string | null;
+  birthDate: string | null;
   createdAt: string; bookings: Booking[]; cars: Car[];
 };
+
+function calcAge(birthDate: string | null): string {
+  if (!birthDate) return '';
+  const today = new Date();
+  const bd = new Date(birthDate);
+  let age = today.getFullYear() - bd.getFullYear();
+  const m = today.getMonth() - bd.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) age--;
+  return `${age} y.o.`;
+}
 
 const STATUS_BADGE: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700',
@@ -89,6 +100,13 @@ export function AdminUserDetailContent({ user, totalSpent }: { user: User; total
             {user.lang && ` · ${user.lang.toUpperCase()}`}
             {user.country && ` · ${user.country}`}
           </p>
+          {user.birthDate && (
+            <p className="text-slate-500 text-xs mt-0.5 flex items-center gap-1">
+              <span className="material-symbols-outlined text-[13px]">cake</span>
+              {new Date(user.birthDate).toLocaleDateString('en-GB')}
+              <span className="font-bold text-slate-700">· {calcAge(user.birthDate)}</span>
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           <div className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2">

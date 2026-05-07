@@ -11,6 +11,7 @@ interface VerificationUser {
   email: string | null;
   phone: string | null;
   idNumber: string | null;
+  birthDate: Date | null;
   createdAt: Date;
   lang: string;
   isVerified: boolean;
@@ -23,6 +24,16 @@ interface VerificationUser {
   idCardFront: string | null;
   idCardBack: string | null;
   hostSelfieUrl: string | null;
+}
+
+function calcAge(birthDate: Date | null): string {
+  if (!birthDate) return '';
+  const today = new Date();
+  const bd = new Date(birthDate);
+  let age = today.getFullYear() - bd.getFullYear();
+  const m = today.getMonth() - bd.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) age--;
+  return `${age} y.o.`;
 }
 
 interface PendingCarItem {
@@ -141,7 +152,14 @@ function GuestCard({ u, rejectingId, rejectComment, loading, onRejectComment, on
           <p className="text-label-sm text-secondary">{u.email}</p>
           {u.phone && <p className="text-label-sm text-slate-500 mt-0.5 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">phone</span>{u.phone}</p>}
           {u.idNumber && <p className="text-label-sm font-bold text-primary mt-0.5 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">badge</span>{u.idNumber}</p>}
-          <p className="text-label-sm text-slate-400 mt-0.5">{new Date(u.createdAt).toLocaleDateString('en-GB')}</p>
+          {u.birthDate && (
+            <p className="text-label-sm text-slate-600 mt-0.5 flex items-center gap-1">
+              <span className="material-symbols-outlined text-[13px]">cake</span>
+              {new Date(u.birthDate).toLocaleDateString('en-GB')}
+              <span className="font-bold text-on-background">· {calcAge(u.birthDate)}</span>
+            </p>
+          )}
+          <p className="text-label-sm text-slate-400 mt-0.5">Joined: {new Date(u.createdAt).toLocaleDateString('en-GB')}</p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
           <StatusBadge status={u.verificationStatus} />
@@ -226,7 +244,14 @@ function HostCard({ u, rejectingId, rejectComment, loading, onRejectComment, onS
           <p className="text-label-sm text-secondary">{u.email}</p>
           {u.phone && <p className="text-label-sm text-slate-500 mt-0.5 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">phone</span>{u.phone}</p>}
           {u.idNumber && <p className="text-label-sm font-bold text-primary mt-0.5 flex items-center gap-1"><span className="material-symbols-outlined text-[13px]">badge</span>{u.idNumber}</p>}
-          <p className="text-label-sm text-slate-400 mt-0.5">{new Date(u.createdAt).toLocaleDateString('en-GB')}</p>
+          {u.birthDate && (
+            <p className="text-label-sm text-slate-600 mt-0.5 flex items-center gap-1">
+              <span className="material-symbols-outlined text-[13px]">cake</span>
+              {new Date(u.birthDate).toLocaleDateString('en-GB')}
+              <span className="font-bold text-on-background">· {calcAge(u.birthDate)}</span>
+            </p>
+          )}
+          <p className="text-label-sm text-slate-400 mt-0.5">Joined: {new Date(u.createdAt).toLocaleDateString('en-GB')}</p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
           <StatusBadge status={u.hostVerificationStatus} />

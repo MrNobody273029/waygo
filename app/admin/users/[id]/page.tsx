@@ -51,6 +51,7 @@ export default async function AdminUserDetailPage({ params }: { params: { id: st
         bio: user.bio,
         rating: user.rating,
         lang: user.lang,
+        birthDate: user.birthDate?.toISOString() ?? null,
         createdAt: user.createdAt.toISOString(),
         bookings: user.bookings.map(b => ({
           id: b.id,

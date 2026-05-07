@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { useLang } from '@/components/lang-provider';
 import { useEffect, useState } from 'react';
-import { LayoutDashboard, Users, CalendarDays, Car, LogOut, ExternalLink, ShieldCheck, Mail, CreditCard, Gavel, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarDays, Car, LogOut, ExternalLink, ShieldCheck, Mail, CreditCard, Gavel, MessageCircle, BarChart3 } from 'lucide-react';
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -48,6 +48,7 @@ useEffect(() => {
     { href: '/admin/verifications',  icon: ShieldCheck,     label: 'Verify' },
     { href: '/admin/emails',         icon: Mail,            label: 'Emails' },
     { href: '/admin/support',        icon: MessageCircle,   label: 'ჩატები', badge: supportCount },
+    { href: '/admin/accounting',     icon: BarChart3,       label: 'Accounting' },
   ];
 
   function isActive(href: string, exact?: boolean) {
@@ -103,7 +104,7 @@ useEffect(() => {
           </Link>
           <button
             onClick={async () => { await signOut({ redirect: false }); window.location.href = '/'; }}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-400 hover:bg-red-500/10 hover:text-red-300 transition"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-400 hover:bg-red-500/10 hover:text-red-300 transition cursor-pointer"
           >
             <LogOut size={17} />
             {t.nav.signOut}

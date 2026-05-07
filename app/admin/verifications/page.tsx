@@ -22,6 +22,7 @@ export default async function AdminVerificationsPage() {
         email: true,
         phone: true,
         idNumber: true,
+        birthDate: true,
         createdAt: true,
         lang: true,
         isVerified: true,

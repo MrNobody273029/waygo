@@ -16,9 +16,20 @@ type User = {
   penaltyBookingsRemaining: number | null;
   penaltyCommissionRate: number | null;
   rating: number | null;
+  birthDate: Date | null;
   createdAt: Date;
   _count: { bookings: number; cars: number };
 };
+
+function calcAge(birthDate: Date | null): string {
+  if (!birthDate) return '—';
+  const today = new Date();
+  const bd = new Date(birthDate);
+  let age = today.getFullYear() - bd.getFullYear();
+  const m = today.getMonth() - bd.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) age--;
+  return `${age}`;
+}
 
 export function AdminUsersContent({ users }: { users: User[] }) {
   const { t } = useLang();
@@ -77,6 +88,7 @@ export function AdminUsersContent({ users }: { users: User[] }) {
                 <tr>
                   <th className="px-6 py-3 text-left">{t.admin.userCol}</th>
                   <th className="px-6 py-3 text-left">{t.admin.phone}</th>
+                  <th className="px-6 py-3 text-left">Age / DOB</th>
                   <th className="px-6 py-3 text-left">{t.admin.country}</th>
                   <th className="px-6 py-3 text-left">{t.admin.role}</th>
                   <th className="px-6 py-3 text-left">{t.admin.bookings}</th>
@@ -101,6 +113,16 @@ export function AdminUsersContent({ users }: { users: User[] }) {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-slate-600">{u.phone || '—'}</td>
+                    <td className="px-6 py-4">
+                      {u.birthDate ? (
+                        <div>
+                          <span className="font-bold text-on-background">{calcAge(u.birthDate)} y.o.</span>
+                          <p className="text-xs text-slate-400">{new Date(u.birthDate).toLocaleDateString('en-GB')}</p>
+                        </div>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold">{u.country}</span>
                     </td>

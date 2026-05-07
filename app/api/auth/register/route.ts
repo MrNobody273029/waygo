@@ -13,6 +13,7 @@ const schema = z.object({
   phone: z.string().min(6),
   idNumber: z.string().min(5),
   country: z.string().default('GE'),
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format'),
   lang: z.string().optional(),
   password: z.string().min(8),
 });
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid data', details: input.error.issues }, { status: 400 });
   }
 
-  const { fullName, email, phone, idNumber, country, lang, password } = input.data;
+  const { fullName, email, phone, idNumber, country, birthDate, lang, password } = input.data;
 
   const [existingEmail, existingId] = await Promise.all([
     prisma.profile.findUnique({ where: { email } }),
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
       phone,
       idNumber,
       country,
+      birthDate: new Date(birthDate),
       lang: lang ?? 'en',
       passwordHash,
       emailVerified: false,
