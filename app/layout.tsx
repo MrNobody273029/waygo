@@ -5,6 +5,7 @@ import { Providers } from '@/components/providers';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { MobileNav } from '@/components/mobile-nav';
+import { AISupportChat } from '@/components/ai-support-chat';
 
 const manrope = Manrope({
   subsets: ['latin'],
@@ -44,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <Footer />
     </div>
   </div>
-
+<AISupportChat />
   <MobileNav />
 </Providers>
       </body>

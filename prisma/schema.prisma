@@ -113,6 +113,7 @@ model Profile {
   notifications      Notification[]
   coupons            Coupon[]
   createdAt          DateTime           @default(now())
+  supportConversations SupportConversation[]
 }
 
 model Car {
@@ -319,4 +320,39 @@ model Notification {
   message   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+enum SupportConversationStatus {
+  open
+  escalated
+  closed
+}
+
+enum SupportSender {
+  user
+  assistant
+  system
+}
+
+model SupportConversation {
+  id        String                    @id @default(cuid())
+  userId    String?
+  user      Profile?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  guestName String?
+  guestEmail String?
+  guestLang String                    @default("en")
+  status    SupportConversationStatus @default(open)
+  escalated Boolean                   @default(false)
+  createdAt DateTime                  @default(now())
+  updatedAt DateTime                  @updatedAt
+  messages  SupportMessage[]
+}
+
+model SupportMessage {
+  id             String              @id @default(cuid())
+  conversationId String
+  conversation   SupportConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         SupportSender
+  content        String
+  createdAt      DateTime            @default(now())
 }

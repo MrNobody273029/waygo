@@ -4,6 +4,7 @@ import { CarCard } from '@/components/car-card';
 import { useLang } from '@/components/lang-provider';
 import type { Car } from '@/lib/sample-data';
 import Image from "next/image";
+import { AISearch } from '@/components/ai-search';
 
 export function HomeContent({ featuredCars }: { featuredCars: Car[] }) {
   const { t } = useLang();
@@ -20,10 +21,13 @@ return (
 />
 */}
 
-    <HeroSearch />
-    
+<HeroSearch />
 
-      {/* Featured cars */}
+<section className="max-w-screen-md mx-auto px-4 md:px-0 -mt-2 mb-8 relative z-10">
+  <AISearch />
+</section>
+
+{/* Featured cars */}
 <section className="max-w-screen-2xl mx-auto px-4 md:px-12 py-10 md:py-20">
           <div className="flex justify-between items-end mb-5 md:mb-10">
           <div>
