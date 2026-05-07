@@ -3,12 +3,25 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { useLang } from '@/components/lang-provider';
-import { LayoutDashboard, Users, CalendarDays, Car, LogOut, ExternalLink, ShieldCheck, Mail, CreditCard, Gavel } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { LayoutDashboard, Users, CalendarDays, Car, LogOut, ExternalLink, ShieldCheck, Mail, CreditCard, Gavel, MessageCircle } from 'lucide-react';
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { t } = useLang();
+  const [supportCount, setSupportCount] = useState(0);
+
+useEffect(() => {
+  fetch('/api/admin/support-conversations/count')
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (typeof data?.escalatedCount === 'number') {
+        setSupportCount(data.escalatedCount);
+      }
+    })
+    .catch(() => {});
+}, []);
 
   const navItems = [
     { href: '/admin',                icon: LayoutDashboard, label: t.admin.overview,    exact: true },
@@ -19,6 +32,7 @@ export function AdminSidebar() {
     { href: '/admin/disputes',        icon: Gavel,           label: 'Disputes' },
     { href: '/admin/verifications',  icon: ShieldCheck,     label: 'Verify' },
     { href: '/admin/emails',         icon: Mail,            label: 'Emails' },
+    { href: '/admin/support',        icon: MessageCircle,   label: 'ჩატები', badge: supportCount },
   ];
 
   function isActive(href: string, exact?: boolean) {
@@ -50,8 +64,16 @@ export function AdminSidebar() {
                   : 'text-slate-400 hover:bg-white/5 hover:text-white'
               }`}
             >
-              <item.icon size={17} />
-              {item.label}
+              <span className="relative">
+  <item.icon size={17} />
+{typeof item.badge === 'number' && item.badge > 0 && (
+      <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-black leading-none text-white ring-2 ring-slate-950">
+{item.badge > 9 ? '9+' : item.badge}
+    </span>
+  )}
+</span>
+<span>{item.label}</span>
+
             </Link>
           ))}
         </nav>
@@ -98,8 +120,15 @@ export function AdminSidebar() {
                   active ? 'text-white bg-white/15' : 'text-slate-400 active:bg-white/5'
                 }`}
               >
-                <item.icon size={20} />
-                <span className="text-[9px] font-bold">{item.label}</span>
+                <span className="relative">
+  <item.icon size={20} />
+{typeof item.badge === 'number' && item.badge > 0 && (
+    <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-black leading-none text-white ring-2 ring-slate-950">
+{item.badge > 9 ? '9+' : item.badge}
+    </span>
+  )}
+</span>
+<span className="text-[9px] font-bold">{item.label}</span>
               </Link>
             );
           })}

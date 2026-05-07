@@ -331,6 +331,7 @@ enum SupportConversationStatus {
 enum SupportSender {
   user
   assistant
+  admin
   system
 }
 

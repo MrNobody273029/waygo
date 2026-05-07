@@ -352,18 +352,24 @@ function supportEmailHtml(params: {
   reason: string | null;
   userLabel: string;
   userEmail: string | null;
-  userContext: unknown;
   transcript: { sender: string; content: string; createdAt?: Date }[];
   latestMessage: string;
 }) {
   const adminUrl = `${siteUrl()}/admin`;
+
+  const senderLabel = (sender: string) => {
+    if (sender === 'user') return 'მომხმარებელი';
+    if (sender === 'assistant') return 'AI ასისტენტი';
+    return 'სისტემა';
+  };
+
   const transcriptHtml = params.transcript
     .map(m => {
       const isUser = m.sender === 'user';
       return `
         <div style="margin:0 0 12px;padding:12px 14px;border-radius:12px;background:${isUser ? '#eff6ff' : '#f8fafc'};border:1px solid #e2e8f0;">
           <div style="font-size:11px;font-weight:800;color:${isUser ? '#1d4ed8' : '#475569'};text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">
-            ${escapeHtml(m.sender)} ${m.createdAt ? `· ${escapeHtml(formatDate(m.createdAt))}` : ''}
+            ${escapeHtml(senderLabel(m.sender))}${m.createdAt ? ` · ${escapeHtml(formatDate(m.createdAt))}` : ''}
           </div>
           <div style="font-size:14px;line-height:1.6;color:#0f172a;white-space:pre-wrap;">${escapeHtml(m.content)}</div>
         </div>
@@ -371,14 +377,12 @@ function supportEmailHtml(params: {
     })
     .join('');
 
-  const userContextText = JSON.stringify(params.userContext, null, 2);
-
   return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>WAYGO Support Escalation</title>
+  <title>WAYGO მხარდაჭერის მოთხოვნა</title>
 </head>
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 14px;">
@@ -387,61 +391,56 @@ function supportEmailHtml(params: {
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:720px;background:#ffffff;border-radius:18px;overflow:hidden;border:1px solid #e2e8f0;">
           <tr>
             <td style="background:linear-gradient(135deg,#0f172a 0%,#1e40af 100%);padding:28px 34px;color:#ffffff;">
-              <div style="font-size:26px;font-weight:900;letter-spacing:-.5px;">WAYGO Support Escalation</div>
-              <div style="font-size:12px;color:#bfdbfe;margin-top:7px;">AI support chat needs human review</div>
+              <div style="font-size:26px;font-weight:900;letter-spacing:-.5px;">WAYGO მხარდაჭერის მოთხოვნა</div>
+              <div style="font-size:13px;color:#bfdbfe;margin-top:7px;">AI ჩატმა მონიშნა საუბარი ადამიანური გადახედვისთვის</div>
             </td>
           </tr>
 
           <tr>
             <td style="padding:28px 34px;">
               <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:16px 18px;margin-bottom:22px;">
-                <div style="font-size:12px;font-weight:900;color:#c2410c;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">Reason</div>
-                <div style="font-size:14px;color:#7c2d12;line-height:1.6;">${escapeHtml(params.reason || 'AI decided this conversation needs human review.')}</div>
+                <div style="font-size:12px;font-weight:900;color:#c2410c;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">მიზეზი</div>
+                <div style="font-size:14px;color:#7c2d12;line-height:1.6;">${escapeHtml(params.reason || 'AI-მ ჩათვალა, რომ ეს საუბარი საჭიროებს მხარდაჭერის გუნდის გადახედვას.')}</div>
               </div>
 
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:22px;border-collapse:collapse;">
                 <tr>
-                  <td style="padding:9px 0;font-size:13px;color:#64748b;border-bottom:1px solid #f1f5f9;">Conversation ID</td>
+                  <td style="padding:9px 0;font-size:13px;color:#64748b;border-bottom:1px solid #f1f5f9;">საუბრის ID</td>
                   <td style="padding:9px 0;font-size:13px;color:#0f172a;font-family:monospace;text-align:right;border-bottom:1px solid #f1f5f9;">${escapeHtml(params.conversationId)}</td>
                 </tr>
                 <tr>
-                  <td style="padding:9px 0;font-size:13px;color:#64748b;border-bottom:1px solid #f1f5f9;">User</td>
+                  <td style="padding:9px 0;font-size:13px;color:#64748b;border-bottom:1px solid #f1f5f9;">მომხმარებელი</td>
                   <td style="padding:9px 0;font-size:13px;color:#0f172a;text-align:right;border-bottom:1px solid #f1f5f9;">${escapeHtml(params.userLabel)}</td>
                 </tr>
                 <tr>
-                  <td style="padding:9px 0;font-size:13px;color:#64748b;border-bottom:1px solid #f1f5f9;">Email</td>
-                  <td style="padding:9px 0;font-size:13px;color:#0f172a;text-align:right;border-bottom:1px solid #f1f5f9;">${escapeHtml(params.userEmail || 'Not provided')}</td>
+                  <td style="padding:9px 0;font-size:13px;color:#64748b;border-bottom:1px solid #f1f5f9;">ელფოსტა</td>
+                  <td style="padding:9px 0;font-size:13px;color:#0f172a;text-align:right;border-bottom:1px solid #f1f5f9;">${escapeHtml(params.userEmail || 'არ არის მითითებული')}</td>
                 </tr>
                 <tr>
-                  <td style="padding:9px 0;font-size:13px;color:#64748b;">Language</td>
+                  <td style="padding:9px 0;font-size:13px;color:#64748b;">ჩატის ენა</td>
                   <td style="padding:9px 0;font-size:13px;color:#0f172a;text-align:right;">${escapeHtml(params.lang)}</td>
                 </tr>
               </table>
 
               <div style="margin-bottom:24px;">
-                <div style="font-size:12px;font-weight:900;color:#334155;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;">Latest user message</div>
+                <div style="font-size:12px;font-weight:900;color:#334155;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;">ბოლო შეტყობინება</div>
                 <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:16px;font-size:14px;line-height:1.7;color:#0f172a;white-space:pre-wrap;">${escapeHtml(params.latestMessage)}</div>
               </div>
 
               <div style="margin-bottom:24px;">
-                <div style="font-size:12px;font-weight:900;color:#334155;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;">Transcript</div>
-                ${transcriptHtml}
+                <div style="font-size:12px;font-weight:900;color:#334155;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;">საუბრის ისტორია</div>
+                ${transcriptHtml || '<div style="font-size:14px;color:#64748b;">საუბრის ისტორია არ არის ხელმისაწვდომი.</div>'}
               </div>
 
-              <details style="margin-bottom:24px;">
-                <summary style="cursor:pointer;font-size:13px;font-weight:800;color:#1d4ed8;">Current user context JSON</summary>
-                <pre style="margin-top:12px;background:#0f172a;color:#e2e8f0;border-radius:12px;padding:14px;font-size:11px;line-height:1.45;overflow:auto;max-height:360px;">${escapeHtml(userContextText)}</pre>
-              </details>
-
               <div style="text-align:center;margin-top:26px;">
-                <a href="${adminUrl}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;border-radius:12px;padding:14px 28px;font-weight:800;font-size:14px;">Open Admin Panel</a>
+                <a href="${adminUrl}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;border-radius:12px;padding:14px 28px;font-weight:800;font-size:14px;">ადმინ პანელის გახსნა</a>
               </div>
             </td>
           </tr>
 
           <tr>
             <td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:20px 34px;text-align:center;">
-              <div style="font-size:12px;color:#94a3b8;">This email was sent automatically by WAYGO AI Support.</div>
+              <div style="font-size:12px;color:#94a3b8;">ეს შეტყობინება ავტომატურად გამოიგზავნა WAYGO AI Support-ის მიერ.</div>
             </td>
           </tr>
         </table>
@@ -458,11 +457,10 @@ async function sendEscalationEmail(params: {
   reason: string | null;
   userLabel: string;
   userEmail: string | null;
-  userContext: unknown;
   transcript: { sender: string; content: string; createdAt?: Date }[];
   latestMessage: string;
 }) {
-  const subject = `🚨 WAYGO AI Support escalation — ${params.userLabel}`;
+const subject = `🚨 WAYGO მხარდაჭერის მოთხოვნა — ${params.userLabel}`;
 
   const html = supportEmailHtml(params);
 
@@ -534,6 +532,9 @@ export async function POST(req: NextRequest) {
             : { id: conversationId, userId: null },
         })
       : null;
+      if (conversation?.status === 'closed') {
+  conversation = null;
+}
 
     if (!conversation) {
       conversation = await prisma.supportConversation.create({
@@ -574,7 +575,31 @@ export async function POST(req: NextRequest) {
         content: message,
       },
     });
+if (conversation.status === 'escalated') {
+  await prisma.supportConversation.update({
+    where: { id: conversation.id },
+    data: {
+      escalated: true,
+      updatedAt: new Date(),
+    },
+  });
 
+  const waitingReply =
+    lang === 'ka'
+      ? 'მხარდაჭერის გუნდი უკვე ჩართულია ამ ჩატში. გთხოვთ დაელოდოთ პასუხს. შეგიძლიათ აქვე გააგრძელოთ დამატებითი ინფორმაციის მოწერა.'
+      : lang === 'ru'
+      ? 'Команда поддержки уже подключена к этому чату. Пожалуйста, дождитесь ответа. Вы можете продолжать писать дополнительную информацию здесь.'
+      : 'The support team is already involved in this chat. Please wait for a reply. You can continue sending additional information here.';
+
+  return NextResponse.json({
+    success: true,
+    conversationId: conversation.id,
+    reply: waitingReply,
+    needsEscalation: true,
+    escalationReason: 'Conversation is already escalated to human support.',
+    escalationEmailSent: false,
+  });
+}
     const userContext = await getUserContext(userId);
 
     const ai = await callOpenAI({
@@ -606,17 +631,15 @@ export async function POST(req: NextRequest) {
         'Anonymous guest';
 
       const userEmail = session?.user?.email || guestEmail;
-
-      emailSent = await sendEscalationEmail({
-        conversationId: conversation.id,
-        lang,
-        reason: ai.escalationReason,
-        userLabel,
-        userEmail,
-        userContext,
-        transcript: transcriptForEmail,
-        latestMessage: message,
-      });
+emailSent = await sendEscalationEmail({
+  conversationId: conversation.id,
+  lang,
+  reason: ai.escalationReason,
+  userLabel,
+  userEmail,
+  transcript: transcriptForEmail,
+  latestMessage: message,
+});
 
       await prisma.supportConversation.update({
         where: { id: conversation.id },
