@@ -49,6 +49,8 @@ const STATUS_STYLE: Record<string, { cls: string; icon: string }> = {
   confirmed:     { cls: 'bg-tertiary-fixed/40 text-tertiary',    icon: 'check_circle' },
   pending:       { cls: 'bg-amber-50 text-amber-700',            icon: 'schedule' },
   awaiting_host: { cls: 'bg-amber-50 text-amber-700',            icon: 'hourglass_top' },
+  return_review: { cls: 'bg-amber-50 text-amber-700',            icon: 'hourglass_top' },
+  disputed:      { cls: 'bg-error-container/40 text-error',      icon: 'gavel' },
   completed:     { cls: 'bg-surface-container text-secondary',   icon: 'task_alt' },
   rejected:      { cls: 'bg-error-container/40 text-error',      icon: 'cancel' },
   cancelled:     { cls: 'bg-surface-container text-secondary',   icon: 'remove_circle' },
@@ -385,6 +387,8 @@ export function BookingDetailContent({ booking, guestEmail, existingReview, host
     confirmed:     t.dashboard.confirmed,
     pending:       t.dashboard.pending,
     awaiting_host: t.dashboard.awaitingHost,
+    return_review: t.dashboard.returnReview,
+    disputed:      t.dashboard.disputed,
     completed:     t.dashboard.completed,
     rejected:      t.dashboard.rejected,
     cancelled:     t.dashboard.cancelled,
@@ -501,11 +505,11 @@ export function BookingDetailContent({ booking, guestEmail, existingReview, host
 
   const pickupAllUploaded = pickupPhotos.every(Boolean);
   const returnAllUploaded = returnPhotos.every(Boolean);
-  const pickupLocked = !!pickupReport || booking.status === 'confirmed' || booking.status === 'completed';
-  const returnLocked = !!returnReport || booking.status === 'completed';
+  const pickupLocked = !!pickupReport || ['confirmed', 'return_review', 'disputed', 'completed'].includes(booking.status);
+  const returnLocked = !!returnReport || ['return_review', 'disputed', 'completed'].includes(booking.status);
 
-  const showPickupSection = ['pending', 'confirmed', 'completed'].includes(booking.status);
-  const showReturnSection = ['confirmed', 'completed'].includes(booking.status);
+  const showPickupSection = ['pending', 'confirmed', 'return_review', 'disputed', 'completed'].includes(booking.status);
+  const showReturnSection = ['confirmed', 'return_review', 'disputed', 'completed'].includes(booking.status);
 
   return (
     <>
@@ -529,6 +533,34 @@ export function BookingDetailContent({ booking, guestEmail, existingReview, host
               {statusLabel[booking.status] ?? booking.status}
             </span>
           </div>
+
+          {/* Status banners for new statuses */}
+          {booking.status === 'return_review' && (
+            <div className="mb-6 flex items-start gap-3 rounded-2xl bg-amber-50 border border-amber-200 px-5 py-4">
+              <span className="material-symbols-outlined text-amber-600 text-[22px] mt-0.5 shrink-0">hourglass_top</span>
+              <div>
+                <p className="font-bold text-label-bold text-amber-800">{t.dispute.returnReviewBanner}</p>
+                <p className="text-label-sm text-amber-700 mt-0.5">{t.dispute.returnReviewSub}</p>
+              </div>
+            </div>
+          )}
+          {booking.status === 'disputed' && (
+            <div className="mb-6 flex items-start gap-3 rounded-2xl bg-error-container/20 border border-error/20 px-5 py-4">
+              <span className="material-symbols-outlined text-error text-[22px] mt-0.5 shrink-0">gavel</span>
+              <div>
+                <p className="font-bold text-label-bold text-error">{t.dispute.disputedBanner}</p>
+                <p className="text-label-sm text-error/80 mt-0.5">{t.dispute.disputedSub}</p>
+              </div>
+            </div>
+          )}
+          {booking.status === 'completed' && (
+            <div className="mb-6 flex items-start gap-3 rounded-2xl bg-tertiary-fixed/20 border border-tertiary/20 px-5 py-4">
+              <span className="material-symbols-outlined text-tertiary text-[22px] mt-0.5 shrink-0">task_alt</span>
+              <div>
+                <p className="font-bold text-label-bold text-tertiary">{t.dispute.returnConfirmedBanner}</p>
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
             {/* Left: condition reports */}

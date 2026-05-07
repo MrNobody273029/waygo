@@ -12,7 +12,6 @@ export function Footer() {
     { text: t.footer.p2, href: '/insurance-terms' },
     { text: t.footer.p3, href: '/host-rules' },
     { text: t.footer.p4, href: '/guest-rules' },
-    { text: (t.footer as any).p5, href: '/how-it-works' },
     { text: t.bookingDetail.cancelPolicyLink, href: '/cancellation-policy' },
   ];
 

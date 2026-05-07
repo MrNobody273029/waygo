@@ -24,9 +24,11 @@ interface Props {
   reviewCount: number;
   verificationStatus: string;
   verificationRejectionComment: string | null;
+  unreadNotifications: number;
+  isHost: boolean;
 }
 
-export function DashboardContent({ name, email, bookings, totalSpent, upcomingTrips, memberSince, rating, reviewCount, verificationStatus, verificationRejectionComment }: Props) {
+export function DashboardContent({ name, email, bookings, totalSpent, upcomingTrips, memberSince, rating, reviewCount, verificationStatus, verificationRejectionComment, unreadNotifications, isHost }: Props) {
   const { t } = useLang();
   const firstName = name.split(' ')[0];
   const [showKYC, setShowKYC] = useState(false);
@@ -39,6 +41,8 @@ export function DashboardContent({ name, email, bookings, totalSpent, upcomingTr
     awaiting_host: { cls: 'bg-primary-fixed/40 text-primary',      icon: 'hourglass_empty' },
     confirmed:     { cls: 'bg-tertiary-fixed/40 text-tertiary',    icon: 'check_circle' },
     pending:       { cls: 'bg-amber-50 text-amber-700',            icon: 'schedule' },
+    return_review: { cls: 'bg-amber-50 text-amber-700',            icon: 'hourglass_top' },
+    disputed:      { cls: 'bg-error-container/40 text-error',      icon: 'gavel' },
     completed:     { cls: 'bg-surface-container text-secondary',   icon: 'task_alt' },
     rejected:      { cls: 'bg-error-container/40 text-error',      icon: 'cancel' },
     cancelled:     { cls: 'bg-surface-container text-secondary',   icon: 'remove_circle' },
@@ -48,6 +52,8 @@ export function DashboardContent({ name, email, bookings, totalSpent, upcomingTr
     awaiting_host: t.dashboard.awaitingHost,
     confirmed:     t.dashboard.confirmed,
     pending:       t.dashboard.pending,
+    return_review: t.dashboard.returnReview,
+    disputed:      t.dashboard.disputed,
     completed:     t.dashboard.completed,
     rejected:      t.dashboard.rejected,
     cancelled:     t.dashboard.cancelled,
@@ -213,8 +219,8 @@ export function DashboardContent({ name, email, bookings, totalSpent, upcomingTr
               <h3 className="text-label-bold font-extrabold text-on-background mb-4">{t.dashboard.quickActions}</h3>
               <div className="space-y-2">
                 {[
-                  { href: '/cars',        icon: 'search',        label: t.dashboard.browseCars },
-                  { href: '/become-host', icon: 'add_home',      label: t.dashboard.listYourCar },
+                  { href: '/cars',        icon: 'search',         label: t.dashboard.browseCars },
+                  { href: '/become-host', icon: 'add_home',       label: t.dashboard.listYourCar },
                   { href: '/my-cars',     icon: 'directions_car', label: t.myCars.quickAction },
                 ].map(action => (
                   <a key={action.href} href={action.href}
@@ -224,6 +230,19 @@ export function DashboardContent({ name, email, bookings, totalSpent, upcomingTr
                     <span className="material-symbols-outlined ml-auto text-[16px] text-slate-300">chevron_right</span>
                   </a>
                 ))}
+                {isHost && (
+                  <a href="/host-rentals"
+                    className="flex items-center gap-3 rounded-xl px-4 py-3 font-semibold text-label-bold text-on-background hover:bg-surface-container-low transition-colors">
+                    <span className="material-symbols-outlined text-primary text-[20px]">handshake</span>
+                    <span className="flex-1">{t.dashboard.hostRentals}</span>
+                    {unreadNotifications > 0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-error px-1.5 text-[11px] font-black text-white">
+                        {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                      </span>
+                    )}
+                    <span className="material-symbols-outlined text-[16px] text-slate-300">chevron_right</span>
+                  </a>
+                )}
               </div>
             </div>
           </div>

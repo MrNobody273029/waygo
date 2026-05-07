@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { Resend } from 'resend';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { carReturnedReviewEmail } from '@/lib/email';
+import { hostReturnReviewEmail } from '@/lib/email';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const SITE_URL = process.env.NEXTAUTH_URL ?? 'https://waygo.ge';
@@ -64,32 +64,44 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     select: { fullName: true },
   });
 
+  const newStatus = phase === 'pickup' ? 'confirmed' : 'return_review';
+
   await prisma.$transaction([
     prisma.conditionReport.create({
       data: { bookingId: params.id, phase, photoUrls },
     }),
     prisma.booking.update({
       where: { id: params.id },
-      data: { status: phase === 'pickup' ? 'confirmed' : 'completed' },
+      data: { status: newStatus },
     }),
   ]);
 
-  // On return completion: email host to review the guest — fire and forget
+  // On return: notify host to confirm/dispute — fire and forget
   if (phase === 'return' && booking.car?.owner?.email) {
     const validLangs = ['en', 'ka', 'ru'];
     const hostLang = validLangs.includes(booking.car.owner.lang)
       ? (booking.car.owner.lang as 'en' | 'ka' | 'ru')
       : 'en';
-    const { html, subject } = carReturnedReviewEmail({
+    const { html, subject } = hostReturnReviewEmail({
       hostName: booking.car.owner.fullName,
       hostLang,
       guestName: guestProfile?.fullName ?? 'Guest',
       car: { brand: booking.carBrand, model: booking.carModel, year: booking.carYear },
       booking: { id: booking.id, startDate: booking.startDate, endDate: booking.endDate },
-      reviewUrl: `${SITE_URL}/review/${booking.id}`,
+      reviewUrl: `${SITE_URL}/host-rentals`,
       siteUrl: SITE_URL,
     });
     resend.emails.send({ from: 'WAYGO <info@waygo.ge>', to: booking.car.owner.email, subject, html }).catch(console.error);
+
+    // Create in-app notification for host
+    prisma.notification.create({
+      data: {
+        userId: booking.car.ownerId,
+        type: 'return_review',
+        bookingId: params.id,
+        message: `${guestProfile?.fullName ?? 'Guest'} submitted return photos for ${booking.carBrand} ${booking.carModel}`,
+      },
+    }).catch(console.error);
   }
 
   return NextResponse.json({ ok: true });

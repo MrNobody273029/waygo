@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { useLang } from '@/components/lang-provider';
-import { LayoutDashboard, Users, CalendarDays, Car, LogOut, ExternalLink, ShieldCheck, Mail, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarDays, Car, LogOut, ExternalLink, ShieldCheck, Mail, CreditCard, Gavel } from 'lucide-react';
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -16,6 +16,7 @@ export function AdminSidebar() {
     { href: '/admin/bookings',       icon: CalendarDays,    label: t.admin.bookings },
     { href: '/admin/cars',           icon: Car,             label: t.admin.cars },
     { href: '/admin/transactions',   icon: CreditCard,      label: 'Transactions' },
+    { href: '/admin/disputes',        icon: Gavel,           label: 'Disputes' },
     { href: '/admin/verifications',  icon: ShieldCheck,     label: 'Verify' },
     { href: '/admin/emails',         icon: Mail,            label: 'Emails' },
   ];

@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { calculateBooking, type InsurancePlan } from '@/lib/constants';
 import { daysBetween, gel } from '@/lib/utils';
@@ -7,6 +7,7 @@ import { InsurancePicker } from './insurance-picker';
 import { useLang } from '@/components/lang-provider';
 import { KYCModal } from '@/components/kyc-modal';
 import { VerificationPendingPopup } from '@/components/verification-pending-popup';
+import { DateRangeCalendar } from '@/components/date-range-calendar';
 import type { AirportState } from '@/lib/sample-data';
 
 type DeliveryOption = { id: string; label: string; cost: number; icon: string };
@@ -33,9 +34,29 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [deliveryOpen, setDeliveryOpen] = useState(false);
   const [availError, setAvailError] = useState<string | null>(null);
+  const [calOpen, setCalOpen] = useState(false);
+  const calRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (calRef.current && !calRef.current.contains(e.target as Node)) {
+        setCalOpen(false);
+      }
+    }
+    if (calOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [calOpen]);
 
   const availSet = availableDates ? new Set(availableDates) : null;
   const noAvailability = availSet !== null && availSet.size === 0;
+
+  function fmtDisplayDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T00:00:00');
+    const day = d.getDate();
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${day} ${monthNames[d.getMonth()]}`;
+  }
 
   // Build delivery options from car data
   const deliveryOptions: DeliveryOption[] = useMemo(() => {
@@ -184,24 +205,41 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
         )}
 
         {/* Dates */}
-        <div className="grid grid-cols-2 gap-3 mb-1">
-          <div className="rounded-xl border px-3 py-2.5">
-            <p className="text-label-sm text-slate-400 uppercase tracking-wider mb-1">{t.booking.pickup}</p>
-            <input type="date" value={start} min={today} onChange={e => {
-              const s = e.target.value;
-              setStart(s);
-              if (end <= s) setEnd(minEnd(s));
-              setAvailError(null);
-            }} className="w-full border-none p-0 focus:ring-0 font-bold text-label-bold bg-transparent text-on-background" />
+        <div className="relative mb-1" ref={calRef}>
+          <div
+            className="grid grid-cols-2 gap-3 cursor-pointer"
+            onClick={() => setCalOpen(v => !v)}
+          >
+            <div className={`rounded-xl border px-3 py-2.5 transition-colors ${calOpen ? 'border-primary ring-2 ring-primary-fixed/30' : 'border-slate-200'}`}>
+              <p className="text-label-sm text-slate-400 uppercase tracking-wider mb-1">{t.booking.pickup}</p>
+              <p className="font-bold text-label-bold text-on-background">
+                {start ? fmtDisplayDate(start) : t.booking.selectDate}
+              </p>
+            </div>
+            <div className={`rounded-xl border px-3 py-2.5 transition-colors ${calOpen ? 'border-primary ring-2 ring-primary-fixed/30' : 'border-slate-200'}`}>
+              <p className="text-label-sm text-slate-400 uppercase tracking-wider mb-1">{t.booking.dropoff}</p>
+              <p className="font-bold text-label-bold text-on-background">
+                {end ? fmtDisplayDate(end) : t.booking.selectDate}
+              </p>
+            </div>
           </div>
-          <div className="rounded-xl border px-3 py-2.5">
-            <p className="text-label-sm text-slate-400 uppercase tracking-wider mb-1">{t.booking.dropoff}</p>
-            <input type="date" value={end} min={minEnd(start)} onChange={e => { setEnd(e.target.value); setAvailError(null); }}
-              className="w-full border-none p-0 focus:ring-0 font-bold text-label-bold bg-transparent text-on-background" />
-          </div>
+          {calOpen && (
+            <div className="absolute left-0 right-0 top-full mt-1 z-50">
+              <DateRangeCalendar
+                start={start}
+                end={end}
+                availableDates={availableDates}
+                onStartChange={s => { setStart(s); setAvailError(null); }}
+                onEndChange={e => { setEnd(e); setAvailError(null); }}
+                minDate={today}
+                open={calOpen}
+                onClose={() => setCalOpen(false)}
+              />
+            </div>
+          )}
         </div>
         {availError && (
-          <p className="mb-4 text-[12px] font-bold text-error flex items-center gap-1">
+          <p className="mb-4 text-[12px] font-bold text-error flex items-center gap-1 mt-2">
             <span className="material-symbols-outlined text-[14px]">error</span>
             {availError}
           </p>

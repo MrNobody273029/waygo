@@ -907,51 +907,54 @@ export function bookingCancelledEmail(data: BookingCancelledEmailData): { html: 
   const rentalPaid = refundAmount + platformFeeKept;
   const dashUrl = `${siteUrl}/dashboard`;
 
-  const html = emailShell(lang, `
-  <!-- Badge -->
+  function buildCancelledSection(ls: typeof CS.en, dl: string): string {
+    return `
   <div style="text-align:center;margin:0 0 28px;">
-    <span style="display:inline-block;background:#fee2e2;color:#991b1b;font-weight:800;font-size:11px;letter-spacing:2.5px;padding:7px 22px;border-radius:100px;text-transform:uppercase;">❌ ${s.badge}</span>
+    <span style="display:inline-block;background:#fee2e2;color:#991b1b;font-weight:800;font-size:11px;letter-spacing:2.5px;padding:7px 22px;border-radius:100px;text-transform:uppercase;">❌ ${ls.badge}</span>
   </div>
-
-  <!-- Greeting -->
-  <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.3;">${s.greeting(guestName)}</h1>
-  <p style="font-size:15px;color:#475569;margin:0 0 32px;line-height:1.8;">${s.intro}</p>
-
-  <!-- Booking info -->
-  <p style="font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#94a3b8;margin:0 0 10px;">${s.sBooking}</p>
+  <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.3;">${ls.greeting(guestName)}</h1>
+  <p style="font-size:15px;color:#475569;margin:0 0 32px;line-height:1.8;">${ls.intro}</p>
+  <p style="font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#94a3b8;margin:0 0 10px;">${ls.sBooking}</p>
   <div style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;padding:4px 24px;margin-bottom:24px;">
     <table width="100%" cellpadding="0" cellspacing="0" border="0">
-      ${row(s.lId, `<span style="font-family:monospace;font-size:12px;background:#e2e8f0;padding:2px 8px;border-radius:4px;">#${booking.id.slice(-8).toUpperCase()}</span>`)}
-      ${row(s.lCar, `${car.brand} ${car.model} ${car.year}`, true)}
-      ${row(s.lDates, `${fmtDate(booking.startDate, lang)} — ${fmtDate(booking.endDate, lang)}`, false, true)}
+      ${row(ls.lId, `<span style="font-family:monospace;font-size:12px;background:#e2e8f0;padding:2px 8px;border-radius:4px;">#${booking.id.slice(-8).toUpperCase()}</span>`)}
+      ${row(ls.lCar, `${car.brand} ${car.model} ${car.year}`, true)}
+      ${row(ls.lDates, `${fmtDate(booking.startDate, dl)} — ${fmtDate(booking.endDate, dl)}`, false, true)}
     </table>
   </div>
-
-  <!-- Refund breakdown -->
-  <p style="font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#94a3b8;margin:0 0 10px;">${s.sRefund}</p>
+  <p style="font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#94a3b8;margin:0 0 10px;">${ls.sRefund}</p>
   <div style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;padding:4px 24px;margin-bottom:24px;">
     <table width="100%" cellpadding="0" cellspacing="0" border="0">
-      ${row(s.lRentalPaid, `${rentalPaid} ₾`)}
-      ${platformFeeKept > 0 ? row(`<span style="color:#ef4444;">− ${s.lFeeKept}</span>`, `<span style="color:#ef4444;">−${platformFeeKept} ₾</span>`) : ''}
-      ${refundAmount > 0 ? row(s.lRentalRefund, `${refundAmount} ₾`, true) : `<tr><td style="padding:11px 0;font-size:13px;color:#64748b;border-bottom:1px solid #f1f5f9;">${s.lRentalRefund}</td><td style="padding:11px 0;font-size:13px;color:#94a3b8;text-align:right;border-bottom:1px solid #f1f5f9;">0 ₾</td></tr>`}
-      ${row(s.lDepositRefund, `${depositRefund} ₾`, true)}
+      ${row(ls.lRentalPaid, `${rentalPaid} ₾`)}
+      ${platformFeeKept > 0 ? row(`<span style="color:#ef4444;">− ${ls.lFeeKept}</span>`, `<span style="color:#ef4444;">−${platformFeeKept} ₾</span>`) : ''}
+      ${refundAmount > 0 ? row(ls.lRentalRefund, `${refundAmount} ₾`, true) : `<tr><td style="padding:11px 0;font-size:13px;color:#64748b;border-bottom:1px solid #f1f5f9;">${ls.lRentalRefund}</td><td style="padding:11px 0;font-size:13px;color:#94a3b8;text-align:right;border-bottom:1px solid #f1f5f9;">0 ₾</td></tr>`}
+      ${row(ls.lDepositRefund, `${depositRefund} ₾`, true)}
       <tr>
-        <td style="padding:14px 0 10px;font-size:15px;font-weight:800;color:#166534;border-top:2px solid #16a34a;">${s.lTotal}</td>
+        <td style="padding:14px 0 10px;font-size:15px;font-weight:800;color:#166534;border-top:2px solid #16a34a;">${ls.lTotal}</td>
         <td style="padding:14px 0 10px;font-size:20px;font-weight:900;color:#16a34a;text-align:right;border-top:2px solid #16a34a;">${totalRefund} ₾</td>
       </tr>
     </table>
   </div>
-
-  <!-- Timing -->
   <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:16px 20px;margin-bottom:28px;text-align:center;">
-    <p style="font-size:13px;font-weight:700;color:#166534;margin:0;">⏱ ${s.timingNote}</p>
+    <p style="font-size:13px;font-weight:700;color:#166534;margin:0;">⏱ ${ls.timingNote}</p>
   </div>
 
-  <!-- CTA -->
   <div style="text-align:center;margin-bottom:10px;">
-    <a href="${dashUrl}" style="display:inline-block;background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);color:#ffffff;padding:18px 52px;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none;letter-spacing:0.4px;">${s.ctaLabel}</a>
-  </div>
-  `, s.footNote, s.copy);
+    <a href="${dashUrl}" style="display:inline-block;background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);color:#ffffff;padding:18px 52px;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none;letter-spacing:0.4px;">${ls.ctaLabel}</a>
+  </div>`;
+  }
+
+  const primarySection = buildCancelledSection(s, lang);
+  const needsEn = lang !== 'en';
+  const enSection = needsEn ? buildCancelledSection(CS.en, 'en') : '';
+
+  const html = emailShell(lang,
+    primarySection + (needsEn ? `
+      <div style="border-top:2px dashed #e2e8f0;margin:8px 0 32px;"></div>
+      <p style="font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#cbd5e1;text-align:center;margin:0 0 32px;">🇬🇧 &nbsp;English Version</p>
+      ${enSection}
+    ` : ''),
+    s.footNote, s.copy);
 
   return { html, subject: s.subject(car.brand, car.model, car.year) };
 }
@@ -1028,6 +1031,734 @@ export function sendOtpEmail(data: OtpEmailData): { html: string; subject: strin
 </body></html>`;
 
   return { html, subject: s.subject, to: data.toEmail };
+}
+
+// ─── 9. DISPUTE EMAIL TEMPLATES ───────────────────────────────
+
+interface HostReturnReviewEmailData {
+  hostName: string;
+  hostLang: 'en' | 'ka' | 'ru';
+  guestName: string;
+  car: { brand: string; model: string; year: number };
+  booking: { id: string; startDate: Date; endDate: Date };
+  reviewUrl: string;
+  siteUrl: string;
+}
+
+const HRR = {
+  ka: {
+    subject:  (g: string, b: string, m: string) => `📸 ${g}-მ დაბრუნების ფოტოები გაგზავნა — ${b} ${m}`,
+    badge:    'დაბრუნების ფოტოები მოვიდა',
+    greeting: (n: string) => `გამარჯობა, ${n}!`,
+    intro:    (g: string) => `<strong>${g}</strong>-მ გაგზავნა დაბრუნების ფოტოები. გთხოვთ, გადახედოთ მანქანის მდგომარეობას და დაადასტუროთ ან გახსნათ დავა.`,
+    urgentTitle: '⏰ საჭიროა თქვენი მოქმედება',
+    urgentBody: 'გადახედეთ ფოტოებს და <strong>დაადასტურეთ</strong> ან <strong>გახსენით დავა</strong> ჩემი გაქირავებები გვერდიდან.',
+    cta:      'ჩემი გაქირავებები — გადახედვა',
+    ctaNote:  'თუ ავტორიზებული არ ხარ, ჯერ შესვლის გვერდი გამოჩნდება.',
+    footNote: 'ეს ავტომატური შეტყობინებაა — გთხოვთ პასუხი არ გამოაგზავნოთ.',
+    copy:     `© ${new Date().getFullYear()} WAYGO.ge`,
+  },
+  en: {
+    subject:  (g: string, b: string, m: string) => `📸 ${g} submitted return photos — ${b} ${m}`,
+    badge:    'Return Photos Submitted',
+    greeting: (n: string) => `Hello, ${n}!`,
+    intro:    (g: string) => `<strong>${g}</strong> has submitted return photos for your vehicle. Please review the condition and confirm the return or open a dispute.`,
+    urgentTitle: '⏰ Action Required',
+    urgentBody: 'Review the photos and <strong>confirm</strong> or <strong>open a dispute</strong> from your My Rentals page.',
+    cta:      'My Rentals — Review Now',
+    ctaNote:  'If not logged in, you will be redirected to sign in first.',
+    footNote: 'This is an automated message — please do not reply.',
+    copy:     `© ${new Date().getFullYear()} WAYGO.ge`,
+  },
+  ru: {
+    subject:  (g: string, b: string, m: string) => `📸 ${g} отправил(а) фото возврата — ${b} ${m}`,
+    badge:    'Фото возврата отправлены',
+    greeting: (n: string) => `Здравствуйте, ${n}!`,
+    intro:    (g: string) => `<strong>${g}</strong> отправил(а) фотографии возврата вашего автомобиля. Просмотрите состояние и подтвердите возврат или откройте спор.`,
+    urgentTitle: '⏰ Требуется ваше действие',
+    urgentBody: 'Просмотрите фотографии и <strong>подтвердите</strong> или <strong>откройте спор</strong> на странице «Мои аренды».',
+    cta:      'Мои аренды — Проверить',
+    ctaNote:  'Если вы не авторизованы, сначала появится страница входа.',
+    footNote: 'Это автоматическое уведомление — пожалуйста, не отвечайте.',
+    copy:     `© ${new Date().getFullYear()} WAYGO.ge`,
+  },
+};
+
+export function hostReturnReviewEmail(data: HostReturnReviewEmailData): { html: string; subject: string } {
+  const lang = data.hostLang;
+  const s = HRR[lang] ?? HRR.en;
+  const subject = s.subject(data.guestName, data.car.brand, data.car.model);
+  const rentalsUrl = `${data.siteUrl}/host-rentals`;
+
+  const primarySection = `
+  <div style="text-align:center;margin:0 0 28px;">
+    <span style="display:inline-block;background:#eff6ff;color:#1e40af;font-weight:800;font-size:11px;letter-spacing:2.5px;padding:7px 22px;border-radius:100px;text-transform:uppercase;">📸 ${s.badge}</span>
+  </div>
+  <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.3;">${s.greeting(data.hostName)}</h1>
+  <p style="font-size:15px;color:#475569;margin:0 0 28px;line-height:1.8;">${s.intro(data.guestName)}</p>
+  <div style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;padding:20px 24px;margin-bottom:24px;">
+    <p style="font-size:18px;font-weight:800;color:#1e293b;margin:0 0 8px;">${data.car.brand} ${data.car.model} &middot; ${data.car.year}</p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      ${row('Dates', `${fmtDate(data.booking.startDate, lang)} → ${fmtDate(data.booking.endDate, lang)}`, true, true)}
+    </table>
+  </div>
+  <div style="background:#fff7ed;border:2px solid #fed7aa;border-radius:14px;padding:22px 24px;margin-bottom:28px;">
+    <p style="font-size:16px;font-weight:900;color:#c2410c;margin:0 0 8px;">${s.urgentTitle}</p>
+    <p style="font-size:13px;color:#9a3412;margin:0;line-height:1.7;">${s.urgentBody}</p>
+  </div>
+  <div style="text-align:center;margin-bottom:10px;">
+    <a href="${rentalsUrl}" style="display:inline-block;background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);color:#ffffff;padding:18px 52px;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none;letter-spacing:0.4px;">${s.cta}</a>
+  </div>
+  <p style="text-align:center;font-size:11px;color:#94a3b8;margin:0 0 8px;">${s.ctaNote}</p>
+  `;
+
+  const needsEn = lang !== 'en';
+  const enSection = needsEn ? `
+  <div style="text-align:center;margin:0 0 28px;">
+    <span style="display:inline-block;background:#eff6ff;color:#1e40af;font-weight:800;font-size:11px;letter-spacing:2.5px;padding:7px 22px;border-radius:100px;text-transform:uppercase;">📸 ${HRR.en.badge}</span>
+  </div>
+  <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.3;">${HRR.en.greeting(data.hostName)}</h1>
+  <p style="font-size:15px;color:#475569;margin:0 0 28px;line-height:1.8;">${HRR.en.intro(data.guestName)}</p>
+  <div style="text-align:center;margin-bottom:10px;">
+    <a href="${rentalsUrl}" style="display:inline-block;background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);color:#ffffff;padding:18px 52px;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none;letter-spacing:0.4px;">${HRR.en.cta}</a>
+  </div>
+  ` : '';
+
+  const html = emailShell(lang,
+    primarySection + (needsEn ? `
+      <div style="border-top:2px dashed #e2e8f0;margin:8px 0 32px;"></div>
+      <p style="font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#cbd5e1;text-align:center;margin:0 0 32px;">🇬🇧 &nbsp;English Version</p>
+      ${enSection}
+    ` : ''),
+    s.footNote, s.copy
+  );
+
+  return { html, subject };
+}
+
+interface ReturnConfirmedGuestEmailData {
+  guestName: string;
+  guestLang: 'en' | 'ka' | 'ru';
+  car: { brand: string; model: string; year: number };
+  booking: { id: string };
+  dashboardUrl: string;
+  siteUrl: string;
+}
+
+export function returnConfirmedGuestEmail(data: ReturnConfirmedGuestEmailData): { html: string; subject: string } {
+  const strings = {
+    ka: {
+      subject: (b: string, m: string) => `✅ დაბრუნება დადასტურდა — ${b} ${m}`,
+      badge: 'დაბრუნება დადასტურდა',
+      greeting: (n: string) => `გამარჯობა, ${n}!`,
+      intro: 'ჰოსტმა დაადასტურა მანქანის დაბრუნება. თქვენი საუზრუნველოჯო დეპოზიტი განიბლოკება <strong>1–2 სამუშაო დღის</strong> განმავლობაში.',
+      depositNote: '💳 დეპოზიტი: 1–2 სამუშაო დღე',
+      cta: 'ჩემი ჯავშნების ნახვა',
+      footNote: 'ეს ავტომატური შეტყობინებაა — გთხოვთ პასუხი არ გამოაგზავნოთ.',
+      copy: `© ${new Date().getFullYear()} WAYGO.ge`,
+    },
+    en: {
+      subject: (b: string, m: string) => `✅ Return confirmed — ${b} ${m}`,
+      badge: 'Return Confirmed',
+      greeting: (n: string) => `Hello, ${n}!`,
+      intro: 'The host has confirmed the return of your vehicle. Your security deposit will be released within <strong>1–2 business days</strong>.',
+      depositNote: '💳 Deposit: 1–2 business days',
+      cta: 'View My Bookings',
+      footNote: 'This is an automated message — please do not reply.',
+      copy: `© ${new Date().getFullYear()} WAYGO.ge`,
+    },
+    ru: {
+      subject: (b: string, m: string) => `✅ Возврат подтверждён — ${b} ${m}`,
+      badge: 'Возврат подтверждён',
+      greeting: (n: string) => `Здравствуйте, ${n}!`,
+      intro: 'Хост подтвердил возврат автомобиля. Ваш страховой залог будет разблокирован в течение <strong>1–2 рабочих дней</strong>.',
+      depositNote: '💳 Залог: 1–2 рабочих дня',
+      cta: 'Мои бронирования',
+      footNote: 'Это автоматическое уведомление — пожалуйста, не отвечайте.',
+      copy: `© ${new Date().getFullYear()} WAYGO.ge`,
+    },
+  };
+  const s = strings[data.guestLang] ?? strings.en;
+  const subject = s.subject(data.car.brand, data.car.model);
+
+  function buildReturnConfirmedSection(ls: typeof strings.en): string {
+    return `
+  <div style="text-align:center;margin:0 0 28px;">
+    <span style="display:inline-block;background:#dcfce7;color:#166534;font-weight:800;font-size:11px;letter-spacing:2.5px;padding:7px 22px;border-radius:100px;text-transform:uppercase;">✅ ${ls.badge}</span>
+  </div>
+  <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.3;">${ls.greeting(data.guestName)}</h1>
+  <p style="font-size:15px;color:#475569;margin:0 0 28px;line-height:1.8;">${ls.intro}</p>
+  <div style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;padding:20px 24px;margin-bottom:24px;">
+    <p style="font-size:18px;font-weight:800;color:#1e293b;margin:0;">${data.car.brand} ${data.car.model} &middot; ${data.car.year}</p>
+  </div>
+  <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:16px 20px;margin-bottom:28px;text-align:center;">
+    <p style="font-size:14px;font-weight:700;color:#166534;margin:0;">${ls.depositNote}</p>
+  </div>
+  <div style="text-align:center;margin-bottom:10px;">
+    <a href="${data.dashboardUrl}" style="display:inline-block;background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);color:#ffffff;padding:18px 52px;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none;letter-spacing:0.4px;">${ls.cta}</a>
+  </div>`;
+  }
+
+  const primarySection = buildReturnConfirmedSection(s);
+  const needsEn = data.guestLang !== 'en';
+  const enSection = needsEn ? buildReturnConfirmedSection(strings.en) : '';
+
+  const html = emailShell(data.guestLang,
+    primarySection + (needsEn ? `
+      <div style="border-top:2px dashed #e2e8f0;margin:8px 0 32px;"></div>
+      <p style="font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#cbd5e1;text-align:center;margin:0 0 32px;">🇬🇧 &nbsp;English Version</p>
+      ${enSection}
+    ` : ''),
+    s.footNote, s.copy);
+
+  return { html, subject };
+}
+
+interface DisputeCreatedEmailData {
+  recipientName: string;
+  recipientLang: 'en' | 'ka' | 'ru';
+  recipientRole: 'guest' | 'admin';
+  guestName: string;
+  hostName: string;
+  car: { brand: string; model: string; year: number };
+  booking: { id: string };
+  hostComment: string;
+  bookingUrl: string;
+  siteUrl: string;
+}
+
+export function disputeCreatedEmail(data: DisputeCreatedEmailData): { html: string; subject: string } {
+  const strings = {
+    ka: {
+      subjectGuest: (b: string, m: string) => `⚠️ ჰოსტმა გახსნა დავა — ${b} ${m}`,
+      subjectAdmin: (b: string, m: string) => `🚨 ახალი დავა — ${b} ${m}`,
+      badgeGuest: 'დავა გაიხსნა',
+      badgeAdmin: 'ახალი დავა',
+      greetingGuest: (n: string) => `გამარჯობა, ${n}!`,
+      introGuest: (h: string) => `<strong>${h}</strong>-მ გახსნა დავა მანქანის დაბრუნების მდგომარეობასთან დაკავშირებით. პლატფორმის მხარდაჭერა განიხილავს სიტუაციას.`,
+      introAdmin: (g: string, h: string) => `სტუმარი <strong>${g}</strong> და ჰოსტი <strong>${h}</strong> შორის დავა გაიხსნა.`,
+      hostCommentLabel: 'ჰოსტის კომენტარი',
+      ctaGuest: 'ჩემი ჯავშნების ნახვა',
+      ctaAdmin: 'ჯავშნის დეტალები',
+      footNote: 'ეს ავტომატური შეტყობინებაა — გთხოვთ პასუხი არ გამოაგზავნოთ.',
+      copy: `© ${new Date().getFullYear()} WAYGO.ge`,
+    },
+    en: {
+      subjectGuest: (b: string, m: string) => `⚠️ Host opened a dispute — ${b} ${m}`,
+      subjectAdmin: (b: string, m: string) => `🚨 New dispute — ${b} ${m}`,
+      badgeGuest: 'Dispute Opened',
+      badgeAdmin: 'New Dispute',
+      greetingGuest: (n: string) => `Hello, ${n}!`,
+      introGuest: (h: string) => `<strong>${h}</strong> has opened a dispute regarding the vehicle return condition. Our support team will review the situation.`,
+      introAdmin: (g: string, h: string) => `A dispute has been opened between guest <strong>${g}</strong> and host <strong>${h}</strong>.`,
+      hostCommentLabel: 'Host Comment',
+      ctaGuest: 'View My Bookings',
+      ctaAdmin: 'View Booking Details',
+      footNote: 'This is an automated message — please do not reply.',
+      copy: `© ${new Date().getFullYear()} WAYGO.ge`,
+    },
+    ru: {
+      subjectGuest: (b: string, m: string) => `⚠️ Хост открыл спор — ${b} ${m}`,
+      subjectAdmin: (b: string, m: string) => `🚨 Новый спор — ${b} ${m}`,
+      badgeGuest: 'Открыт спор',
+      badgeAdmin: 'Новый спор',
+      greetingGuest: (n: string) => `Здравствуйте, ${n}!`,
+      introGuest: (h: string) => `<strong>${h}</strong> открыл(а) спор по состоянию возвращённого автомобиля. Наша поддержка рассмотрит ситуацию.`,
+      introAdmin: (g: string, h: string) => `Открыт спор между гостем <strong>${g}</strong> и хостом <strong>${h}</strong>.`,
+      hostCommentLabel: 'Комментарий хоста',
+      ctaGuest: 'Мои бронирования',
+      ctaAdmin: 'Детали бронирования',
+      footNote: 'Это автоматическое уведомление — пожалуйста, не отвечайте.',
+      copy: `© ${new Date().getFullYear()} WAYGO.ge`,
+    },
+  };
+  const s = strings[data.recipientLang] ?? strings.en;
+  const isAdmin = data.recipientRole === 'admin';
+  const subject = isAdmin
+    ? s.subjectAdmin(data.car.brand, data.car.model)
+    : s.subjectGuest(data.car.brand, data.car.model);
+
+  function buildDisputeSection(ls: typeof strings.en): string {
+    const lBadge = isAdmin ? ls.badgeAdmin : ls.badgeGuest;
+    const lIntro = isAdmin ? ls.introAdmin(data.guestName, data.hostName) : ls.introGuest(data.hostName);
+    const lCta = isAdmin ? ls.ctaAdmin : ls.ctaGuest;
+    return `
+  <div style="text-align:center;margin:0 0 28px;">
+    <span style="display:inline-block;background:#fee2e2;color:#991b1b;font-weight:800;font-size:11px;letter-spacing:2.5px;padding:7px 22px;border-radius:100px;text-transform:uppercase;">⚠️ ${lBadge}</span>
+  </div>
+  <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.3;">${ls.greetingGuest(data.recipientName)}</h1>
+  <p style="font-size:15px;color:#475569;margin:0 0 28px;line-height:1.8;">${lIntro}</p>
+  <div style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;padding:20px 24px;margin-bottom:24px;">
+    <p style="font-size:18px;font-weight:800;color:#1e293b;margin:0 0 8px;">${data.car.brand} ${data.car.model} &middot; ${data.car.year}</p>
+    <p style="font-size:12px;color:#64748b;margin:0;font-family:monospace;">ID: ${data.booking.id.slice(-8).toUpperCase()}</p>
+  </div>
+  ${data.hostComment ? `
+  <div style="background:#fff7ed;border:2px solid #fed7aa;border-radius:14px;padding:20px 24px;margin-bottom:24px;">
+    <p style="font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#c2410c;margin:0 0 8px;">${ls.hostCommentLabel}</p>
+    <p style="font-size:14px;color:#7c2d12;line-height:1.7;margin:0;">${data.hostComment.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
+  </div>
+  ` : ''}
+  <div style="text-align:center;margin-bottom:10px;">
+    <a href="${data.bookingUrl}" style="display:inline-block;background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);color:#ffffff;padding:18px 52px;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none;letter-spacing:0.4px;">${lCta}</a>
+  </div>`;
+  }
+
+  const primarySection = buildDisputeSection(s);
+  const needsEn = data.recipientLang !== 'en';
+  const enSection = needsEn ? buildDisputeSection(strings.en) : '';
+
+  const html = emailShell(data.recipientLang,
+    primarySection + (needsEn ? `
+      <div style="border-top:2px dashed #e2e8f0;margin:8px 0 32px;"></div>
+      <p style="font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#cbd5e1;text-align:center;margin:0 0 32px;">🇬🇧 &nbsp;English Version</p>
+      ${enSection}
+    ` : ''),
+    s.footNote, s.copy);
+
+  return { html, subject };
+}
+
+interface ExpertAssignedEmailData {
+  recipientName: string;
+  recipientLang: 'en' | 'ka' | 'ru';
+  car: { brand: string; model: string; year: number };
+  booking: { id: string };
+  siteUrl: string;
+}
+
+export function expertAssignedEmail(data: ExpertAssignedEmailData): { html: string; subject: string } {
+  const strings = {
+    ka: {
+      subject: (b: string, m: string) => `🔍 დამოუკიდებელი ექსპერტი დაინიშნა — ${b} ${m}`,
+      badge: 'ექსპერტი დაინიშნა',
+      greeting: (n: string) => `გამარჯობა, ${n}!`,
+      intro: 'ზარალის ობიექტური შეფასებისთვის პლატფორმამ დანიშნა <strong>დამოუკიდებელი ექსპერტი</strong>. გთხოვთ, ელოდოთ ექსპერტიზის დასრულებას.',
+      note: 'ექსპერტი დაუკავშირდება ორივე მხარეს. დასკვნა გაიგზავნება ელ-ფოსტაზე.',
+      footNote: 'ეს ავტომატური შეტყობინებაა — გთხოვთ პასუხი არ გამოაგზავნოთ.',
+      copy: `© ${new Date().getFullYear()} WAYGO.ge`,
+    },
+    en: {
+      subject: (b: string, m: string) => `🔍 Independent expert assigned — ${b} ${m}`,
+      badge: 'Expert Assigned',
+      greeting: (n: string) => `Hello, ${n}!`,
+      intro: 'An <strong>independent expert</strong> has been assigned by the platform to objectively assess the damage. Please await the outcome.',
+      note: 'The expert will contact both parties. The assessment will be sent to your email.',
+      footNote: 'This is an automated message — please do not reply.',
+      copy: `© ${new Date().getFullYear()} WAYGO.ge`,
+    },
+    ru: {
+      subject: (b: string, m: string) => `🔍 Назначен независимый эксперт — ${b} ${m}`,
+      badge: 'Эксперт назначен',
+      greeting: (n: string) => `Здравствуйте, ${n}!`,
+      intro: 'Для объективной оценки ущерба платформа назначила <strong>независимого эксперта</strong>. Пожалуйста, ожидайте результата.',
+      note: 'Эксперт свяжется с обеими сторонами. Заключение будет отправлено на email.',
+      footNote: 'Это автоматическое уведомление — пожалуйста, не отвечайте.',
+      copy: `© ${new Date().getFullYear()} WAYGO.ge`,
+    },
+  };
+  const s = strings[data.recipientLang] ?? strings.en;
+
+  function buildExpertSection(ls: typeof strings.en): string {
+    return `
+  <div style="text-align:center;margin:0 0 28px;">
+    <span style="display:inline-block;background:#f0f9ff;color:#0369a1;font-weight:800;font-size:11px;letter-spacing:2.5px;padding:7px 22px;border-radius:100px;text-transform:uppercase;">🔍 ${ls.badge}</span>
+  </div>
+  <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.3;">${ls.greeting(data.recipientName)}</h1>
+  <p style="font-size:15px;color:#475569;margin:0 0 28px;line-height:1.8;">${ls.intro}</p>
+  <div style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;padding:20px 24px;margin-bottom:24px;">
+    <p style="font-size:18px;font-weight:800;color:#1e293b;margin:0;">${data.car.brand} ${data.car.model} &middot; ${data.car.year}</p>
+  </div>
+  <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:16px 20px;margin-bottom:28px;">
+    <p style="font-size:13px;color:#1e40af;margin:0;">ℹ️ ${ls.note}</p>
+  </div>`;
+  }
+
+  const primarySection = buildExpertSection(s);
+  const needsEn = data.recipientLang !== 'en';
+  const enSection = needsEn ? buildExpertSection(strings.en) : '';
+
+  const html = emailShell(data.recipientLang,
+    primarySection + (needsEn ? `
+      <div style="border-top:2px dashed #e2e8f0;margin:8px 0 32px;"></div>
+      <p style="font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#cbd5e1;text-align:center;margin:0 0 32px;">🇬🇧 &nbsp;English Version</p>
+      ${enSection}
+    ` : ''),
+    s.footNote, s.copy);
+
+  return { html, subject: s.subject(data.car.brand, data.car.model) };
+}
+
+interface DisputeResolvedEmailData {
+  recipientName: string;
+  recipientLang: 'en' | 'ka' | 'ru';
+  recipientRole: 'guest' | 'host';
+  car: { brand: string; model: string; year: number };
+  booking: { id: string };
+  damageAmount: number;
+  expertFee: number;
+  expertNote?: string;
+  siteUrl: string;
+}
+
+export function disputeResolvedEmail(data: DisputeResolvedEmailData): { html: string; subject: string } {
+  const strings = {
+    ka: {
+      subject: (b: string, m: string) => `⚖️ დავა გადაწყდა — ${b} ${m}`,
+      badge: 'დავა გადაწყდა',
+      greeting: (n: string) => `გამარჯობა, ${n}!`,
+      intro: 'პლატფორმამ განიხილა სიტუაცია და მიიღო საბოლოო გადაწყვეტილება.',
+      damageLabel: 'ზარალის ოდენობა',
+      expertFeeLabel: 'ექსპერტის ანაზღაურება',
+      totalLabel: 'სულ',
+      noteLabel: 'ექსპერტის შენიშვნა',
+      footNote: 'ეს ავტომატური შეტყობინებაა — გთხოვთ პასუხი არ გამოაგზავნოთ.',
+      copy: `© ${new Date().getFullYear()} WAYGO.ge`,
+    },
+    en: {
+      subject: (b: string, m: string) => `⚖️ Dispute resolved — ${b} ${m}`,
+      badge: 'Dispute Resolved',
+      greeting: (n: string) => `Hello, ${n}!`,
+      intro: 'The platform has reviewed the dispute and issued a final decision.',
+      damageLabel: 'Damage Assessment',
+      expertFeeLabel: 'Expert Fee',
+      totalLabel: 'Total',
+      noteLabel: 'Expert Note',
+      footNote: 'This is an automated message — please do not reply.',
+      copy: `© ${new Date().getFullYear()} WAYGO.ge`,
+    },
+    ru: {
+      subject: (b: string, m: string) => `⚖️ Спор урегулирован — ${b} ${m}`,
+      badge: 'Спор урегулирован',
+      greeting: (n: string) => `Здравствуйте, ${n}!`,
+      intro: 'Платформа рассмотрела ситуацию и вынесла окончательное решение.',
+      damageLabel: 'Оценка ущерба',
+      expertFeeLabel: 'Вознаграждение эксперта',
+      totalLabel: 'Итого',
+      noteLabel: 'Примечание эксперта',
+      footNote: 'Это автоматическое уведомление — пожалуйста, не отвечайте.',
+      copy: `© ${new Date().getFullYear()} WAYGO.ge`,
+    },
+  };
+  const s = strings[data.recipientLang] ?? strings.en;
+  const total = (data.damageAmount ?? 0) + (data.expertFee ?? 0);
+
+  function buildResolvedSection(ls: typeof strings.en): string {
+    return `
+  <div style="text-align:center;margin:0 0 28px;">
+    <span style="display:inline-block;background:#faf5ff;color:#7c3aed;font-weight:800;font-size:11px;letter-spacing:2.5px;padding:7px 22px;border-radius:100px;text-transform:uppercase;">⚖️ ${ls.badge}</span>
+  </div>
+  <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.3;">${ls.greeting(data.recipientName)}</h1>
+  <p style="font-size:15px;color:#475569;margin:0 0 28px;line-height:1.8;">${ls.intro}</p>
+  <div style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;padding:20px 24px;margin-bottom:24px;">
+    <p style="font-size:18px;font-weight:800;color:#1e293b;margin:0 0 12px;">${data.car.brand} ${data.car.model} &middot; ${data.car.year}</p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      ${row(ls.damageLabel, `${data.damageAmount ?? 0} ₾`, true)}
+      ${row(ls.expertFeeLabel, `${data.expertFee ?? 0} ₾`, true)}
+      <tr>
+        <td style="padding:12px 0 4px;font-size:15px;font-weight:800;color:#1e293b;border-top:2px solid #1a56db;">${ls.totalLabel}</td>
+        <td style="padding:12px 0 4px;font-size:18px;font-weight:900;color:#1a56db;text-align:right;border-top:2px solid #1a56db;">${total} ₾</td>
+      </tr>
+    </table>
+  </div>
+  ${data.expertNote ? `
+  <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:16px 20px;margin-bottom:24px;">
+    <p style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#c2410c;margin:0 0 6px;">${ls.noteLabel}</p>
+    <p style="font-size:13px;color:#7c2d12;line-height:1.7;margin:0;">${data.expertNote.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
+  </div>
+  ` : ''}`;
+  }
+
+  const primarySection = buildResolvedSection(s);
+  const needsEn = data.recipientLang !== 'en';
+  const enSection = needsEn ? buildResolvedSection(strings.en) : '';
+
+  const html = emailShell(data.recipientLang,
+    primarySection + (needsEn ? `
+      <div style="border-top:2px dashed #e2e8f0;margin:8px 0 32px;"></div>
+      <p style="font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#cbd5e1;text-align:center;margin:0 0 32px;">🇬🇧 &nbsp;English Version</p>
+      ${enSection}
+    ` : ''),
+    s.footNote, s.copy);
+
+  return { html, subject: s.subject(data.car.brand, data.car.model) };
+}
+
+// ─── 9. HOST CANCELLED — GUEST & HOST EMAILS ─────────────────
+
+const HC_GUEST = {
+  ka: {
+    subject:      (b: string, m: string, y: number) => `❌ ჯავშანი გაუქმდა ჰოსტის მიერ — ${b} ${m} ${y}`,
+    badge:        'ჯავშანი გაუქმდა',
+    greeting:     (n: string) => `გამარჯობა, ${n}!`,
+    intro:        'სამწუხაროდ, ჰოსტმა გააუქმა შენი ჯავშანი. ბლოკირებული თანხა 3–5 სამუშაო დღეში დაგიბრუნდება.',
+    sBooking:     'ჯავშნის დეტალები',
+    lId:          'ჯავშნის ID',
+    lCar:         'მანქანა',
+    lPickDate:    'აყვანის თარიღი',
+    lRetDate:     'დაბრუნების თარიღი',
+    refundNote:   'თქვენი სრული გადახდა განბლოკდება 3–5 სამუშაო დღის განმავლობაში.',
+    couponTitle:  (x: number) => `🎁 ბოდიშის ნიშნად, გთავაზობთ ${x}%-იან ფასდაკლებას შემდეგ გაქირავებაზე.`,
+    couponSub:    'მოქმედებს 7 დღის განმავლობაში დღევანდელი თარიღიდან. ფასდაკლება ვრცელდება მხოლოდ ბაზისური ქირის ტარიფზე (გარეშე დაზღვევისა და დეპოზიტისა).',
+    ctaLabel:     'მანქანების ნახვა',
+    footNote:     'ეს ავტომატური შეტყობინებაა — გთხოვთ პასუხი არ გამოაგზავნოთ.',
+    copy:         `© ${new Date().getFullYear()} WAYGO.ge — P2P ავტოდაქირავება საქართველოში`,
+  },
+  ru: {
+    subject:      (b: string, m: string, y: number) => `❌ Бронирование отменено хостом — ${b} ${m} ${y}`,
+    badge:        'Бронирование отменено',
+    greeting:     (n: string) => `Здравствуйте, ${n}!`,
+    intro:        'К сожалению, хост отменил ваше бронирование. Заблокированная сумма будет возвращена в течение 3–5 рабочих дней.',
+    sBooking:     'Детали бронирования',
+    lId:          'ID бронирования',
+    lCar:         'Автомобиль',
+    lPickDate:    'Дата получения',
+    lRetDate:     'Дата возврата',
+    refundNote:   'Ваш полный платёж будет разблокирован в течение 3–5 рабочих дней.',
+    couponTitle:  (x: number) => `🎁 В знак извинения мы предоставляем вам скидку ${x}% на следующую аренду.`,
+    couponSub:    'Действительно в течение 7 дней с сегодняшнего дня. Скидка распространяется только на базовую стоимость аренды (без страховки и депозита).',
+    ctaLabel:     'Найти автомобиль',
+    footNote:     'Это автоматическое уведомление — пожалуйста, не отвечайте.',
+    copy:         `© ${new Date().getFullYear()} WAYGO.ge — P2P аренда авто в Грузии`,
+  },
+  en: {
+    subject:      (b: string, m: string, y: number) => `❌ Booking Cancelled by Host — ${b} ${m} ${y}`,
+    badge:        'Booking Cancelled',
+    greeting:     (n: string) => `Hello, ${n}!`,
+    intro:        'Unfortunately, the host has cancelled your booking. Your full payment will be unblocked within 3–5 business days.',
+    sBooking:     'Booking Details',
+    lId:          'Booking ID',
+    lCar:         'Car',
+    lPickDate:    'Pick-up Date',
+    lRetDate:     'Return Date',
+    refundNote:   'Your full payment will be unblocked within 3–5 business days.',
+    couponTitle:  (x: number) => `🎁 As an apology, we're giving you a ${x}% discount on your next rental.`,
+    couponSub:    'Valid for 7 days from today. Discount applies to the base rental rate only (not insurance or deposit).',
+    ctaLabel:     'Browse Cars',
+    footNote:     'This is an automated message — please do not reply.',
+    copy:         `© ${new Date().getFullYear()} WAYGO.ge — P2P Car Rental in Georgia`,
+  },
+};
+
+const HC_HOST = {
+  ka: {
+    subject:      (b: string, m: string, y: number) => `✅ ჯავშანი გაუქმდა — ${b} ${m} ${y}`,
+    badge:        'გაუქმება დადასტურდა',
+    greeting:     (n: string) => `გამარჯობა, ${n}!`,
+    intro:        'შენი ჯავშნის გაუქმება დადასტურდა. ქვემოთ მოცემულია სანქციების დეტალები (ასეთის არსებობის შემთხვევაში).',
+    sBooking:     'ჯავშნის დეტალები',
+    lId:          'ჯავშნის ID',
+    lCar:         'მანქანა',
+    lPickDate:    'აყვანის თარიღი',
+    lRetDate:     'დაბრუნების თარიღი',
+    penaltyNone:  'სანქცია არ დაეკისრება — წვდომამდე 48 საათზე მეტია.',
+    penaltyMedium: 'საშუალო სანქცია: შემდეგ 2 ჯავშანზე კომისია შეადგენს 15%-ს.',
+    penaltyHigh:  'მაღალი სანქცია: შემდეგ 2 ჯავშანზე კომისია შეადგენს 20%-ს.',
+    suspendedWarning: '⚠️ შეჩერება: ამ კალენდარულ თვეში ეს მესამე სასჯელო გაუქმებაა. შენი ანგარიში შეჩერებულია და ყველა განცხადება გამოქვეყნებიდან ამოღებულია.',
+    footNote:     'ეს ავტომატური შეტყობინებაა — გთხოვთ პასუხი არ გამოაგზავნოთ.',
+    copy:         `© ${new Date().getFullYear()} WAYGO.ge — P2P ავტოდაქირავება საქართველოში`,
+  },
+  ru: {
+    subject:      (b: string, m: string, y: number) => `✅ Бронирование отменено — ${b} ${m} ${y}`,
+    badge:        'Отмена подтверждена',
+    greeting:     (n: string) => `Здравствуйте, ${n}!`,
+    intro:        'Ваша отмена бронирования подтверждена. Ниже приведены сведения о санкциях (при наличии).',
+    sBooking:     'Детали бронирования',
+    lId:          'ID бронирования',
+    lCar:         'Автомобиль',
+    lPickDate:    'Дата получения',
+    lRetDate:     'Дата возврата',
+    penaltyNone:  'Санкций нет — до начала аренды более 48 часов.',
+    penaltyMedium: 'Средняя санкция: комиссия на следующие 2 бронирования составит 15%.',
+    penaltyHigh:  'Высокая санкция: комиссия на следующие 2 бронирования составит 20%.',
+    suspendedWarning: '⚠️ Аккаунт заблокирован: это третья штрафная отмена в текущем месяце. Ваш аккаунт приостановлен, все объявления деактивированы.',
+    footNote:     'Это автоматическое уведомление — пожалуйста, не отвечайте.',
+    copy:         `© ${new Date().getFullYear()} WAYGO.ge — P2P аренда авто в Грузии`,
+  },
+  en: {
+    subject:      (b: string, m: string, y: number) => `✅ Booking Cancelled — ${b} ${m} ${y}`,
+    badge:        'Cancellation Confirmed',
+    greeting:     (n: string) => `Hello, ${n}!`,
+    intro:        'Your booking cancellation has been confirmed. Below are the details of any applicable penalties.',
+    sBooking:     'Booking Details',
+    lId:          'Booking ID',
+    lCar:         'Car',
+    lPickDate:    'Pick-up Date',
+    lRetDate:     'Return Date',
+    penaltyNone:  'No penalty — pickup is more than 48 hours away.',
+    penaltyMedium: 'Medium penalty: your commission on the next 2 bookings will be 15%.',
+    penaltyHigh:  'High penalty: your commission on the next 2 bookings will be 20%.',
+    suspendedWarning: '⚠️ Account suspended: this is the 3rd penalized cancellation this month. Your account has been suspended and all listings have been deactivated.',
+    footNote:     'This is an automated message — please do not reply.',
+    copy:         `© ${new Date().getFullYear()} WAYGO.ge — P2P Car Rental in Georgia`,
+  },
+};
+
+function buildGuestCancelSection(
+  lang: 'en' | 'ka' | 'ru',
+  params: {
+    guestName: string;
+    car: { brand: string; model: string; year: number };
+    booking: { id: string; startDate: Date; endDate: Date };
+    penaltyTier: 'none' | 'medium' | 'high';
+    couponPercent: number | null;
+    couponExpiresAt: Date | null;
+    siteUrl: string;
+  },
+): string {
+  const s = HC_GUEST[lang];
+  const carsUrl = `${params.siteUrl}/cars`;
+
+  return `
+  <div style="text-align:center;margin:0 0 28px;">
+    <span style="display:inline-block;background:#fee2e2;color:#991b1b;font-weight:800;font-size:11px;letter-spacing:2.5px;padding:7px 22px;border-radius:100px;text-transform:uppercase;">❌ ${s.badge}</span>
+  </div>
+  <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.3;">${s.greeting(params.guestName)}</h1>
+  <p style="font-size:15px;color:#475569;margin:0 0 32px;line-height:1.8;">${s.intro}</p>
+
+  <p style="font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#94a3b8;margin:0 0 10px;">${s.sBooking}</p>
+  <div style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;padding:4px 24px;margin-bottom:24px;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      ${row(s.lId, `<span style="font-family:monospace;font-size:12px;background:#e2e8f0;padding:2px 8px;border-radius:4px;">#${params.booking.id.slice(-8).toUpperCase()}</span>`)}
+      ${row(s.lCar, `${params.car.brand} ${params.car.model} ${params.car.year}`, true)}
+      ${row(s.lPickDate, fmtDate(params.booking.startDate, lang), true)}
+      ${row(s.lRetDate, fmtDate(params.booking.endDate, lang), true, true)}
+    </table>
+  </div>
+
+  <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:16px 20px;margin-bottom:24px;text-align:center;">
+    <p style="font-size:13px;font-weight:700;color:#166534;margin:0;">⏱ ${s.refundNote}</p>
+  </div>
+
+  ${params.couponPercent !== null ? `
+  <div style="background:#eff6ff;border:2px solid #bfdbfe;border-radius:14px;padding:22px 24px;margin-bottom:28px;">
+    <p style="font-size:15px;font-weight:800;color:#1e40af;margin:0 0 8px;">${s.couponTitle(params.couponPercent)}</p>
+    <p style="font-size:13px;color:#3b82f6;margin:0;line-height:1.7;">${s.couponSub}</p>
+  </div>
+  ` : ''}
+
+  <div style="text-align:center;margin-bottom:10px;">
+    <a href="${carsUrl}" style="display:inline-block;background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);color:#ffffff;padding:18px 52px;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none;letter-spacing:0.4px;">${s.ctaLabel}</a>
+  </div>
+  `;
+}
+
+function buildHostCancelSection(
+  lang: 'en' | 'ka' | 'ru',
+  params: {
+    hostName: string;
+    car: { brand: string; model: string; year: number };
+    booking: { id: string; startDate: Date; endDate: Date };
+    penaltyTier: 'none' | 'medium' | 'high';
+    isSuspended: boolean;
+    siteUrl: string;
+  },
+): string {
+  const s = HC_HOST[lang];
+
+  const penaltyMsg =
+    params.penaltyTier === 'none' ? s.penaltyNone :
+    params.penaltyTier === 'medium' ? s.penaltyMedium :
+    s.penaltyHigh;
+
+  const penaltyBg =
+    params.penaltyTier === 'none' ? '#f0fdf4' :
+    params.penaltyTier === 'medium' ? '#fffbeb' :
+    '#fef2f2';
+  const penaltyBorder =
+    params.penaltyTier === 'none' ? '#86efac' :
+    params.penaltyTier === 'medium' ? '#fcd34d' :
+    '#fca5a5';
+  const penaltyColor =
+    params.penaltyTier === 'none' ? '#166534' :
+    params.penaltyTier === 'medium' ? '#78350f' :
+    '#991b1b';
+
+  return `
+  <div style="text-align:center;margin:0 0 28px;">
+    <span style="display:inline-block;background:#dcfce7;color:#166534;font-weight:800;font-size:11px;letter-spacing:2.5px;padding:7px 22px;border-radius:100px;text-transform:uppercase;">✅ ${s.badge}</span>
+  </div>
+  <h1 style="font-size:24px;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.3;">${s.greeting(params.hostName)}</h1>
+  <p style="font-size:15px;color:#475569;margin:0 0 32px;line-height:1.8;">${s.intro}</p>
+
+  <p style="font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#94a3b8;margin:0 0 10px;">${s.sBooking}</p>
+  <div style="background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;padding:4px 24px;margin-bottom:24px;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      ${row(s.lId, `<span style="font-family:monospace;font-size:12px;background:#e2e8f0;padding:2px 8px;border-radius:4px;">#${params.booking.id.slice(-8).toUpperCase()}</span>`)}
+      ${row(s.lCar, `${params.car.brand} ${params.car.model} ${params.car.year}`, true)}
+      ${row(s.lPickDate, fmtDate(params.booking.startDate, lang), true)}
+      ${row(s.lRetDate, fmtDate(params.booking.endDate, lang), true, true)}
+    </table>
+  </div>
+
+  <div style="background:${penaltyBg};border:1.5px solid ${penaltyBorder};border-radius:12px;padding:16px 20px;margin-bottom:${params.isSuspended ? '16px' : '28px'};">
+    <p style="font-size:13px;font-weight:700;color:${penaltyColor};margin:0;">${penaltyMsg}</p>
+  </div>
+
+  ${params.isSuspended ? `
+  <div style="background:#fef2f2;border:2px solid #fca5a5;border-radius:14px;padding:20px 24px;margin-bottom:28px;">
+    <p style="font-size:14px;font-weight:800;color:#991b1b;margin:0;line-height:1.7;">${s.suspendedWarning}</p>
+  </div>
+  ` : ''}
+  `;
+}
+
+export function hostCancelledGuestEmail(params: {
+  guestName: string;
+  guestLang: 'en' | 'ka' | 'ru';
+  car: { brand: string; model: string; year: number };
+  booking: { id: string; startDate: Date; endDate: Date };
+  penaltyTier: 'none' | 'medium' | 'high';
+  couponPercent: number | null;
+  couponExpiresAt: Date | null;
+  siteUrl: string;
+}): { html: string; subject: string } {
+  const { guestLang, car } = params;
+  const s = HC_GUEST[guestLang];
+  const subject = s.subject(car.brand, car.model, car.year);
+
+  const primarySection = buildGuestCancelSection(guestLang, params);
+  const needsEn = guestLang !== 'en';
+  const enSection = needsEn ? buildGuestCancelSection('en', params) : '';
+
+  const html = emailShell(guestLang,
+    primarySection + (needsEn ? `
+      <div style="border-top:2px dashed #e2e8f0;margin:8px 0 32px;"></div>
+      <p style="font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#cbd5e1;text-align:center;margin:0 0 32px;">🇬🇧 &nbsp;English Version</p>
+      ${enSection}
+    ` : ''),
+    s.footNote, s.copy
+  );
+
+  return { html, subject };
+}
+
+export function hostCancelledHostEmail(params: {
+  hostName: string;
+  hostLang: 'en' | 'ka' | 'ru';
+  car: { brand: string; model: string; year: number };
+  booking: { id: string; startDate: Date; endDate: Date };
+  penaltyTier: 'none' | 'medium' | 'high';
+  isSuspended: boolean;
+  siteUrl: string;
+}): { html: string; subject: string } {
+  const { hostLang, car } = params;
+  const s = HC_HOST[hostLang];
+  const subject = s.subject(car.brand, car.model, car.year);
+
+  const primarySection = buildHostCancelSection(hostLang, params);
+  const needsEn = hostLang !== 'en';
+  const enSection = needsEn ? buildHostCancelSection('en', params) : '';
+
+  const html = emailShell(hostLang,
+    primarySection + (needsEn ? `
+      <div style="border-top:2px dashed #e2e8f0;margin:8px 0 32px;"></div>
+      <p style="font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#cbd5e1;text-align:center;margin:0 0 32px;">🇬🇧 &nbsp;English Version</p>
+      ${enSection}
+    ` : ''),
+    s.footNote, s.copy
+  );
+
+  return { html, subject };
 }
 
 export function emailLayout(content: string, ctaHref: string, ctaLabel: string): string {

@@ -17,9 +17,18 @@ enum BookingStatus {
   awaiting_host
   pending
   confirmed
+  return_review
+  disputed
   rejected
   cancelled
+  cancelled_by_host
   completed
+}
+
+enum DisputeStatus {
+  PENDING
+  EXPERT_ASSIGNED
+  RESOLVED
 }
 
 enum PlanType {
@@ -95,8 +104,14 @@ model Profile {
   emailVerificationExpiry          DateTime?
   passwordResetCode                String?
   passwordResetExpiry              DateTime?
+  penaltyBookingsRemaining         Int?
+  penaltyCommissionRate            Float?
+  isSuspended                      Boolean            @default(false)
+  suspensionReason                 String?
   cars               Car[]
   bookings           Booking[]          @relation("GuestBookings")
+  notifications      Notification[]
+  coupons            Coupon[]
   createdAt          DateTime           @default(now())
 }
 
@@ -165,11 +180,15 @@ model Booking {
   cancelledAt             DateTime?
   cancellationOtpCode     String?
   cancellationOtpExpiry   DateTime?
+  cancelPenaltyTier       String?
   insurancePolicy  InsurancePolicy?
   transactions     Transaction[]
   conditionReports ConditionReport[]
   availability     CarAvailability[]
   reviews          Review[]
+  dispute          Dispute?
+  notifications    Notification[]
+  coupons          Coupon[]
   createdAt        DateTime          @default(now())
 }
 
@@ -260,4 +279,44 @@ model AdminEmailAttachment {
 enum AdminEmailStatus {
   sent
   failed
+}
+
+model Dispute {
+  id           String        @id @default(cuid())
+  bookingId    String        @unique
+  booking      Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  hostComment  String
+  hostPhotos   String[]
+  status       DisputeStatus @default(PENDING)
+  damageAmount Float?
+  expertFee    Float?
+  expertNote   String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Coupon {
+  id              String   @id @default(cuid())
+  userId          String
+  user            Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discountPercent Int
+  expiresAt       DateTime
+  used            Boolean  @default(false)
+  usedAt          DateTime?
+  triggeredBy     String   @default("host_cancellation")
+  bookingId       String
+  booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
 }

@@ -16,6 +16,9 @@ export default async function AdminUsers() {
       isVerified: true,
       rating: true,
       createdAt: true,
+      isSuspended: true,
+      penaltyBookingsRemaining: true,
+      penaltyCommissionRate: true,
       _count: { select: { bookings: true, cars: true } },
     },
   });

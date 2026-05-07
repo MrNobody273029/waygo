@@ -12,6 +12,9 @@ type User = {
   country: string;
   role: string;
   isVerified: boolean;
+  isSuspended: boolean;
+  penaltyBookingsRemaining: number | null;
+  penaltyCommissionRate: number | null;
   rating: number | null;
   createdAt: Date;
   _count: { bookings: number; cars: number };
@@ -106,13 +109,25 @@ export function AdminUsersContent({ users }: { users: User[] }) {
                     <td className="px-6 py-4 font-semibold">{u._count.cars}</td>
                     <td className="px-6 py-4 text-slate-500 text-xs">{new Date(u.createdAt).toLocaleDateString('en-GB')}</td>
                     <td className="px-6 py-4">
-                      {u.isVerified ? (
-                        <span className="flex items-center gap-1 text-xs font-bold text-emerald-600">
-                          <BadgeCheck size={13} /> {t.admin.verified}
-                        </span>
-                      ) : (
-                        <span className="text-xs font-semibold text-slate-400">{t.admin.unverified}</span>
-                      )}
+                      <div className="flex flex-col gap-1">
+                        {u.isVerified ? (
+                          <span className="flex items-center gap-1 text-xs font-bold text-emerald-600">
+                            <BadgeCheck size={13} /> {t.admin.verified}
+                          </span>
+                        ) : (
+                          <span className="text-xs font-semibold text-slate-400">{t.admin.unverified}</span>
+                        )}
+                        {u.isSuspended && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-black text-red-700 uppercase tracking-wide">
+                            Suspended
+                          </span>
+                        )}
+                        {!u.isSuspended && u.penaltyBookingsRemaining !== null && u.penaltyBookingsRemaining > 0 && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
+                            Penalty: {Math.round((u.penaltyCommissionRate ?? 0) * 100)}% · {u.penaltyBookingsRemaining} left
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
                       <Link href={`/admin/users/${u.id}`} className="text-xs font-bold text-primary hover:underline">
