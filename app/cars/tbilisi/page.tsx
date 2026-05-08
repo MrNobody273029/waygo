@@ -6,7 +6,7 @@ import { CarCard } from '@/components/car-card';
 import { JsonLd } from '@/components/JsonLd';
 import {
   citySeo, absoluteUrl, getSiteUrl,
-  jsonLdBreadcrumb, jsonLdFaq,
+  jsonLdBreadcrumb, jsonLdItemList,
 } from '@/lib/seo';
 
 const city = citySeo('Tbilisi');
@@ -40,14 +40,23 @@ const FAQ_ITEMS = [
 ];
 
 export async function generateMetadata(): Promise<Metadata> {
+  const canonical = absoluteUrl(city.canonical);
   return {
     title: city.title,
     description: city.description,
-    alternates: { canonical: absoluteUrl(city.canonical) },
+    alternates: {
+      canonical,
+      languages: {
+        ru: absoluteUrl('/ru/cars/tbilisi'),
+        ka: absoluteUrl('/ka/cars/tbilisi'),
+        'x-default': canonical,
+      },
+    },
     openGraph: {
       title: city.title,
       description: city.description,
-      url: absoluteUrl(city.canonical),
+      url: canonical,
+      locale: 'en_US',
       type: 'website',
     },
     keywords: city.keywordEn.split(' · '),
@@ -70,7 +79,7 @@ export default async function TbilisiCarsPage() {
           { name: 'Cars', url: absoluteUrl('/cars') },
           { name: city.h1, url: absoluteUrl(city.canonical) },
         ]),
-        jsonLdFaq(FAQ_ITEMS),
+        jsonLdItemList(cars.map(c => ({ url: absoluteUrl(`/cars/${c.id}`) }))),
       ]} />
 
       <main className="pt-[62px] md:pt-[73px] min-h-screen bg-surface pb-16">

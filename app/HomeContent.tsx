@@ -1,25 +1,16 @@
 'use client';
+import Link from 'next/link';
 import { HeroSearch } from '@/components/hero-search';
 import { CarCard } from '@/components/car-card';
 import { useLang } from '@/components/lang-provider';
 import type { Car } from '@/lib/sample-data';
-import Image from "next/image";
 import { AISearch } from '@/components/ai-search';
 
 export function HomeContent({ featuredCars }: { featuredCars: Car[] }) {
   const { t } = useLang();
 
 return (
-<main>{/* 
-<Image
-  src="/home-photo.png"
-  alt="Home banner"
-  width={1983}
-  height={793}
-  className="w-full h-auto block"
-  priority
-/>
-*/}
+<main>
 
 <HeroSearch />
 
@@ -35,10 +26,10 @@ return (
 <h2 className="text-[26px] md:text-h1 font-bold text-white leading-tight drop-shadow-lg">{t.home.sectionTitle}</h2>
 <p className="text-white/80 text-[13px] md:text-body-md mt-1 md:mt-2 drop-shadow-md">{t.home.sectionSub}</p>
           </div>
-<a href="/cars" className="hidden md:flex items-center gap-1 text-white font-bold text-label-bold hover:underline shrink-0 drop-shadow-md">
+<Link href="/cars" className="hidden md:flex items-center gap-1 text-white font-bold text-label-bold hover:underline shrink-0 drop-shadow-md">
             {t.home.viewAll}
             <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-          </a>
+          </Link>
         </div>
 
         {featuredCars.length === 0 ? (
@@ -53,13 +44,13 @@ return (
             </div>
             {/* View all — mobile only, below the grid */}
             <div className="mt-6 flex md:hidden">
-              <a
+              <Link
                 href="/cars"
                 className="flex-1 flex items-center justify-center gap-2 border-2 border-primary/20 text-primary font-bold text-[14px] py-3 rounded-xl hover:bg-primary/5 transition active:scale-95"
               >
                 {t.home.viewAll}
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-              </a>
+              </Link>
             </div>
           </>
         )}
@@ -109,7 +100,5 @@ return (
         </div>
       </section>
     </main>
-        
-
   );
 }

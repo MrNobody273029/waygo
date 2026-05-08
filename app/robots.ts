@@ -17,8 +17,6 @@ export default function robots(): MetadataRoute.Robots {
           '/bookings/',
           '/checkout/',
           '/api/',
-          '/login',
-          '/register',
         ],
       },
       { userAgent: 'GPTBot', allow: '/' },

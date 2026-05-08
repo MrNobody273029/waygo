@@ -37,6 +37,8 @@ export interface CarForSeo {
   description?: string;
   images?: string[];
   verified?: boolean;
+  trips?: number;
+  rating?: number;
 }
 
 export function carTitle(car: CarForSeo): string {
@@ -67,6 +69,14 @@ export interface CityMeta {
   keywordEn: string;
   keywordKa: string;
   keywordRu: string;
+  titleKa?: string;
+  descriptionKa?: string;
+  h1Ka?: string;
+  introKa?: string;
+  titleRu?: string;
+  descriptionRu?: string;
+  h1Ru?: string;
+  introRu?: string;
 }
 
 const CITY_META: Record<SeoCity, CityMeta> = {
@@ -83,6 +93,18 @@ const CITY_META: Record<SeoCity, CityMeta> = {
     keywordEn: 'car rental Tbilisi · rent a car Tbilisi · Tbilisi airport car rental',
     keywordKa: 'მანქანის ქირაობა თბილისში · მანქანის გაქირავება',
     keywordRu: 'аренда авто Тбилиси · прокат машины Тбилиси',
+    titleKa: 'მანქანის ქირაობა თბილისში — ადგილობრივი მასპინძლები',
+    descriptionKa:
+      'გაქირავეთ მანქანა თბილისში ვერიფიცირებული ადგილობრივი მასპინძლებისგან. აეროპორტის მიწოდება, მოქნილი დაზღვევა და 250 ₾ დეპოზიტის დაცვა. დაჯავშნეთ WAYGO.ge-ზე.',
+    h1Ka: 'მანქანის ქირაობა თბილისში',
+    introKa:
+      'იპოვეთ სრულყოფილი გასაქირავებელი მანქანა თბილისში ვერიფიცირებული ადგილობრივი მფლობელისგან. გჭირდებათ ქალაქის მანქანა, ჯიპი იყაზბეგისთვის თუ ეკონომიური მანქანა კახეთის ღვინის რეგიონისთვის — WAYGO.ge დაგაკავშირებთ სანდო ადგილობრივ მასპინძლებთან.',
+    titleRu: 'Аренда авто в Тбилиси — от местных хозяев',
+    descriptionRu:
+      'Арендуйте автомобиль в Тбилиси у проверенных местных хозяев. Трансфер из аэропорта, гибкая страховка и депозит 250 GEL. Бронируйте на WAYGO.ge.',
+    h1Ru: 'Аренда автомобиля в Тбилиси',
+    introRu:
+      'Найдите идеальный прокатный автомобиль в Тбилиси у проверенного местного владельца. Нужен городской автомобиль, внедорожник для Казбеги или экономичный вариант для Кахетии — WAYGO.ge соединит вас с надёжными местными хозяевами.',
   },
   Batumi: {
     slug: 'batumi',
@@ -97,6 +119,18 @@ const CITY_META: Record<SeoCity, CityMeta> = {
     keywordEn: 'car rental Batumi · rent a car Batumi · Batumi airport car rental',
     keywordKa: 'მანქანის ქირაობა ბათუმში · მანქანის გაქირავება',
     keywordRu: 'прокат авто Батуми · аренда машины Батуми',
+    titleKa: 'მანქანის ქირაობა ბათუმში — ყოველდღიური და კვირეული ქირა',
+    descriptionKa:
+      'გაქირავეთ მანქანა ბათუმში ვერიფიცირებული ადგილობრივი მასპინძლებისგან. შავი ზღვის სანაპირო, აჭარის მთები, აეროპორტის მიწოდება. WAYGO.ge-ზე.',
+    h1Ka: 'მანქანის ქირაობა ბათუმში',
+    introKa:
+      'შეისწავლეთ ბათუმი და აჭარის რეგიონი საკუთარი ტემპით ვერიფიცირებული ადგილობრივი მასპინძლის მანქანით. იმოძრავეთ შავი ზღვის ბულვარზე, აღმოაჩინეთ აჭარის მთის სოფლები ან გადაინაცვლეთ სარფში.',
+    titleRu: 'Аренда авто в Батуми — посуточно и понедельно',
+    descriptionRu:
+      'Арендуйте автомобиль в Батуми у проверенных местных хозяев. Черноморское побережье, горы Аджарии, трансфер из аэропорта. На WAYGO.ge.',
+    h1Ru: 'Аренда автомобиля в Батуми',
+    introRu:
+      'Исследуйте Батуми и Аджарию в своём темпе на арендованном автомобиле от местного хозяина. Прокатитесь по Черноморскому бульвару, откройте для себя горные сёла Аджарии или доедьте до Сарпи.',
   },
   Kutaisi: {
     slug: 'kutaisi',
@@ -111,6 +145,18 @@ const CITY_META: Record<SeoCity, CityMeta> = {
     keywordEn: 'car rental Kutaisi · rent a car Kutaisi · Kutaisi airport car rental',
     keywordKa: 'მანქანის ქირაობა ქუთაისში · მანქანის გაქირავება',
     keywordRu: 'аренда авто Кутаиси · прокат машины Кутаиси',
+    titleKa: 'მანქანის ქირაობა ქუთაისში — აეროპორტი და ქალაქი',
+    descriptionKa:
+      'გაქირავეთ მანქანა ქუთაისში ვერიფიცირებული ადგილობრივი მასპინძლებისგან. ქუთაისის საერთაშორისო აეროპორტი, გელათი, იმერეთის გამოკვლევა. WAYGO.ge.',
+    h1Ka: 'მანქანის ქირაობა ქუთაისში',
+    introKa:
+      'ჩამოფრინდით ქუთაისის საერთაშორისო აეროპორტში? გაქირავეთ მანქანა ვერიფიცირებული ადგილობრივი მასპინძლისგან და შეისწავლეთ იმერეთი. ეწვიეთ გელათს, მოწამეთას, სათაფლიას და პრომეთეს გამოქვაბულს.',
+    titleRu: 'Аренда авто в Кутаиси — аэропорт и город',
+    descriptionRu:
+      'Арендуйте автомобиль в Кутаиси у проверенных местных хозяев. Аэропорт Кутаиси, монастырь Гелати, исследование Имеретии. WAYGO.ge.',
+    h1Ru: 'Аренда автомобиля в Кутаиси',
+    introRu:
+      'Прилетели в Международный аэропорт Кутаиси? Арендуйте автомобиль у проверенного местного хозяина и исследуйте Имеретию. Посетите Гелати, Моцамету, заповедник Сатаплиа и пещеру Прометея.',
   },
 };
 
@@ -126,11 +172,18 @@ export function jsonLdOrganization(): Record<string, unknown> {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'WAYGO.ge',
+    legalName: 'WAYGO Georgia',
     url,
     logo: `${url}/logo-website.svg`,
     description:
       'WAYGO.ge is a peer-to-peer car rental platform in Georgia connecting verified local car owners with guests seeking flexible, insured car hire in Tbilisi, Batumi, Kutaisi, and across Georgia.',
+    foundingDate: '2024',
     areaServed: { '@type': 'Country', name: 'Georgia' },
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'GE',
+      addressLocality: 'Tbilisi',
+    },
     contactPoint: {
       '@type': 'ContactPoint',
       email: 'info@waygo.ge',
@@ -149,11 +202,19 @@ export function jsonLdWebSite(): Record<string, unknown> {
     url,
     description:
       'P2P car rental platform in Georgia. Book verified local cars in Tbilisi, Batumi, and Kutaisi with flexible insurance and deposit protection.',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: { '@type': 'EntryPoint', urlTemplate: `${url}/cars?q={search_term_string}` },
-      'query-input': 'required name=search_term_string',
-    },
+  };
+}
+
+export function jsonLdItemList(items: { url: string }[]): Record<string, unknown> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    numberOfItems: items.length,
+    itemListElement: items.map((item, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: item.url,
+    })),
   };
 }
 
@@ -190,15 +251,21 @@ export function jsonLdCarOffer(
   car: CarForSeo,
   pageUrl: string,
 ): Record<string, unknown> {
-  return {
+  const schema: Record<string, unknown> = {
     '@context': 'https://schema.org',
-    '@type': 'Product',
+    '@type': ['Vehicle', 'Product'],
     name: `${car.brand} ${car.model} ${car.year}`,
+    sku: car.id,
     description:
       car.description ||
       `${car.year} ${car.brand} ${car.model} available for rental in ${car.location}, Georgia.`,
-    image: car.images?.[0] ? [car.images[0]] : [],
+    image: car.images?.slice(0, 5) ?? [],
     brand: { '@type': 'Brand', name: car.brand },
+    vehicleModelDate: String(car.year),
+    vehicleConfiguration: car.transmission,
+    fuelType: car.fuelType,
+    vehicleSeatingCapacity: car.seats,
+    bodyType: car.type,
     offers: {
       '@type': 'Offer',
       url: pageUrl,
@@ -209,15 +276,20 @@ export function jsonLdCarOffer(
         price: car.dailyPrice,
         priceCurrency: 'GEL',
         unitCode: 'DAY',
-        unitText: 'per day',
       },
       availability: 'https://schema.org/InStock',
       seller: { '@type': 'Organization', name: 'WAYGO.ge', url: getSiteUrl() },
+      areaServed: { '@type': 'Country', name: 'Georgia' },
     },
-    vehicleConfiguration: car.transmission,
-    fuelType: car.fuelType,
-    vehicleSeatingCapacity: car.seats,
-    bodyType: car.type,
-    productionDate: String(car.year),
   };
+
+  if (car.trips && car.trips > 0 && car.rating) {
+    schema.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: car.rating,
+      reviewCount: car.trips,
+    };
+  }
+
+  return schema;
 }

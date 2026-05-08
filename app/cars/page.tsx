@@ -4,19 +4,25 @@ import { dbCarToUiCar } from '@/lib/sample-data';
 import { CarsContent } from './CarsContent';
 import { absoluteUrl } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Rent a Car in Georgia — Browse Verified Local Cars',
-  description:
-    'Browse verified cars for rent across Georgia. Filter by city, dates, type, and price. Instant booking with insurance and 250 GEL deposit protection on WAYGO.ge.',
-  alternates: { canonical: absoluteUrl('/cars') },
-  openGraph: {
+const FILTER_PARAMS = ['city','type','transmission','maxPrice','fuel','seats','brand','model','features'];
+
+export async function generateMetadata({ searchParams }: { searchParams: Record<string, string> }): Promise<Metadata> {
+  const isFiltered = Object.keys(searchParams).some(k => FILTER_PARAMS.includes(k));
+  return {
     title: 'Rent a Car in Georgia — Browse Verified Local Cars',
     description:
-      'Browse verified cars for rent across Georgia. Filter by city, dates, type, and price. Instant booking with insurance included.',
-    url: absoluteUrl('/cars'),
-    type: 'website',
-  },
-};
+      'Browse verified cars for rent across Georgia. Filter by city, dates, type, and price. Instant booking with insurance and 250 GEL deposit protection on WAYGO.ge.',
+    alternates: { canonical: absoluteUrl('/cars') },
+    openGraph: {
+      title: 'Rent a Car in Georgia — Browse Verified Local Cars',
+      description:
+        'Browse verified cars for rent across Georgia. Filter by city, dates, type, and price. Instant booking with insurance included.',
+      url: absoluteUrl('/cars'),
+      type: 'website',
+    },
+    robots: isFiltered ? { index: false, follow: true } : { index: true, follow: true },
+  };
+}
 
 function getDatesInRange(start: string, end: string): Date[] {
   const dates: Date[] = [];

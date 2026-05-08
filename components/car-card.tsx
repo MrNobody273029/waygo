@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useLang } from '@/components/lang-provider';
 import { useCurrency } from '@/components/currency-provider';
 import type { Car } from '@/lib/sample-data';
@@ -24,10 +25,12 @@ export function CarCard({ car }: { car: Car }) {
       {/* Image */}
       <div className="relative h-44 md:h-52 overflow-hidden bg-surface-container">
         {image ? (
-          <img
+          <Image
             src={image}
-            alt={`${car.brand} ${car.model}`}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            alt={`${car.year} ${car.brand} ${car.model} for rent in ${car.location}`}
+            fill
+            sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

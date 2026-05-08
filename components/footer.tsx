@@ -37,10 +37,10 @@ export function Footer() {
         </div>
 
         {/* Link columns */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-6">
 
           {/* Brand — desktop only */}
-          <div className="hidden md:block">
+          <div className="hidden md:block col-span-1">
 <span className="text-lg font-black text-white drop-shadow-md">
                 WAYGO<span className="text-primary">.ge</span>
             </span>
@@ -55,14 +55,25 @@ export function Footer() {
             <ul className="space-y-2 text-[12px] md:text-label-sm text-white/75">
               {([['tbilisi', t.footer.loc1], ['batumi', t.footer.loc2], ['kutaisi', t.footer.loc3]] as [string, string][]).map(([slug, label]) => (
                 <li key={slug}>
-                  <Link
-                    href={`/cars/${slug}`}
-                    className="hover:text-primary transition-colors"
-                  >
-                    {label}
-                  </Link>
+                  <Link href={`/cars/${slug}`} className="hover:text-primary transition-colors">{label}</Link>
                 </li>
               ))}
+            </ul>
+            <h5 className="font-bold text-[13px] md:text-label-bold text-white drop-shadow-md mb-3 md:mb-4 mt-5">{t.footer.airportTitle}</h5>
+            <ul className="space-y-2 text-[12px] md:text-label-sm text-white/75">
+              <li><Link href="/cars/tbilisi-airport" className="hover:text-primary transition-colors">{t.footer.airport1}</Link></li>
+              <li><Link href="/cars/batumi-airport" className="hover:text-primary transition-colors">{t.footer.airport2}</Link></li>
+              <li><Link href="/cars/kutaisi-airport" className="hover:text-primary transition-colors">{t.footer.airport3}</Link></li>
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h5 className="font-bold text-[13px] md:text-label-bold text-white drop-shadow-md mb-3 md:mb-4">{t.footer.companyTitle}</h5>
+            <ul className="space-y-2 text-[12px] md:text-label-sm text-white/75">
+              <li><Link href="/about" className="hover:text-primary transition-colors">{t.footer.about}</Link></li>
+              <li><Link href="/contact" className="hover:text-primary transition-colors">{t.footer.contact}</Link></li>
+              <li><Link href="/faq" className="hover:text-primary transition-colors">{t.footer.faq}</Link></li>
             </ul>
           </div>
 
@@ -72,9 +83,7 @@ export function Footer() {
             <ul className="space-y-2 text-[12px] md:text-label-sm text-white/75">
               {policies.map(({ text, href }) => (
                 <li key={href}>
-                  <Link href={href} className="hover:text-primary transition-colors">
-                    {text}
-                  </Link>
+                  <Link href={href} className="hover:text-primary transition-colors">{text}</Link>
                 </li>
               ))}
             </ul>

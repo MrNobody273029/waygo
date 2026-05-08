@@ -1,11 +1,21 @@
 'use client';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useLang } from '@/components/lang-provider';
 import { CurrencySwitcher } from '@/components/currency-switcher';
 import { useState, useRef, useEffect } from 'react';
 import type { Lang } from '@/lib/i18n';
+
+const LOCALE_PAGES = new Set(['/', '/cars/tbilisi', '/cars/batumi', '/cars/kutaisi']);
+
+function getLocaleUrl(currentPath: string, target: Lang): string {
+  const withoutLocale = currentPath.replace(/^\/(ru|ka)(\/|$)/, '/').replace(/\/$/, '') || '/';
+  if (target === 'en') return withoutLocale || '/';
+  return LOCALE_PAGES.has(withoutLocale)
+    ? `/${target}${withoutLocale === '/' ? '' : withoutLocale}`
+    : withoutLocale || '/';
+}
 
 const LANG_OPTIONS: { value: Lang; label: string; flag: string }[] = [
   { value: 'en', label: 'English', flag: '🇬🇧' },
@@ -33,11 +43,20 @@ function NavPill({ href, children }: { href: string; children: React.ReactNode }
 export function Navbar() {
   const { data: session } = useSession();
   const { lang, t, setLang } = useLang();
+  const pathname = usePathname();
+  const router = useRouter();
   const [userOpen, setUserOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
+
+  function handleLangSwitch(locale: Lang) {
+    setLang(locale);
+    setLangOpen(false);
+    setMobileOpen(false);
+    router.push(getLocaleUrl(pathname, locale));
+  }
 
   const role = (session?.user as any)?.role;
   const isVerified = (session?.user as any)?.isVerified as boolean | undefined;
@@ -59,7 +78,7 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/" className="shrink-0 flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-website.svg" alt="WAYGO.GE" className="h-[54px] md:h-[108px] w-auto" />
+          <img src="/logo-website.svg" alt="WAYGO.GE" width="216" height="108" className="h-[54px] md:h-[108px] w-auto" />
         </Link>
 
         {/* Center nav — pill group */}
@@ -95,7 +114,7 @@ className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 bg-white/90 text-sla
                 {LANG_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
-                    onClick={() => { setLang(opt.value); setLangOpen(false); }}
+                    onClick={() => handleLangSwitch(opt.value)}
                     className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-label-bold font-semibold transition cursor-pointer ${
                       lang === opt.value
                         ? 'bg-primary-fixed/40 text-primary'
@@ -230,7 +249,7 @@ className="flex items-center gap-2.5 bg-white/90 border border-slate-200/80 shad
               {LANG_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
-                  onClick={() => { setLang(opt.value); setMobileOpen(false); }}
+                  onClick={() => handleLangSwitch(opt.value)}
                   className={`w-full text-left rounded-xl px-4 py-2.5 text-label-bold font-semibold transition flex items-center gap-2 cursor-pointer ${
                     lang === opt.value ? 'text-primary bg-primary-fixed/30' : 'text-slate-500 hover:bg-slate-50'
                   }`}

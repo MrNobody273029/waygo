@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { BookingWidget } from '@/components/booking-widget';
 import { useLang } from '@/components/lang-provider';
 import { useCurrency } from '@/components/currency-provider';
@@ -75,6 +76,8 @@ export function CarDetailContent({ car, availableDates }: { car: Car; availableD
         <nav className="flex items-center gap-2 text-label-sm text-secondary mb-4">
           <a href="/cars" className="hover:text-primary transition-colors">{t.carDetail.back}</a>
           <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+          <a href={`/cars/${car.location.toLowerCase()}`} className="hover:text-primary transition-colors">{car.location}</a>
+          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
           <span className="text-on-background font-semibold">{car.brand} {car.model}</span>
         </nav>
 
@@ -93,8 +96,16 @@ export function CarDetailContent({ car, availableDates }: { car: Car; availableD
         {/* Photo gallery */}
         <div className="grid gap-3 md:grid-cols-2 mb-8">
           {car.images?.[0] ? (
-            <img src={car.images[0]} className="w-full h-72 md:h-[420px] rounded-2xl object-cover"
-              alt={`${car.brand} ${car.model}`} />
+            <div className="relative w-full h-72 md:h-[420px] rounded-2xl overflow-hidden">
+              <Image
+                src={car.images[0]}
+                alt={`${car.year} ${car.brand} ${car.model} for rent in ${car.location} — exterior`}
+                fill
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover"
+                priority
+              />
+            </div>
           ) : (
             <div className="w-full h-72 md:h-[420px] rounded-2xl bg-surface-container flex items-center justify-center">
               <span className="material-symbols-outlined text-[72px] text-slate-300">directions_car</span>
@@ -103,7 +114,15 @@ export function CarDetailContent({ car, availableDates }: { car: Car; availableD
           {car.images.length > 1 && (
             <div className="hidden md:grid grid-cols-2 gap-3">
               {car.images.slice(1, 5).map((img, i) => (
-                <img key={i} src={img} className="w-full h-full rounded-2xl object-cover" alt="" />
+                <div key={i} className="relative w-full h-full min-h-[200px] rounded-2xl overflow-hidden">
+                  <Image
+                    src={img}
+                    alt={`${car.brand} ${car.model} ${car.year} photo ${i + 2}`}
+                    fill
+                    sizes="25vw"
+                    className="object-cover"
+                  />
+                </div>
               ))}
             </div>
           )}
