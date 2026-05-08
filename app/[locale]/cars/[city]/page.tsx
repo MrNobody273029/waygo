@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { dbCarToUiCar } from '@/lib/sample-data';
-import { CarCard } from '@/components/car-card';
+import { CityPageCars } from '@/components/city-page-cars';
 import { JsonLd } from '@/components/JsonLd';
 import {
   citySeo, absoluteUrl, getSiteUrl,
@@ -87,10 +87,6 @@ export default async function LocaleCityPage({
 
   const homeLabel = isRu ? 'Главная' : 'მთავარი';
   const carsLabel = isRu ? 'Автомобили' : 'მანქანები';
-  const availableLabel = isRu ? 'Доступные автомобили в' : 'ხელმისაწვდომი მანქანები';
-  const noLabel = isRu ? 'Автомобилей в' : 'მანქანები';
-  const noSuffix = isRu ? 'пока нет — загляните позже.' : 'ახლა ხელმისაწვდომი არ არის.';
-  const browseLabel = isRu ? 'Смотреть все автомобили в Грузии →' : 'ყველა მანქანა საქართველოში →';
 
   return (
     <>
@@ -122,26 +118,7 @@ export default async function LocaleCityPage({
           </div>
         </div>
 
-        <div className="mx-auto max-w-7xl px-4 pt-8 pb-8">
-          {cars.length > 0 ? (
-            <>
-              <h2 className="text-h3 font-bold text-on-background mb-5">
-                {availableLabel} {seo.slug.charAt(0).toUpperCase() + seo.slug.slice(1)}
-                <span className="ml-2 text-label-sm text-secondary font-normal">({cars.length})</span>
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {cars.map(car => <CarCard key={car.id} car={car} />)}
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-secondary text-body-lg mb-2">{noLabel} {seo.slug} — {noSuffix}</p>
-              <Link href="/cars" className="text-primary font-semibold hover:underline">
-                {browseLabel}
-              </Link>
-            </div>
-          )}
-        </div>
+        <CityPageCars cars={cars} fixedCity={VALID_CITIES[params.city]} />
       </main>
     </>
   );

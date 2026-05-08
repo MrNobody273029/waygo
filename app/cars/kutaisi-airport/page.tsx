@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { dbCarToUiCar } from '@/lib/sample-data';
-import { CarCard } from '@/components/car-card';
+import { CityPageCars } from '@/components/city-page-cars';
 import { JsonLd } from '@/components/JsonLd';
 import { absoluteUrl, getSiteUrl, jsonLdBreadcrumb, jsonLdItemList } from '@/lib/seo';
 
@@ -90,26 +90,7 @@ export default async function KutaisiAirportPage() {
           </div>
         </div>
 
-        <div className="mx-auto max-w-7xl px-4 pt-4 pb-8">
-          {cars.length > 0 ? (
-            <>
-              <h2 className="text-h3 font-bold text-on-background mb-5">
-                Cars Available Near Kutaisi Airport
-                <span className="ml-2 text-label-sm text-secondary font-normal">({cars.length})</span>
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {cars.map(car => <CarCard key={car.id} car={car} />)}
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-secondary text-body-lg mb-4">No cars listed right now — check back soon.</p>
-              <Link href="/cars" className="text-primary font-semibold hover:underline">
-                Browse all cars in Georgia →
-              </Link>
-            </div>
-          )}
-        </div>
+        <CityPageCars cars={cars} fixedCity="Kutaisi" airportKey="kutaisi" />
 
         <div className="mx-auto max-w-2xl px-4 pb-8 space-y-4">
           <h2 className="text-h2 font-extrabold text-on-background mb-4">About Kutaisi International Airport</h2>
