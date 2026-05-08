@@ -6,6 +6,7 @@ import { dbCarToUiCar } from '@/lib/sample-data';
 import { Resend } from 'resend';
 import { adminNotificationLayout } from '@/lib/email';
 import { PREMIUM_HOST_CUTOFF } from '@/lib/constants';
+import { createUniqueSlug } from '@/lib/slugs';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const SITE_URL = process.env.NEXTAUTH_URL ?? 'https://waygo.ge';
@@ -43,10 +44,18 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
 
+  const slug = await createUniqueSlug(
+    body.brand,
+    body.model,
+    parseInt(body.year, 10),
+    body.location,
+  );
+
   const [car, owner] = await Promise.all([
     prisma.car.create({
       data: {
         ownerId: userId,
+        slug,
         brand: body.brand,
         model: body.model,
         year: parseInt(body.year, 10),

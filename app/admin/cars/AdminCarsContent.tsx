@@ -55,7 +55,7 @@ export function AdminCarsContent({ cars }: { cars: Car[] }) {
       <div className="flex flex-col sm:flex-row gap-3">
         <input
           type="text"
-          placeholder="Search by car, owner or plate…"
+          placeholder={t.admin.searchCars}
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-primary transition"
@@ -68,7 +68,7 @@ export function AdminCarsContent({ cars }: { cars: Car[] }) {
               className={`rounded-xl border px-3 py-2 text-xs font-bold transition cursor-pointer capitalize ${
                 statusFilter === s ? 'bg-slate-900 text-white border-slate-900' : 'border-slate-200 text-slate-600 hover:border-slate-400'
               }`}
-            >{s === 'all' ? 'All' : s}</button>
+            >{s === 'all' ? t.admin.filterAll : s}</button>
           ))}
         </div>
       </div>
@@ -77,7 +77,7 @@ export function AdminCarsContent({ cars }: { cars: Car[] }) {
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-slate-400">
             <CarFront size={40} className="mb-3" />
-            <p className="font-semibold">{search || statusFilter !== 'all' ? 'No cars match your filters' : t.admin.noCarsYet}</p>
+            <p className="font-semibold">{search || statusFilter !== 'all' ? t.admin.noFilterCars : t.admin.noCarsYet}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -88,7 +88,7 @@ export function AdminCarsContent({ cars }: { cars: Car[] }) {
                   <th className="px-5 py-3 text-left">{t.admin.owner}</th>
                   <th className="px-5 py-3 text-left">{t.admin.location}</th>
                   <th className="px-5 py-3 text-left">{t.admin.type}</th>
-                  <th className="px-5 py-3 text-left">Specs</th>
+                  <th className="px-5 py-3 text-left">{t.admin.specs}</th>
                   <th className="px-5 py-3 text-left">{t.admin.dailyPrice}</th>
                   <th className="px-5 py-3 text-left">{t.admin.estimatedValueUsd}</th>
                   <th className="px-5 py-3 text-left">{t.admin.bookings}</th>
@@ -137,10 +137,10 @@ export function AdminCarsContent({ cars }: { cars: Car[] }) {
                           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500">{t.admin.inactive}</span>
                         )}
                         {c.listingStatus === 'PENDING' && (
-                          <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700">Pending</span>
+                          <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700">{t.admin.statusPending}</span>
                         )}
                         {c.listingStatus === 'REJECTED' && (
-                          <span className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-bold text-red-700">Rejected</span>
+                          <span className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-bold text-red-700">{t.admin.statusRejected}</span>
                         )}
                       </div>
                     </td>
@@ -148,7 +148,7 @@ export function AdminCarsContent({ cars }: { cars: Car[] }) {
                       {new Date(c.createdAt).toLocaleDateString('en-GB')}
                     </td>
                     <td className="px-5 py-4" onClick={e => e.stopPropagation()}>
-                      <Link href={`/admin/cars/${c.id}`} className="text-xs font-bold text-primary hover:underline">View →</Link>
+                      <Link href={`/admin/cars/${c.id}`} className="text-xs font-bold text-primary hover:underline">{t.admin.viewBtn}</Link>
                     </td>
                   </tr>
                 ))}

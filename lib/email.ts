@@ -37,6 +37,10 @@ export interface BookingEmailData {
   insurancePlan: 'basic' | 'standard' | 'premium';
   grandTotal: number;
   siteUrl: string;
+  /** Optional view-only display currency (financial system always charges in GEL) */
+  displayCurrency?: 'USD' | 'EUR';
+  displayTotal?: number;
+  exchangeRateUsed?: number;
 }
 
 export interface HostRequestEmailData {
@@ -308,7 +312,8 @@ function buildGuestSection(
   type: 'submitted' | 'approved',
 ): string {
   const s = GS[lang];
-  const { booking, car, totals, days, insurancePlan, grandTotal, siteUrl } = data;
+  const { booking, car, totals, days, insurancePlan, grandTotal, siteUrl,
+          displayCurrency, displayTotal } = data;
   const dailyPrice = days > 0 ? Math.round(totals.base / days) : totals.base;
   const dailyIns   = totals.insurance > 0 && days > 0 ? Math.round(totals.insurance / days) : 0;
   const bookingUrl = `${siteUrl}/bookings/${booking.id}`;
@@ -382,6 +387,16 @@ function buildGuestSection(
         <td style="padding:14px 0 10px;font-size:15px;font-weight:800;color:#1e293b;border-top:2px solid #1a56db;">${s.lTotal}</td>
         <td style="padding:14px 0 10px;font-size:20px;font-weight:900;color:#1a56db;text-align:right;border-top:2px solid #1a56db;">${grandTotal} ₾</td>
       </tr>
+      ${displayCurrency && displayTotal != null ? `
+      <tr>
+        <td colspan="2" style="padding:2px 0 8px;">
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:12px;color:#16a34a;">≈ ${displayCurrency === 'USD' ? 'USD' : 'EUR'}</span>
+            <span style="font-size:14px;font-weight:800;color:#15803d;">${displayCurrency === 'USD' ? '$' : '€'}${displayTotal}</span>
+          </div>
+          <p style="font-size:10px;color:#94a3b8;margin:4px 0 0;text-align:center;">Approximate amount · Final payment in GEL</p>
+        </td>
+      </tr>` : ''}
       <tr>
         <td style="padding:4px 0 14px;font-size:12px;color:#64748b;">${s.lDeposit}<br/><span style="font-size:11px;color:#94a3b8;">${s.lDepositNote}</span></td>
         <td style="padding:4px 0 14px;font-size:13px;color:#475569;text-align:right;vertical-align:top;">250 ₾</td>

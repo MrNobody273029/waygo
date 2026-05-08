@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
-import { gel } from '@/lib/utils';
 import { useLang } from '@/components/lang-provider';
+import { useCurrency } from '@/components/currency-provider';
 import type { Car } from '@/lib/sample-data';
 
 const FUEL_ICON: Record<string, string> = {
@@ -11,13 +11,14 @@ const FUEL_ICON: Record<string, string> = {
 
 export function CarCard({ car }: { car: Car }) {
   const { t } = useLang();
+  const { formatPrice } = useCurrency();
   const image = car.images?.[0];
   const hasTbsFree = car.airportDelivery?.tbilisi?.state === 'free';
   const hasTbsPaid = car.airportDelivery?.tbilisi?.state === 'paid';
 
   return (
     <Link
-      href={`/cars/${car.id}`}
+      href={`/cars/${car.slug ?? car.id}`}
       className="group bg-white rounded-[20px] overflow-hidden shadow-card border border-slate-100 transition-all duration-200 hover:shadow-card-hover hover:-translate-y-1 active:scale-[0.98] flex flex-col"
     >
       {/* Image */}
@@ -44,7 +45,7 @@ export function CarCard({ car }: { car: Car }) {
           {(hasTbsFree || hasTbsPaid) && (
             <span className={`backdrop-blur-sm px-2 py-1 rounded-lg text-[10px] font-black flex items-center gap-1 ${hasTbsFree ? 'bg-primary/90 text-white' : 'bg-white/90 text-secondary'}`}>
               <span className="material-symbols-outlined text-[11px]">flight_takeoff</span>
-              {hasTbsFree ? t.carDetail.freeDelivery : `${gel(car.airportDelivery.tbilisi.price)}`}
+              {hasTbsFree ? t.carDetail.freeDelivery : formatPrice(car.airportDelivery.tbilisi.price)}
             </span>
           )}
         </div>
@@ -109,7 +110,7 @@ export function CarCard({ car }: { car: Car }) {
         {/* Price + CTA */}
         <div className="flex items-center justify-between mt-auto">
           <div>
-            <span className="text-[20px] md:text-h2 font-bold text-primary">{gel(car.dailyPrice)}</span>
+            <span className="text-[20px] md:text-h2 font-bold text-primary">{formatPrice(car.dailyPrice)}</span>
             <span className="text-[12px] md:text-label-sm text-slate-400"> {t.booking.perDay}</span>
           </div>
           <span className="bg-slate-50 hover:bg-primary hover:text-white text-primary px-4 py-2.5 md:px-5 rounded-lg font-bold text-[13px] md:text-label-bold transition-all">

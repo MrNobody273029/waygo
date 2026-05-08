@@ -43,12 +43,12 @@ useEffect(() => {
     { href: '/admin/users',          icon: Users,           label: t.admin.users },
     { href: '/admin/bookings',       icon: CalendarDays,    label: t.admin.bookings },
     { href: '/admin/cars',           icon: Car,             label: t.admin.cars },
-    { href: '/admin/transactions',   icon: CreditCard,      label: 'Transactions' },
-    { href: '/admin/disputes',        icon: Gavel,           label: 'Disputes' },
-    { href: '/admin/verifications',  icon: ShieldCheck,     label: 'Verify' },
-    { href: '/admin/emails',         icon: Mail,            label: 'Emails' },
-    { href: '/admin/support',        icon: MessageCircle,   label: 'ჩატები', badge: supportCount },
-    { href: '/admin/accounting',     icon: BarChart3,       label: 'Accounting' },
+    { href: '/admin/transactions',   icon: CreditCard,      label: t.admin.transactions },
+    { href: '/admin/disputes',        icon: Gavel,           label: t.admin.disputes },
+    { href: '/admin/verifications',  icon: ShieldCheck,     label: t.admin.verifyNav },
+    { href: '/admin/emails',         icon: Mail,            label: t.admin.emails },
+    { href: '/admin/support',        icon: MessageCircle,   label: t.admin.support, badge: supportCount },
+    { href: '/admin/accounting',     icon: BarChart3,       label: t.admin.accounting },
   ];
 
   function isActive(href: string, exact?: boolean) {

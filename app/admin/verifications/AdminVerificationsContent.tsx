@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLang } from '@/components/lang-provider';
 
 type VerificationStatus = 'UNVERIFIED' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
 type CarListingStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -60,17 +61,17 @@ interface PendingCarItem {
 
 type Tab = 'guest' | 'host' | 'cars';
 
-const STATUS_BADGE: Record<VerificationStatus, { cls: string; label: string; icon: string }> = {
-  UNVERIFIED: { cls: 'bg-slate-100 text-slate-500',        label: 'Unverified',  icon: 'help' },
-  SUBMITTED:  { cls: 'bg-amber-50 text-amber-700',         label: 'Pending',     icon: 'pending_actions' },
-  APPROVED:   { cls: 'bg-tertiary-fixed/40 text-tertiary', label: 'Approved',    icon: 'verified' },
-  REJECTED:   { cls: 'bg-error-container/40 text-error',   label: 'Rejected',    icon: 'cancel' },
+const STATUS_BADGE_CLS: Record<VerificationStatus, { cls: string; icon: string }> = {
+  UNVERIFIED: { cls: 'bg-slate-100 text-slate-500',        icon: 'help' },
+  SUBMITTED:  { cls: 'bg-amber-50 text-amber-700',         icon: 'pending_actions' },
+  APPROVED:   { cls: 'bg-tertiary-fixed/40 text-tertiary', icon: 'verified' },
+  REJECTED:   { cls: 'bg-error-container/40 text-error',   icon: 'cancel' },
 };
 
-const CAR_STATUS_BADGE: Record<CarListingStatus, { cls: string; label: string; icon: string }> = {
-  PENDING:  { cls: 'bg-amber-50 text-amber-700',         label: 'Pending',  icon: 'pending_actions' },
-  APPROVED: { cls: 'bg-tertiary-fixed/40 text-tertiary', label: 'Approved', icon: 'verified' },
-  REJECTED: { cls: 'bg-error-container/40 text-error',   label: 'Rejected', icon: 'cancel' },
+const CAR_STATUS_BADGE_CLS: Record<CarListingStatus, { cls: string; icon: string }> = {
+  PENDING:  { cls: 'bg-amber-50 text-amber-700',         icon: 'pending_actions' },
+  APPROVED: { cls: 'bg-tertiary-fixed/40 text-tertiary', icon: 'verified' },
+  REJECTED: { cls: 'bg-error-container/40 text-error',   icon: 'cancel' },
 };
 
 const LANG_BADGE: Record<string, { cls: string; label: string }> = {
@@ -80,21 +81,34 @@ const LANG_BADGE: Record<string, { cls: string; label: string }> = {
 };
 
 function StatusBadge({ status }: { status: VerificationStatus }) {
-  const b = STATUS_BADGE[status];
+  const { t } = useLang();
+  const b = STATUS_BADGE_CLS[status];
+  const labels: Record<VerificationStatus, string> = {
+    UNVERIFIED: t.admin.statusUnverified,
+    SUBMITTED:  t.admin.statusPending,
+    APPROVED:   t.admin.statusApproved,
+    REJECTED:   t.admin.statusRejected,
+  };
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-black uppercase ${b.cls}`}>
       <span className="material-symbols-outlined text-[12px]">{b.icon}</span>
-      {b.label}
+      {labels[status]}
     </span>
   );
 }
 
 function CarStatusBadge({ status }: { status: CarListingStatus }) {
-  const b = CAR_STATUS_BADGE[status];
+  const { t } = useLang();
+  const b = CAR_STATUS_BADGE_CLS[status];
+  const labels: Record<CarListingStatus, string> = {
+    PENDING:  t.admin.statusPending,
+    APPROVED: t.admin.statusApproved,
+    REJECTED: t.admin.statusRejected,
+  };
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-black uppercase ${b.cls}`}>
       <span className="material-symbols-outlined text-[12px]">{b.icon}</span>
-      {b.label}
+      {labels[status]}
     </span>
   );
 }
@@ -140,6 +154,7 @@ interface CardSharedProps {
 }
 
 function GuestCard({ u, rejectingId, rejectComment, loading, onRejectComment, onStartReject, onCancelReject, onAction }: { u: VerificationUser } & CardSharedProps) {
+  const { t } = useLang();
   const isPending = u.verificationStatus === 'SUBMITTED';
   const isRejectOpen = rejectingId === u.id + '-guest';
   const busy = (a: string) => loading === `${u.id}-${a}`;
@@ -159,7 +174,7 @@ function GuestCard({ u, rejectingId, rejectComment, loading, onRejectComment, on
               <span className="font-bold text-on-background">· {calcAge(u.birthDate)}</span>
             </p>
           )}
-          <p className="text-label-sm text-slate-400 mt-0.5">Joined: {new Date(u.createdAt).toLocaleDateString('en-GB')}</p>
+          <p className="text-label-sm text-slate-400 mt-0.5">{t.admin.joinedPrefix} {new Date(u.createdAt).toLocaleDateString('en-GB')}</p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
           <StatusBadge status={u.verificationStatus} />
@@ -168,9 +183,9 @@ function GuestCard({ u, rejectingId, rejectComment, loading, onRejectComment, on
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <PhotoCard src={u.driverLicenseFront} label="DL Front" />
-        <PhotoCard src={u.driverLicenseBack}  label="DL Back" />
-        <PhotoCard src={u.selfieUrl}           label="Selfie" />
+        <PhotoCard src={u.driverLicenseFront} label={t.admin.dlFront} />
+        <PhotoCard src={u.driverLicenseBack}  label={t.admin.dlBack} />
+        <PhotoCard src={u.selfieUrl}           label={t.admin.selfie} />
       </div>
 
       {isPending && !isRejectOpen && (
@@ -178,12 +193,12 @@ function GuestCard({ u, rejectingId, rejectComment, loading, onRejectComment, on
           <button onClick={() => onAction(u.id, 'approve_guest')} disabled={!!loading}
             className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-tertiary-fixed/40 text-tertiary border border-tertiary/20 py-2.5 font-bold text-label-bold hover:bg-tertiary/10 transition disabled:opacity-60 cursor-pointer">
             {busy('approve_guest') ? <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span> : <span className="material-symbols-outlined text-[16px]">check_circle</span>}
-            Approve
+            {t.admin.approve}
           </button>
           <button onClick={() => onStartReject(u.id + '-guest')} disabled={!!loading}
             className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-error-container/30 text-error border border-error/20 py-2.5 font-bold text-label-bold hover:bg-error/10 transition disabled:opacity-60 cursor-pointer">
             <span className="material-symbols-outlined text-[16px]">cancel</span>
-            Reject
+            {t.admin.reject}
           </button>
         </div>
       )}
@@ -192,18 +207,18 @@ function GuestCard({ u, rejectingId, rejectComment, loading, onRejectComment, on
         <div className="pt-2 border-t border-slate-100 space-y-3">
           <div>
             <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
-              Rejection comment — write in <LangBadge lang={u.lang} />
+              {t.admin.rejectionCommentGuest} <LangBadge lang={u.lang} />
             </p>
             <textarea value={rejectComment} onChange={e => onRejectComment(e.target.value)} rows={3}
               placeholder={u.lang === 'ka' ? 'დაწერე მიზეზი ქართულად…' : u.lang === 'ru' ? 'Напишите причину по-русски…' : 'Write the reason in English…'}
               className="w-full rounded-xl border border-outline-variant px-3.5 py-2.5 text-label-bold text-on-background outline-none focus:border-error focus:ring-2 focus:ring-error/20 resize-none placeholder:text-slate-400 transition" />
           </div>
           <div className="flex gap-2">
-            <button onClick={onCancelReject} className="flex-1 rounded-xl border border-outline-variant py-2.5 font-bold text-label-bold text-secondary hover:bg-slate-50 transition cursor-pointer">Cancel</button>
+            <button onClick={onCancelReject} className="flex-1 rounded-xl border border-outline-variant py-2.5 font-bold text-label-bold text-secondary hover:bg-slate-50 transition cursor-pointer">{t.admin.cancelBtn}</button>
             <button onClick={() => onAction(u.id, 'reject_guest', rejectComment || undefined)} disabled={!!loading}
               className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-error text-white py-2.5 font-bold text-label-bold hover:opacity-90 transition disabled:opacity-60 cursor-pointer">
               {busy('reject_guest') ? <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span> : <span className="material-symbols-outlined text-[16px]">cancel</span>}
-              Confirm Reject
+              {t.admin.confirmReject}
             </button>
           </div>
         </div>
@@ -214,7 +229,7 @@ function GuestCard({ u, rejectingId, rejectComment, loading, onRejectComment, on
           <button onClick={() => onAction(u.id, 'reject_guest')} disabled={!!loading}
             className="flex items-center gap-1.5 rounded-xl border border-error/20 text-error px-4 py-2 font-semibold text-label-bold hover:bg-error/5 transition disabled:opacity-60 cursor-pointer">
             <span className="material-symbols-outlined text-[15px]">cancel</span>
-            Revoke
+            {t.admin.revoke}
           </button>
         </div>
       )}
@@ -223,7 +238,7 @@ function GuestCard({ u, rejectingId, rejectComment, loading, onRejectComment, on
         <div className="pt-2 border-t border-slate-100">
           <p className="text-[11px] text-slate-400 font-semibold flex items-center gap-1.5">
             <span className="material-symbols-outlined text-[13px]">info</span>
-            Waiting for guest to resubmit new documents
+            {t.admin.awaitingResubmitGuest}
           </p>
         </div>
       )}
@@ -232,6 +247,7 @@ function GuestCard({ u, rejectingId, rejectComment, loading, onRejectComment, on
 }
 
 function HostCard({ u, rejectingId, rejectComment, loading, onRejectComment, onStartReject, onCancelReject, onAction }: { u: VerificationUser } & CardSharedProps) {
+  const { t } = useLang();
   const isPending = u.hostVerificationStatus === 'SUBMITTED';
   const isRejectOpen = rejectingId === u.id + '-host';
   const busy = (a: string) => loading === `${u.id}-${a}`;
@@ -251,7 +267,7 @@ function HostCard({ u, rejectingId, rejectComment, loading, onRejectComment, onS
               <span className="font-bold text-on-background">· {calcAge(u.birthDate)}</span>
             </p>
           )}
-          <p className="text-label-sm text-slate-400 mt-0.5">Joined: {new Date(u.createdAt).toLocaleDateString('en-GB')}</p>
+          <p className="text-label-sm text-slate-400 mt-0.5">{t.admin.joinedPrefix} {new Date(u.createdAt).toLocaleDateString('en-GB')}</p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
           <StatusBadge status={u.hostVerificationStatus} />
@@ -260,9 +276,9 @@ function HostCard({ u, rejectingId, rejectComment, loading, onRejectComment, onS
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <PhotoCard src={u.idCardFront}   label="ID Front" />
-        <PhotoCard src={u.idCardBack}    label="ID Back" />
-        <PhotoCard src={u.hostSelfieUrl} label="Selfie" />
+        <PhotoCard src={u.idCardFront}   label={t.admin.idFront} />
+        <PhotoCard src={u.idCardBack}    label={t.admin.idBack} />
+        <PhotoCard src={u.hostSelfieUrl} label={t.admin.selfie} />
       </div>
 
       {isPending && !isRejectOpen && (
@@ -270,12 +286,12 @@ function HostCard({ u, rejectingId, rejectComment, loading, onRejectComment, onS
           <button onClick={() => onAction(u.id, 'approve_host')} disabled={!!loading}
             className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-tertiary-fixed/40 text-tertiary border border-tertiary/20 py-2.5 font-bold text-label-bold hover:bg-tertiary/10 transition disabled:opacity-60 cursor-pointer">
             {busy('approve_host') ? <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span> : <span className="material-symbols-outlined text-[16px]">check_circle</span>}
-            Approve
+            {t.admin.approve}
           </button>
           <button onClick={() => onStartReject(u.id + '-host')} disabled={!!loading}
             className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-error-container/30 text-error border border-error/20 py-2.5 font-bold text-label-bold hover:bg-error/10 transition disabled:opacity-60 cursor-pointer">
             <span className="material-symbols-outlined text-[16px]">cancel</span>
-            Reject
+            {t.admin.reject}
           </button>
         </div>
       )}
@@ -284,18 +300,18 @@ function HostCard({ u, rejectingId, rejectComment, loading, onRejectComment, onS
         <div className="pt-2 border-t border-slate-100 space-y-3">
           <div>
             <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
-              Rejection comment — write in <LangBadge lang={u.lang} />
+              {t.admin.rejectionCommentGuest} <LangBadge lang={u.lang} />
             </p>
             <textarea value={rejectComment} onChange={e => onRejectComment(e.target.value)} rows={3}
               placeholder={u.lang === 'ka' ? 'დაწერე მიზეზი ქართულად…' : u.lang === 'ru' ? 'Напишите причину по-русски…' : 'Write the reason in English…'}
               className="w-full rounded-xl border border-outline-variant px-3.5 py-2.5 text-label-bold text-on-background outline-none focus:border-error focus:ring-2 focus:ring-error/20 resize-none placeholder:text-slate-400 transition" />
           </div>
           <div className="flex gap-2">
-            <button onClick={onCancelReject} className="flex-1 rounded-xl border border-outline-variant py-2.5 font-bold text-label-bold text-secondary hover:bg-slate-50 transition cursor-pointer">Cancel</button>
+            <button onClick={onCancelReject} className="flex-1 rounded-xl border border-outline-variant py-2.5 font-bold text-label-bold text-secondary hover:bg-slate-50 transition cursor-pointer">{t.admin.cancelBtn}</button>
             <button onClick={() => onAction(u.id, 'reject_host', rejectComment || undefined)} disabled={!!loading}
               className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-error text-white py-2.5 font-bold text-label-bold hover:opacity-90 transition disabled:opacity-60 cursor-pointer">
               {busy('reject_host') ? <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span> : <span className="material-symbols-outlined text-[16px]">cancel</span>}
-              Confirm Reject
+              {t.admin.confirmReject}
             </button>
           </div>
         </div>
@@ -306,7 +322,7 @@ function HostCard({ u, rejectingId, rejectComment, loading, onRejectComment, onS
           <button onClick={() => onAction(u.id, 'reject_host')} disabled={!!loading}
             className="flex items-center gap-1.5 rounded-xl border border-error/20 text-error px-4 py-2 font-semibold text-label-bold hover:bg-error/5 transition disabled:opacity-60 cursor-pointer">
             <span className="material-symbols-outlined text-[15px]">cancel</span>
-            Revoke
+            {t.admin.revoke}
           </button>
         </div>
       )}
@@ -315,7 +331,7 @@ function HostCard({ u, rejectingId, rejectComment, loading, onRejectComment, onS
         <div className="pt-2 border-t border-slate-100">
           <p className="text-[11px] text-slate-400 font-semibold flex items-center gap-1.5">
             <span className="material-symbols-outlined text-[13px]">info</span>
-            Waiting for host to resubmit new documents
+            {t.admin.awaitingResubmitHost}
           </p>
         </div>
       )}
@@ -334,6 +350,7 @@ interface CarCardSharedProps {
 }
 
 function CarCard({ car, rejectingCarId, rejectCarComment, carLoading, onRejectCarComment, onStartRejectCar, onCancelRejectCar, onCarAction }: { car: PendingCarItem } & CarCardSharedProps) {
+  const { t } = useLang();
   const isPending = car.listingStatus === 'PENDING';
   const isRejectOpen = rejectingCarId === car.id;
   const busy = (a: string) => carLoading === `${car.id}-${a}`;
@@ -356,7 +373,7 @@ function CarCard({ car, rejectingCarId, rejectCarComment, carLoading, onRejectCa
             <span className="flex items-center gap-0.5"><span className="material-symbols-outlined text-[12px]">door_open</span>{car.doors}</span>
             <span>{car.transmission}</span>
             <span>{car.fuelType}</span>
-            <span className="font-bold text-primary">{car.dailyPrice} ₾/day</span>
+            <span className="font-bold text-primary">{car.dailyPrice} {t.admin.gelPerDay}</span>
           </div>
         </div>
         <div className="flex flex-col items-end gap-1.5 shrink-0">
@@ -378,7 +395,7 @@ function CarCard({ car, rejectingCarId, rejectCarComment, carLoading, onRejectCa
       {/* Car photos grid */}
       {car.imageUrls.length > 0 && (
         <div>
-          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Car Photos ({car.imageUrls.length})</p>
+          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">{t.admin.carPhotos} ({car.imageUrls.length})</p>
           <div className="grid grid-cols-3 gap-2">
             {car.imageUrls.slice(0, 6).map((url, i) => (
               <a key={i} href={url} target="_blank" rel="noreferrer" className="block aspect-video rounded-lg overflow-hidden bg-slate-100 hover:opacity-90 transition">
@@ -387,15 +404,15 @@ function CarCard({ car, rejectingCarId, rejectCarComment, carLoading, onRejectCa
             ))}
           </div>
           {car.imageUrls.length > 6 && (
-            <p className="text-[10px] text-slate-400 mt-1">+{car.imageUrls.length - 6} more photos</p>
+            <p className="text-[10px] text-slate-400 mt-1">+{car.imageUrls.length - 6} {t.admin.morePhotos}</p>
           )}
         </div>
       )}
 
       {/* Tech passport */}
       <div className="grid grid-cols-2 gap-3">
-        <PhotoCard src={car.techPassportFront} label="Tech Passport Front" />
-        <PhotoCard src={car.techPassportBack}  label="Tech Passport Back" />
+        <PhotoCard src={car.techPassportFront} label={t.admin.techPassFront} />
+        <PhotoCard src={car.techPassportBack}  label={t.admin.techPassBack} />
       </div>
 
       {/* Actions */}
@@ -404,12 +421,12 @@ function CarCard({ car, rejectingCarId, rejectCarComment, carLoading, onRejectCa
           <button onClick={() => onCarAction(car.id, 'approve')} disabled={!!carLoading}
             className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-tertiary-fixed/40 text-tertiary border border-tertiary/20 py-2.5 font-bold text-label-bold hover:bg-tertiary/10 transition disabled:opacity-60 cursor-pointer">
             {busy('approve') ? <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span> : <span className="material-symbols-outlined text-[16px]">check_circle</span>}
-            Approve
+            {t.admin.approve}
           </button>
           <button onClick={() => onStartRejectCar(car.id)} disabled={!!carLoading}
             className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-error-container/30 text-error border border-error/20 py-2.5 font-bold text-label-bold hover:bg-error/10 transition disabled:opacity-60 cursor-pointer">
             <span className="material-symbols-outlined text-[16px]">cancel</span>
-            Reject
+            {t.admin.reject}
           </button>
         </div>
       )}
@@ -418,7 +435,7 @@ function CarCard({ car, rejectingCarId, rejectCarComment, carLoading, onRejectCa
         <div className="pt-2 border-t border-slate-100 space-y-3">
           <div>
             <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
-              Rejection reason — write in <LangBadge lang={car.owner.lang} />
+              {t.admin.rejectionCommentCar} <LangBadge lang={car.owner.lang} />
             </p>
             <textarea value={rejectCarComment} onChange={e => onRejectCarComment(e.target.value)} rows={3}
               placeholder={
@@ -429,11 +446,11 @@ function CarCard({ car, rejectingCarId, rejectCarComment, carLoading, onRejectCa
               className="w-full rounded-xl border border-outline-variant px-3.5 py-2.5 text-label-bold text-on-background outline-none focus:border-error focus:ring-2 focus:ring-error/20 resize-none placeholder:text-slate-400 transition" />
           </div>
           <div className="flex gap-2">
-            <button onClick={onCancelRejectCar} className="flex-1 rounded-xl border border-outline-variant py-2.5 font-bold text-label-bold text-secondary hover:bg-slate-50 transition cursor-pointer">Cancel</button>
+            <button onClick={onCancelRejectCar} className="flex-1 rounded-xl border border-outline-variant py-2.5 font-bold text-label-bold text-secondary hover:bg-slate-50 transition cursor-pointer">{t.admin.cancelBtn}</button>
             <button onClick={() => onCarAction(car.id, 'reject', rejectCarComment || undefined)} disabled={!!carLoading}
               className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-error text-white py-2.5 font-bold text-label-bold hover:opacity-90 transition disabled:opacity-60 cursor-pointer">
               {busy('reject') ? <span className="material-symbols-outlined animate-spin text-[16px]">autorenew</span> : <span className="material-symbols-outlined text-[16px]">cancel</span>}
-              Confirm Reject
+              {t.admin.confirmReject}
             </button>
           </div>
         </div>
@@ -444,7 +461,7 @@ function CarCard({ car, rejectingCarId, rejectCarComment, carLoading, onRejectCa
           <button onClick={() => onCarAction(car.id, 'reject')} disabled={!!carLoading}
             className="flex items-center gap-1.5 rounded-xl border border-error/20 text-error px-4 py-2 font-semibold text-label-bold hover:bg-error/5 transition disabled:opacity-60 cursor-pointer">
             <span className="material-symbols-outlined text-[15px]">cancel</span>
-            Revoke Approval
+            {t.admin.revokeApproval}
           </button>
         </div>
       )}
@@ -453,14 +470,14 @@ function CarCard({ car, rejectingCarId, rejectCarComment, carLoading, onRejectCa
         <div className="space-y-3 pt-2 border-t border-slate-100">
           {car.listingRejectionComment && (
             <div className="rounded-lg bg-red-50 border border-red-100 px-3 py-2">
-              <p className="text-[10px] font-black uppercase tracking-wider text-red-400 mb-1">Rejection Note</p>
+              <p className="text-[10px] font-black uppercase tracking-wider text-red-400 mb-1">{t.admin.rejectionNote}</p>
               <p className="text-[12px] text-red-700">{car.listingRejectionComment}</p>
             </div>
           )}
           <button onClick={() => onCarAction(car.id, 'approve')} disabled={!!carLoading}
             className="flex items-center gap-1.5 rounded-xl border border-tertiary/20 text-tertiary px-4 py-2 font-semibold text-label-bold hover:bg-tertiary/5 transition disabled:opacity-60 cursor-pointer">
             <span className="material-symbols-outlined text-[15px]">check_circle</span>
-            Approve
+            {t.admin.approve}
           </button>
         </div>
       )}
@@ -469,6 +486,7 @@ function CarCard({ car, rejectingCarId, rejectCarComment, carLoading, onRejectCa
 }
 
 export function AdminVerificationsContent({ users, cars }: { users: VerificationUser[]; cars: PendingCarItem[] }) {
+  const { t } = useLang();
   const router = useRouter();
 
   // User verification state
@@ -538,27 +556,27 @@ export function AdminVerificationsContent({ users, cars }: { users: Verification
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[22px] md:text-2xl font-black text-slate-950">Verifications</h1>
-        <p className="text-slate-500 text-sm mt-1">Review identity documents and car listings.</p>
+        <h1 className="text-[22px] md:text-2xl font-black text-slate-950">{t.admin.verifications}</h1>
+        <p className="text-slate-500 text-sm mt-1">{t.admin.pendingReview}</p>
       </div>
 
       <div className="flex gap-1 p-1 bg-slate-100 rounded-2xl w-fit flex-wrap">
         <button onClick={() => setTab('guest')}
           className={`flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 rounded-xl font-bold text-sm transition cursor-pointer ${tab === 'guest' ? 'bg-white text-slate-900 shadow' : 'text-slate-500 hover:text-slate-700'}`}>
           <span className="material-symbols-outlined text-[16px]">badge</span>
-          Guest / Renter
+          {t.admin.guestRenter}
           {pendingGuest > 0 && <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-white">{pendingGuest}</span>}
         </button>
         <button onClick={() => setTab('host')}
           className={`flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 rounded-xl font-bold text-sm transition cursor-pointer ${tab === 'host' ? 'bg-white text-slate-900 shadow' : 'text-slate-500 hover:text-slate-700'}`}>
           <span className="material-symbols-outlined text-[16px]">shield_person</span>
-          Host / Lessor
+          {t.admin.hostLessor}
           {pendingHost > 0 && <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-white">{pendingHost}</span>}
         </button>
         <button onClick={() => setTab('cars')}
           className={`flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 rounded-xl font-bold text-sm transition cursor-pointer ${tab === 'cars' ? 'bg-white text-slate-900 shadow' : 'text-slate-500 hover:text-slate-700'}`}>
           <span className="material-symbols-outlined text-[16px]">directions_car</span>
-          Car Listings
+          {t.admin.carListings}
           {pendingCars > 0 && <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-white">{pendingCars}</span>}
         </button>
       </div>
@@ -567,14 +585,14 @@ export function AdminVerificationsContent({ users, cars }: { users: Verification
         <div className="space-y-4">
           <div className="rounded-xl bg-white/5 px-3 py-1.5 w-fit">
             <p className="text-xs text-slate-400">
-              <span className="font-black text-white">{guestUsers.length}</span> submissions
-              {pendingGuest > 0 && <> · <span className="font-black text-amber-400">{pendingGuest} pending</span></>}
+              <span className="font-black text-white">{guestUsers.length}</span> {t.admin.submissions}
+              {pendingGuest > 0 && <> · <span className="font-black text-amber-400">{pendingGuest} {t.admin.pendingLabel}</span></>}
             </p>
           </div>
           {guestUsers.length === 0 ? (
             <div className="rounded-2xl bg-white/5 p-12 text-center">
               <span className="material-symbols-outlined text-[48px] text-slate-600">verified_user</span>
-              <p className="text-slate-400 mt-3">No guest verification submissions yet.</p>
+              <p className="text-slate-400 mt-3">{t.admin.noGuestSubmissions}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -588,14 +606,14 @@ export function AdminVerificationsContent({ users, cars }: { users: Verification
         <div className="space-y-4">
           <div className="rounded-xl bg-white/5 px-3 py-1.5 w-fit">
             <p className="text-xs text-slate-400">
-              <span className="font-black text-white">{hostUsers.length}</span> submissions
-              {pendingHost > 0 && <> · <span className="font-black text-amber-400">{pendingHost} pending</span></>}
+              <span className="font-black text-white">{hostUsers.length}</span> {t.admin.submissions}
+              {pendingHost > 0 && <> · <span className="font-black text-amber-400">{pendingHost} {t.admin.pendingLabel}</span></>}
             </p>
           </div>
           {hostUsers.length === 0 ? (
             <div className="rounded-2xl bg-white/5 p-12 text-center">
               <span className="material-symbols-outlined text-[48px] text-slate-600">directions_car</span>
-              <p className="text-slate-400 mt-3">No host verification submissions yet.</p>
+              <p className="text-slate-400 mt-3">{t.admin.noHostSubmissions}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -609,14 +627,14 @@ export function AdminVerificationsContent({ users, cars }: { users: Verification
         <div className="space-y-4">
           <div className="rounded-xl bg-white/5 px-3 py-1.5 w-fit">
             <p className="text-xs text-slate-400">
-              <span className="font-black text-white">{cars.length}</span> listings
-              {pendingCars > 0 && <> · <span className="font-black text-amber-400">{pendingCars} pending review</span></>}
+              <span className="font-black text-white">{cars.length}</span> {t.admin.carListings}
+              {pendingCars > 0 && <> · <span className="font-black text-amber-400">{pendingCars} {t.admin.listingsPending}</span></>}
             </p>
           </div>
           {cars.length === 0 ? (
             <div className="rounded-2xl bg-white/5 p-12 text-center">
               <span className="material-symbols-outlined text-[48px] text-slate-600">directions_car</span>
-              <p className="text-slate-400 mt-3">No car listings submitted yet.</p>
+              <p className="text-slate-400 mt-3">{t.admin.noCarSubmissions}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">

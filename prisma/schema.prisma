@@ -157,6 +157,7 @@ model Car {
   depositGel              Int              @default(250)
   listingStatus           CarListingStatus @default(APPROVED)
   listingRejectionComment String?
+  slug                    String?          @unique
   createdAt               DateTime         @default(now())
   availability            CarAvailability[]
   bookings                Booking[]        @relation("CarBookings")
@@ -180,6 +181,9 @@ model Booking {
   status           BookingStatus     @default(awaiting_host)
   hostApprovalDeadline    DateTime?
   platformFeeGel          Int              @default(0)
+  displayCurrency         String           @default("GEL")
+  displayTotal            Int?
+  exchangeRateUsed        Float?
   cancelledAt             DateTime?
   cancellationOtpCode     String?
   cancellationOtpExpiry   DateTime?

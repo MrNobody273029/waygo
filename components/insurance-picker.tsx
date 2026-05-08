@@ -1,7 +1,7 @@
 'use client';
 import { insurancePlans, type InsurancePlan } from '@/lib/constants';
-import { gel } from '@/lib/utils';
 import { useLang } from '@/components/lang-provider';
+import { useCurrency } from '@/components/currency-provider';
 
 const planMeta: Record<InsurancePlan, { icon: string; color: string; tagKey?: 'mostPopular' | 'recommended' }> = {
   basic: { icon: 'shield', color: 'text-slate-500' },
@@ -19,6 +19,7 @@ export function InsurancePicker({
   days: number;
 }) {
   const { t } = useLang();
+  const { formatPrice } = useCurrency();
 
   return (
     <div className="grid grid-cols-1 gap-4">
@@ -48,12 +49,12 @@ export function InsurancePicker({
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-bold text-label-bold text-on-background">{p.label}</p>
                   <p className="font-extrabold text-h3 text-on-background shrink-0">
-                    {p.dailyPrice > 0 ? gel(p.dailyPrice * days) : t.insurance.free}
+                    {p.dailyPrice > 0 ? formatPrice(p.dailyPrice * days) : t.insurance.free}
                   </p>
                 </div>
                 <p className="text-label-sm text-secondary mt-0.5">{p.description}</p>
                 <p className="text-label-sm text-secondary mt-0.5">
-                  {t.insurance.deductible} <span className="font-bold text-on-background">{gel(p.deductible)}</span>
+                  {t.insurance.deductible} <span className="font-bold text-on-background">{p.deductible > 0 ? formatPrice(p.deductible) : t.insurance.free}</span>
                 </p>
               </div>
             </div>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { MessageCircle, Send, XCircle, ChevronDown, ChevronRight, User, Bot, Shield, Clock, Search } from 'lucide-react';
+import { useLang } from '@/components/lang-provider';
 
 type SupportMessage = {
   id: string;
@@ -57,12 +58,6 @@ function shortDate(value: string) {
   });
 }
 
-function senderLabel(sender: SupportMessage['sender']) {
-  if (sender === 'user') return 'მომხმარებელი';
-  if (sender === 'assistant') return 'AI';
-  if (sender === 'admin') return 'ადმინი';
-  return 'სისტემა';
-}
 
 function senderIcon(sender: SupportMessage['sender']) {
   if (sender === 'user') return User;
@@ -76,6 +71,7 @@ export function AdminSupportContent({
 }: {
   initialConversations: SupportConversation[];
 }) {
+  const { t } = useLang();
   const [conversations, setConversations] = useState(initialConversations);
   const [openUsers, setOpenUsers] = useState<Record<string, boolean>>({});
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(
@@ -84,7 +80,15 @@ export function AdminSupportContent({
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [closing, setClosing] = useState(false);
-const [search, setSearch] = useState('');
+  const [search, setSearch] = useState('');
+
+  function senderLabel(sender: SupportMessage['sender']) {
+    if (sender === 'user') return t.admin.supportChatSenderUser;
+    if (sender === 'assistant') return t.admin.supportChatSenderAI;
+    if (sender === 'admin') return t.admin.supportChatSenderAdmin;
+    return t.admin.supportChatSenderSystem;
+  }
+
   const groups = useMemo<UserGroup[]>(() => {
     const map = new Map<string, UserGroup>();
 
@@ -98,12 +102,12 @@ const [search, setSearch] = useState('');
       const name =
         c.user?.fullName ||
         c.guestName ||
-        'Anonymous guest';
+        t.admin.supportChatAnonymousGuest;
 
       const email =
         c.user?.email ||
         c.guestEmail ||
-        'ელფოსტა არ არის';
+        t.admin.supportChatNoEmail;
 
       if (!map.has(key)) {
         map.set(key, {
@@ -135,7 +139,7 @@ return Array.from(map.values())
     new Date(b.conversations[0]?.updatedAt ?? 0).getTime() -
       new Date(a.conversations[0]?.updatedAt ?? 0).getTime()
   );
-  }, [conversations]);
+  }, [conversations, t]);
   const filteredGroups = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return groups;
@@ -193,7 +197,7 @@ return Array.from(map.values())
       );
     } catch (err) {
       console.error('Admin support send error:', err);
-      alert('შეტყობინება ვერ გაიგზავნა.');
+      alert(t.admin.supportChatSendError);
       setDraft(text);
     } finally {
       setSending(false);
@@ -203,7 +207,7 @@ return Array.from(map.values())
   async function closeConversation() {
     if (!selectedConversation || closing) return;
 
-    const ok = window.confirm('დარწმუნებული ხარ, რომ გინდა ამ support session-ის დახურვა?');
+    const ok = window.confirm(t.admin.supportChatConfirmClose);
     if (!ok) return;
 
     setClosing(true);
@@ -232,7 +236,7 @@ return Array.from(map.values())
                   {
                     id: `system-${Date.now()}`,
                     sender: 'system',
-                    content: 'ჩატი დახურა ადმინისტრატორმა. ახალი მოთხოვნის შემთხვევაში დაიწყება ახალი support session.',
+                    content: t.admin.supportChatClosedByAdmin,
                     createdAt: new Date().toISOString(),
                   },
                 ],
@@ -242,7 +246,7 @@ return Array.from(map.values())
       );
     } catch (err) {
       console.error('Admin support close error:', err);
-      alert('ჩატი ვერ დაიხურა.');
+      alert(t.admin.supportChatCloseError);
     } finally {
       setClosing(false);
     }
@@ -260,20 +264,20 @@ return Array.from(map.values())
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <h1 className="text-[22px] md:text-3xl font-black text-slate-950">
-            AI Support ჩატები
+            {t.admin.supportChatTitle}
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            დაკეცილი მომხმარებლები, session history და ადმინის პირდაპირი მიმოწერა.
+            {t.admin.supportChatSub}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-2 md:flex">
           <div className="rounded-2xl border bg-white px-4 py-3 shadow-soft">
-            <p className="text-xs font-bold text-slate-400">მომხმარებლები</p>
+            <p className="text-xs font-bold text-slate-400">{t.admin.supportChatUsers}</p>
             <p className="text-2xl font-black text-slate-950">{groups.length}</p>
           </div>
           <div className="rounded-2xl border bg-white px-4 py-3 shadow-soft">
-            <p className="text-xs font-bold text-slate-400">გასახსნელი</p>
+            <p className="text-xs font-bold text-slate-400">{t.admin.supportChatEscalated}</p>
             <p className="text-2xl font-black text-red-600">
 {conversations.filter(c => c.escalated).length}
             </p>
@@ -286,9 +290,9 @@ return Array.from(map.values())
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
             <MessageCircle size={30} className="text-slate-400" />
           </div>
-          <p className="font-black text-slate-900">ჩატები ჯერ არ არის</p>
+          <p className="font-black text-slate-900">{t.admin.supportChatNone}</p>
           <p className="mt-1 text-sm text-slate-500">
-            როცა მომხმარებელი AI support-ს მისწერს, აქ გამოჩნდება.
+            {t.admin.supportChatNoneSub}
           </p>
         </div>
       ) : (
@@ -301,7 +305,7 @@ return Array.from(map.values())
     <input
       value={search}
       onChange={e => setSearch(e.target.value)}
-      placeholder="ძებნა სახელით ან ელფოსტით..."
+      placeholder={t.admin.supportChatSearch}
       className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400"
     />
   </div>
@@ -309,7 +313,7 @@ return Array.from(map.values())
 
             {filteredGroups.length === 0 ? (
               <div className="rounded-3xl border bg-white p-6 text-center text-sm font-semibold text-slate-500 shadow-soft">
-                შედეგი ვერ მოიძებნა.
+                {t.admin.supportChatNoResults}
               </div>
             ) : (
               filteredGroups.map(group => {
@@ -338,7 +342,7 @@ return Array.from(map.values())
                       </div>
                       <p className="truncate text-xs text-slate-500">{group.email}</p>
                       <p className="mt-0.5 text-[11px] text-slate-400">
-                        {group.conversations.length} session · ბოლო: {shortDate(latest.updatedAt)}
+                        {group.conversations.length} {t.admin.supportChatSession} · {t.admin.supportChatLast}: {shortDate(latest.updatedAt)}
                       </p>
                     </div>
 
@@ -381,7 +385,7 @@ return Array.from(map.values())
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center justify-between gap-2">
                                 <p className="text-xs font-black text-slate-900">
-                                  Session #{group.conversations.length - index}
+                                  {t.admin.supportChatSessionLabel} #{group.conversations.length - index}
                                 </p>
                                 <span
                                   className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
@@ -396,7 +400,7 @@ return Array.from(map.values())
                                 </span>
                               </div>
                               <p className="mt-1 line-clamp-2 text-xs text-slate-500">
-                                {lastMessage?.content || 'შეტყობინებები არ არის'}
+                                {lastMessage?.content || t.admin.supportChatNoMessages}
                               </p>
                               <p className="mt-1 text-[11px] text-slate-400">
                                 {formatDate(c.updatedAt)}
@@ -417,9 +421,9 @@ return Array.from(map.values())
             {!selectedConversation ? (
               <div className="flex h-full min-h-[620px] flex-col items-center justify-center p-10 text-center">
                 <MessageCircle size={42} className="mb-4 text-slate-300" />
-                <p className="font-black text-slate-900">აირჩიე ჩატი</p>
+                <p className="font-black text-slate-900">{t.admin.supportChatSelect}</p>
                 <p className="mt-1 text-sm text-slate-500">
-                  მომხმარებელი გაშალე და აირჩიე კონკრეტული session.
+                  {t.admin.supportChatSelectSub}
                 </p>
               </div>
             ) : (
@@ -430,7 +434,7 @@ return Array.from(map.values())
                       <h2 className="truncate text-base font-black text-slate-950">
                         {selectedConversation.user?.fullName ||
                           selectedConversation.guestName ||
-                          'Anonymous guest'}
+                          t.admin.supportChatAnonymousGuest}
                       </h2>
 
                       <span
@@ -447,7 +451,7 @@ return Array.from(map.values())
 
                       {selectedConversation.escalated && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-red-500 px-2.5 py-1 text-[11px] font-black text-white">
-                          გასახსნელია
+                          {t.admin.supportChatNeedsAction}
                         </span>
                       )}
                     </div>
@@ -455,7 +459,7 @@ return Array.from(map.values())
                     <p className="mt-1 truncate text-sm text-slate-500">
                       {selectedConversation.user?.email ||
                         selectedConversation.guestEmail ||
-                        'ელფოსტა არ არის'}
+                        t.admin.supportChatNoEmail}
                     </p>
                     <p className="mt-1 text-xs text-slate-400">
                       Session ID: {selectedConversation.id}
@@ -470,16 +474,16 @@ return Array.from(map.values())
                   >
                     <XCircle size={16} />
                     {selectedConversation.status === 'closed'
-                      ? 'დახურულია'
+                      ? t.admin.supportChatClosed
                       : closing
-                      ? 'იხურება...'
-                      : 'ჩატის დახურვა'}
+                      ? t.admin.supportChatClosing
+                      : t.admin.supportChatClose}
                   </button>
                 </div>
 
                 <div className="flex-1 space-y-3 overflow-y-auto bg-slate-50/50 px-4 py-5">
                   {selectedConversation.messages.length === 0 ? (
-                    <p className="text-sm text-slate-400">შეტყობინებები არ არის.</p>
+                    <p className="text-sm text-slate-400">{t.admin.supportChatNoMessages}</p>
                   ) : (
                     selectedConversation.messages.map(message => {
                       const Icon = senderIcon(message.sender);
@@ -521,7 +525,7 @@ return Array.from(map.values())
                 <div className="border-t bg-white p-4">
                   {selectedConversation.status === 'closed' ? (
                     <div className="rounded-2xl border bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-500">
-                      ეს session დახურულია. მომხმარებლის ახალი შეტყობინება ახალ AI session-ს დაიწყებს.
+                      {t.admin.supportChatClosedNotice}
                     </div>
                   ) : (
                     <div className="flex gap-2">
@@ -535,7 +539,7 @@ return Array.from(map.values())
                           }
                         }}
                         rows={2}
-                        placeholder="მიწერე მომხმარებელს..."
+                        placeholder={t.admin.supportChatPlaceholder}
                         className="min-h-[48px] flex-1 resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-fixed/40"
                       />
                       <button
@@ -551,7 +555,7 @@ return Array.from(map.values())
 
                   {selectedConversation.status !== 'closed' && (
                     <p className="mt-2 text-xs text-slate-400">
-                      Enter — გაგზავნა, Shift + Enter — ახალი ხაზი. ამ session-ში AI აღარ ჩაერევა, სანამ ჩატს არ დახურავ.
+                      {t.admin.supportChatKeyHint}
                     </p>
                   )}
                 </div>

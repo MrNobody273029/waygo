@@ -1,7 +1,7 @@
 'use client';
 import { BookingWidget } from '@/components/booking-widget';
 import { useLang } from '@/components/lang-provider';
-import { gel } from '@/lib/utils';
+import { useCurrency } from '@/components/currency-provider';
 import type { Car } from '@/lib/sample-data';
 
 const FUEL_ICON: Record<string, string> = {
@@ -27,6 +27,7 @@ function AirportDeliveryRow({ icon, label, state, price, freeText, noneText }: {
   icon: string; label: string; state: 'none' | 'free' | 'paid'; price: number;
   freeText: string; noneText: string;
 }) {
+  const { formatPrice } = useCurrency();
   return (
     <div className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
       <div className="flex items-center gap-2">
@@ -44,7 +45,7 @@ function AirportDeliveryRow({ icon, label, state, price, freeText, noneText }: {
       )}
       {state === 'paid' && (
         <span className="flex items-center gap-1 bg-surface-container text-on-background px-3 py-1 rounded-full text-label-sm font-bold">
-          {gel(price)}
+          {formatPrice(price)}
         </span>
       )}
     </div>
@@ -53,6 +54,7 @@ function AirportDeliveryRow({ icon, label, state, price, freeText, noneText }: {
 
 export function CarDetailContent({ car, availableDates }: { car: Car; availableDates?: string[] }) {
   const { t } = useLang();
+  const { formatPrice } = useCurrency();
 
   const steeringLabel = car.steeringWheel === 'right' ? t.carDetail.steeringRight : t.carDetail.steeringLeft;
   const specItems = [
@@ -79,7 +81,7 @@ export function CarDetailContent({ car, availableDates }: { car: Car; availableD
         {/* Mobile booking shortcut */}
         <a href="#booking" className="lg:hidden flex items-center justify-between gap-3 mb-5 rounded-2xl bg-primary-fixed/20 border border-primary/20 px-4 py-3.5 active:scale-[0.98] transition-all">
           <div>
-            <span className="text-[20px] font-bold text-primary">{gel(car.dailyPrice)}</span>
+            <span className="text-[20px] font-bold text-primary">{formatPrice(car.dailyPrice)}</span>
             <span className="text-label-sm text-secondary"> {t.booking.perDay}</span>
           </div>
           <span className="flex items-center gap-2 bg-primary-container text-white px-4 py-2.5 rounded-xl font-bold text-label-bold">
@@ -226,7 +228,7 @@ export function CarDetailContent({ car, availableDates }: { car: Car; availableD
                         {car.cityDelivery.city}
                       </span>
                       <span className="bg-surface-container text-on-background px-3 py-1 rounded-full text-label-sm font-bold">
-                        {gel(car.cityDelivery.price)}
+                        {formatPrice(car.cityDelivery.price)}
                       </span>
                     </div>
                   ) : (

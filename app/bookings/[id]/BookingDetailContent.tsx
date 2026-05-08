@@ -2,7 +2,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLang } from '@/components/lang-provider';
-import { gel } from '@/lib/utils';
+import { useCurrency } from '@/components/currency-provider';
 import { calculateCancellation } from '@/lib/constants';
 import { RatingBadge } from '@/app/review/[bookingId]/ReviewContent';
 
@@ -351,6 +351,7 @@ function GuestReviewSection({ bookingId, existingReview, hostProfile }: {
 
 export function BookingDetailContent({ booking, guestEmail, existingReview, hostProfile }: Props) {
   const { t } = useLang();
+  const { formatPrice } = useCurrency();
   const router = useRouter();
   const bd = t.bookingDetail;
 
@@ -740,7 +741,7 @@ export function BookingDetailContent({ booking, guestEmail, existingReview, host
                       <span className="material-symbols-outlined text-[14px]">payments</span>
                       {bd.totalPaid}
                     </span>
-                    <span className="font-extrabold text-label-bold text-primary">{gel(booking.totalPrice)}</span>
+                    <span className="font-extrabold text-label-bold text-primary">{formatPrice(booking.totalPrice)}</span>
                   </div>
 
                   {booking.deliveryCost > 0 && (
@@ -749,7 +750,7 @@ export function BookingDetailContent({ booking, guestEmail, existingReview, host
                         <span className="material-symbols-outlined text-[14px]">local_shipping</span>
                         {bd.deliveryFee}
                       </span>
-                      <span className="font-semibold text-on-background">{gel(booking.deliveryCost)}</span>
+                      <span className="font-semibold text-on-background">{formatPrice(booking.deliveryCost)}</span>
                     </div>
                   )}
 
@@ -874,14 +875,14 @@ export function BookingDetailContent({ booking, guestEmail, existingReview, host
                       <div className="divide-y divide-slate-100">
                         <div className="flex items-center justify-between gap-2 px-4 py-3">
                           <span className="text-label-sm text-secondary">{bd.cancelBreakdownRental}</span>
-                          <span className="text-label-sm font-semibold text-on-background">{gel(booking.totalPrice)}</span>
+                          <span className="text-label-sm font-semibold text-on-background">{formatPrice(booking.totalPrice)}</span>
                         </div>
                         <div className="flex items-center justify-between gap-2 px-4 py-3">
                           <span className="text-label-sm text-secondary flex items-center gap-1.5">
                             <span className="material-symbols-outlined text-[14px] text-error">remove_circle_outline</span>
                             {bd.cancelBreakdownFeeKept}
                           </span>
-                          <span className="text-label-sm font-semibold text-error">− {gel(cancelCalc.platformFeeKept)}</span>
+                          <span className="text-label-sm font-semibold text-error">− {formatPrice(cancelCalc.platformFeeKept)}</span>
                         </div>
                         {cancelCalc.refundAmount > 0 && (
                           <div className="flex items-center justify-between gap-2 px-4 py-3">
@@ -889,7 +890,7 @@ export function BookingDetailContent({ booking, guestEmail, existingReview, host
                               <span className="material-symbols-outlined text-[14px] text-tertiary">add_circle_outline</span>
                               {bd.cancelBreakdownRefund} ({cancelCalc.refundPct}%)
                             </span>
-                            <span className="text-label-sm font-semibold text-tertiary">+ {gel(cancelCalc.refundAmount)}</span>
+                            <span className="text-label-sm font-semibold text-tertiary">+ {formatPrice(cancelCalc.refundAmount)}</span>
                           </div>
                         )}
                         <div className="flex items-center justify-between gap-2 px-4 py-3">
@@ -897,11 +898,11 @@ export function BookingDetailContent({ booking, guestEmail, existingReview, host
                             <span className="material-symbols-outlined text-[14px] text-tertiary">add_circle_outline</span>
                             {bd.cancelBreakdownDeposit}
                           </span>
-                          <span className="text-label-sm font-semibold text-tertiary">+ {gel(cancelCalc.depositRefund)}</span>
+                          <span className="text-label-sm font-semibold text-tertiary">+ {formatPrice(cancelCalc.depositRefund)}</span>
                         </div>
                         <div className="flex items-center justify-between gap-2 px-4 py-3 bg-tertiary-fixed/10">
                           <span className="text-label-sm font-bold text-on-background">{bd.cancelBreakdownTotal}</span>
-                          <span className="text-[16px] font-extrabold text-tertiary">{gel(cancelCalc.totalRefund)}</span>
+                          <span className="text-[16px] font-extrabold text-tertiary">{formatPrice(cancelCalc.totalRefund)}</span>
                         </div>
                       </div>
                     </div>

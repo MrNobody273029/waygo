@@ -58,7 +58,7 @@ export function AdminUsersContent({ users }: { users: User[] }) {
       <div className="flex flex-col sm:flex-row gap-3">
         <input
           type="text"
-          placeholder="Search by name, email or phone…"
+          placeholder={t.admin.searchUsers}
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-primary transition"
@@ -68,7 +68,7 @@ export function AdminUsersContent({ users }: { users: User[] }) {
           onChange={e => setRoleFilter(e.target.value)}
           className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-semibold outline-none focus:border-primary transition bg-white cursor-pointer"
         >
-          <option value="all">All roles</option>
+          <option value="all">{t.admin.filterAllRoles}</option>
           <option value="USER">USER</option>
           <option value="HOST">HOST</option>
           <option value="ADMIN">ADMIN</option>
@@ -79,7 +79,7 @@ export function AdminUsersContent({ users }: { users: User[] }) {
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-slate-400">
             <UserX size={40} className="mb-3" />
-            <p className="font-semibold">{search || roleFilter !== 'all' ? 'No users match your filters' : t.admin.noUsers}</p>
+            <p className="font-semibold">{search || roleFilter !== 'all' ? t.admin.noFilterUsers : t.admin.noUsers}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -88,7 +88,7 @@ export function AdminUsersContent({ users }: { users: User[] }) {
                 <tr>
                   <th className="px-6 py-3 text-left">{t.admin.userCol}</th>
                   <th className="px-6 py-3 text-left">{t.admin.phone}</th>
-                  <th className="px-6 py-3 text-left">Age / DOB</th>
+                  <th className="px-6 py-3 text-left">{t.admin.ageDob}</th>
                   <th className="px-6 py-3 text-left">{t.admin.country}</th>
                   <th className="px-6 py-3 text-left">{t.admin.role}</th>
                   <th className="px-6 py-3 text-left">{t.admin.bookings}</th>
@@ -141,19 +141,19 @@ export function AdminUsersContent({ users }: { users: User[] }) {
                         )}
                         {u.isSuspended && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-black text-red-700 uppercase tracking-wide">
-                            Suspended
+                            {t.admin.suspended}
                           </span>
                         )}
                         {!u.isSuspended && u.penaltyBookingsRemaining !== null && u.penaltyBookingsRemaining > 0 && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
-                            Penalty: {Math.round((u.penaltyCommissionRate ?? 0) * 100)}% · {u.penaltyBookingsRemaining} left
+                            {t.admin.penaltyPrefix} {Math.round((u.penaltyCommissionRate ?? 0) * 100)}% · {u.penaltyBookingsRemaining} left
                           </span>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
                       <Link href={`/admin/users/${u.id}`} className="text-xs font-bold text-primary hover:underline">
-                        View →
+                        {t.admin.viewBtn}
                       </Link>
                     </td>
                   </tr>

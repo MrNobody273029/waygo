@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import { useLang } from '@/components/lang-provider';
+import { CurrencySwitcher } from '@/components/currency-switcher';
 import { useState, useRef, useEffect } from 'react';
 import type { Lang } from '@/lib/i18n';
 
@@ -77,14 +78,17 @@ export function Navbar() {
 
         {/* Right actions */}
         <div className="flex items-center gap-2">
+          {/* Currency switcher */}
+          <CurrencySwitcher variant="nav" />
+
           {/* Language dropdown */}
           <div ref={langRef} className="relative hidden md:block">
             <button
               onClick={() => setLangOpen(v => !v)}
-className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-white font-bold text-[13px] hover:bg-white/10 hover:text-white transition-all border border-white/30 cursor-pointer"
+className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 bg-white/90 text-slate-700 font-bold text-[13px] hover:bg-white transition-all border border-slate-200/80 shadow-sm cursor-pointer"
             >
               <span className="uppercase font-black">{lang}</span>
-              <span className={`material-symbols-outlined text-[15px] text-slate-400 transition-transform ${langOpen ? 'rotate-180' : ''}`}>expand_more</span>
+              <span className={`material-symbols-outlined text-[15px] text-slate-400 transition-transform duration-200 ${langOpen ? 'rotate-180' : ''}`}>expand_more</span>
             </button>
             {langOpen && (
               <div className="absolute right-0 top-full mt-2 w-44 rounded-xl border bg-white shadow-card-hover z-50 p-1 overflow-hidden">
@@ -113,7 +117,7 @@ className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-white font-bold
             <div ref={userRef} className="relative">
               <button
                 onClick={() => setUserOpen(!userOpen)}
-className="flex items-center gap-2.5 border border-white/30 rounded-full pl-2 pr-4 py-1.5 hover:border-white/60 hover:bg-white/10 transition-all cursor-pointer"
+className="flex items-center gap-2.5 bg-white/90 border border-slate-200/80 shadow-sm rounded-full pl-2 pr-4 py-1.5 hover:bg-white transition-all cursor-pointer"
               >
                 <span className="relative">
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-container text-white text-sm font-black">
@@ -123,10 +127,10 @@ className="flex items-center gap-2.5 border border-white/30 rounded-full pl-2 pr
                     <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-amber-400 border-2 border-white" title={t.kyc.unverifiedBadge} />
                   )}
                 </span>
-                <span className="hidden sm:block font-semibold text-white text-[14px]">
+                <span className="hidden sm:block font-semibold text-slate-700 text-[14px]">
                   {session.user.name?.split(' ')[0]}
                 </span>
-<span className="material-symbols-outlined text-[16px] text-white/70">expand_more</span>
+                <span className="material-symbols-outlined text-[16px] text-slate-400">expand_more</span>
               </button>
               {userOpen && (
                 <div className="absolute right-0 top-full mt-2 w-52 rounded-xl border bg-white shadow-card-hover z-50 p-1.5">
@@ -212,6 +216,14 @@ className="flex items-center gap-2.5 border border-white/30 rounded-full pl-2 pr
                 <MobileLink href="/register" onClick={() => setMobileOpen(false)}>{t.nav.register}</MobileLink>
               </>
             )}
+            {/* Mobile currency selector */}
+            <div className="pt-2 border-t border-slate-100 mt-2">
+              <p className="px-4 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{t.booking.currencyLabel}</p>
+              <div className="px-4 pb-2">
+                <CurrencySwitcher variant="mobile" onSelect={() => setMobileOpen(false)} />
+              </div>
+            </div>
+
             {/* Mobile language selector */}
             <div className="pt-2 border-t border-slate-100 mt-2">
               <p className="px-4 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Language</p>

@@ -20,6 +20,10 @@ const schema = z.object({
   deliveryType: z.string().default('none'),
   deliveryCost: z.number().int().min(0).default(0),
   deliveryAddress: z.string().optional(),
+  // View-only display currency (financial system always uses GEL)
+  displayCurrency: z.enum(['GEL', 'USD', 'EUR']).default('GEL'),
+  displayTotal: z.number().int().optional(),
+  exchangeRateUsed: z.number().optional(),
 });
 
 function dateRange(start: string, end: string): string[] {
@@ -100,6 +104,9 @@ export async function POST(req: Request) {
         status: 'awaiting_host',
         hostApprovalDeadline,
         platformFeeGel: totals.platformFee,
+        displayCurrency: input.displayCurrency ?? 'GEL',
+        displayTotal: input.displayTotal ?? grandTotal,
+        exchangeRateUsed: input.exchangeRateUsed ?? null,
       },
     });
 
@@ -193,6 +200,9 @@ export async function POST(req: Request) {
       insurancePlan: input.insurancePlan,
       grandTotal,
       siteUrl: SITE_URL,
+      displayCurrency: input.displayCurrency !== 'GEL' ? input.displayCurrency : undefined,
+      displayTotal: input.displayCurrency !== 'GEL' ? input.displayTotal : undefined,
+      exchangeRateUsed: input.exchangeRateUsed,
     };
 
     const { html: guestHtml, subject: guestSubject } = bookingSubmittedEmail(emailData);

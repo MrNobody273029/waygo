@@ -17,6 +17,7 @@ export function Footer() {
     { text: t.footer.p4, href: '/guest-rules' },
     { text: t.bookingDetail.cancelPolicyLink, href: '/cancellation-policy' },
     { text: termsContent.title[termsLang], href: '/terms' },
+    { text: t.footer.faq, href: '/faq' },
   ];
 
   return (
@@ -52,10 +53,10 @@ export function Footer() {
           <div>
             <h5 className="font-bold text-[13px] md:text-label-bold text-white drop-shadow-md mb-3 md:mb-4">{t.footer.locTitle}</h5>
             <ul className="space-y-2 text-[12px] md:text-label-sm text-white/75">
-              {([['Tbilisi', t.footer.loc1], ['Batumi', t.footer.loc2], ['Kutaisi', t.footer.loc3]] as [string, string][]).map(([canonical, label]) => (
-                <li key={canonical}>
+              {([['tbilisi', t.footer.loc1], ['batumi', t.footer.loc2], ['kutaisi', t.footer.loc3]] as [string, string][]).map(([slug, label]) => (
+                <li key={slug}>
                   <Link
-                    href={`/cars?city=${canonical}`}
+                    href={`/cars/${slug}`}
                     className="hover:text-primary transition-colors"
                   >
                     {label}

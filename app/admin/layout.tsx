@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { AdminSidebar } from '@/components/admin-sidebar';
+import { AdminLangDefault } from '@/components/admin-lang-default';
 import type { ReactNode } from 'react';
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
@@ -20,6 +21,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   return (
     <div className="fixed inset-0 z-30 flex bg-slate-50 pt-[62px] md:pt-[96px]">
+      <AdminLangDefault />
       <AdminSidebar />
       <main className="md:ml-64 flex-1 overflow-y-auto pb-16 md:pb-0">
         <div className="p-4 md:p-8">{children}</div>

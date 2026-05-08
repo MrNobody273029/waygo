@@ -4,6 +4,7 @@ export type AirportState = 'none' | 'free' | 'paid';
 
 export interface Car {
   id: string;
+  slug?: string;
   brand: string;
   model: string;
   year: number;
@@ -121,6 +122,7 @@ export const cars: Car[] = [
 
 export type DbCarWithOwner = {
   id: string;
+  slug?: string | null;
   brand: string;
   model: string;
   year: number;
@@ -156,6 +158,7 @@ export type DbCarWithOwner = {
 export function dbCarToUiCar(c: DbCarWithOwner): Car {
   return {
     id: c.id,
+    slug: c.slug ?? undefined,
     brand: c.brand,
     model: c.model,
     year: c.year,

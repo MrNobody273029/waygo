@@ -37,14 +37,14 @@ export function AdminOverviewContent({
     { label: t.admin.totalUsers,    value: userCount.toString(),        icon: Users,        color: 'bg-primary-fixed/60 text-primary',      href: '/admin/users' },
     { label: t.admin.totalBookings, value: bookingCount.toString(),     icon: CalendarDays, color: 'bg-tertiary-fixed/40 text-tertiary',    href: '/admin/bookings' },
     { label: t.admin.activeCars,    value: activeCarCount.toString(),   icon: Car,          color: 'bg-amber-50 text-amber-700',            href: '/admin/cars' },
-    { label: 'Net Revenue',         value: gel(netRevenue),             icon: TrendingUp,   color: 'bg-emerald-50 text-emerald-700',        href: '/admin/transactions' },
+    { label: t.admin.netRevenue,      value: gel(netRevenue),             icon: TrendingUp,   color: 'bg-emerald-50 text-emerald-700',        href: '/admin/transactions' },
   ];
 
   const alertCards = [
-    { label: 'Pending verifications', value: pendingVerifCount, icon: ShieldAlert, color: pendingVerifCount > 0 ? 'bg-amber-50 text-amber-700' : 'bg-slate-50 text-slate-400', href: '/admin/verifications' },
-    { label: 'Pending car listings',  value: pendingCarsCount,  icon: Car,         color: pendingCarsCount > 0  ? 'bg-amber-50 text-amber-700' : 'bg-slate-50 text-slate-400', href: '/admin/verifications' },
-    { label: 'Active bookings',       value: activeBookingsCount, icon: Activity,  color: 'bg-blue-50 text-blue-700',  href: '/admin/bookings' },
-    { label: 'Cancelled bookings',    value: cancelledCount,    icon: XCircle,     color: 'bg-slate-50 text-slate-500', href: '/admin/bookings' },
+    { label: t.admin.pendingVerificationsLabel, value: pendingVerifCount, isPending: true,  icon: ShieldAlert, color: pendingVerifCount > 0 ? 'bg-amber-50 text-amber-700' : 'bg-slate-50 text-slate-400', href: '/admin/verifications' },
+    { label: t.admin.pendingCarsLabel,           value: pendingCarsCount,  isPending: true,  icon: Car,         color: pendingCarsCount > 0  ? 'bg-amber-50 text-amber-700' : 'bg-slate-50 text-slate-400', href: '/admin/verifications' },
+    { label: t.admin.activeBookingsLabel,        value: activeBookingsCount, isPending: false, icon: Activity,  color: 'bg-blue-50 text-blue-700',  href: '/admin/bookings' },
+    { label: t.admin.cancelledBookingsLabel,     value: cancelledCount,    isPending: false, icon: XCircle,     color: 'bg-slate-50 text-slate-500', href: '/admin/bookings' },
   ];
 
   return (
@@ -75,12 +75,12 @@ export function AdminOverviewContent({
 
       {/* Revenue breakdown */}
       <div className="rounded-3xl border bg-white shadow-soft p-5 md:p-6">
-        <h2 className="font-black text-base mb-4">Revenue Breakdown</h2>
+        <h2 className="font-black text-base mb-4">{t.admin.revenueBreakdown}</h2>
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: 'Gross payments', value: gel(revenue), sub: 'succeeded payments', color: 'text-slate-900' },
-            { label: 'Refunds issued', value: gel(refunds), sub: 'to guests', color: 'text-error' },
-            { label: 'Net revenue', value: gel(netRevenue), sub: 'kept by platform', color: 'text-tertiary' },
+            { label: t.admin.grossPayments, value: gel(revenue), sub: t.admin.totalBookings, color: 'text-slate-900' },
+            { label: t.admin.refundsIssued, value: gel(refunds), sub: '', color: 'text-error' },
+            { label: t.admin.netRevenue,    value: gel(netRevenue), sub: '', color: 'text-tertiary' },
           ].map(r => (
             <div key={r.label} className="border-l pl-4 first:border-l-0 first:pl-0">
               <p className="text-xs font-semibold text-slate-500">{r.label}</p>
@@ -102,7 +102,7 @@ export function AdminOverviewContent({
               <p className="text-xl font-black text-slate-950">{card.value}</p>
               <p className="text-[11px] font-semibold text-slate-500 leading-tight">{card.label}</p>
             </div>
-            {(card.label.includes('Pending') && card.value > 0) && (
+            {(card.isPending && card.value > 0) && (
               <span className="ml-auto flex h-2 w-2 rounded-full bg-amber-500 shrink-0" />
             )}
           </Link>
@@ -114,7 +114,7 @@ export function AdminOverviewContent({
         <div className="rounded-3xl border bg-white shadow-soft">
           <div className="border-b px-6 py-5 flex items-center justify-between">
             <h2 className="text-lg font-black">{t.admin.recentBookings}</h2>
-            <Link href="/admin/bookings" className="text-xs font-bold text-primary hover:underline">View all →</Link>
+            <Link href="/admin/bookings" className="text-xs font-bold text-primary hover:underline">{t.admin.viewAll}</Link>
           </div>
           {recentBookings.length === 0 ? (
             <p className="px-6 py-8 text-sm text-slate-400">{t.admin.noBookings}</p>
@@ -153,7 +153,7 @@ export function AdminOverviewContent({
         <div className="rounded-3xl border bg-white shadow-soft">
           <div className="border-b px-6 py-5 flex items-center justify-between">
             <h2 className="text-lg font-black">{t.admin.recentUsers}</h2>
-            <Link href="/admin/users" className="text-xs font-bold text-primary hover:underline">View all →</Link>
+            <Link href="/admin/users" className="text-xs font-bold text-primary hover:underline">{t.admin.viewAll}</Link>
           </div>
           {recentUsers.length === 0 ? (
             <p className="px-6 py-8 text-sm text-slate-400">{t.admin.noUsers}</p>

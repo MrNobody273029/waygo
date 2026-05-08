@@ -2,9 +2,10 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { calculateBooking, type InsurancePlan } from '@/lib/constants';
-import { daysBetween, gel } from '@/lib/utils';
+import { daysBetween } from '@/lib/utils';
 import { InsurancePicker } from './insurance-picker';
 import { useLang } from '@/components/lang-provider';
+import { useCurrency } from '@/components/currency-provider';
 import { KYCModal } from '@/components/kyc-modal';
 import { VerificationPendingPopup } from '@/components/verification-pending-popup';
 import { DateRangeCalendar } from '@/components/date-range-calendar';
@@ -17,6 +18,7 @@ type DeliveryOption = { id: string; label: string; cost: number; icon: string };
 
 export function BookingWidget({ car, availableDates }: { car: any; availableDates?: string[] }) {
   const { t, lang } = useLang();
+  const { currency, rates, formatPrice, convertGel } = useCurrency();
   const { data: session } = useSession();
   const today = new Date().toISOString().split('T')[0];
   const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
@@ -60,7 +62,7 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
     if (!dateStr) return '';
     const d = new Date(dateStr + 'T00:00:00');
     const day = d.getDate();
-    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const monthNames = t.booking.monthsShort as unknown as string[];
     return `${day} ${monthNames[d.getMonth()]}`;
   }
 
@@ -158,6 +160,11 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
         deliveryType: deliveryId,
         deliveryCost: selectedDelivery.cost,
         deliveryAddress: deliveryId === 'city' ? deliveryAddress : undefined,
+        displayCurrency: currency,
+        displayTotal: convertGel(grandTotal),
+        exchangeRateUsed: currency !== 'GEL' && rates
+          ? (currency === 'USD' ? rates.USD : rates.EUR)
+          : undefined,
       }),
     });
     const data = await res.json();
@@ -199,7 +206,7 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
 
       <aside id="booking" className="lg:sticky top-24 rounded-2xl border bg-white shadow-card-hover p-6">
         <div className="mb-5">
-          <span className="text-h1 font-bold text-primary">{gel(car.dailyPrice)}</span>
+          <span className="text-h1 font-bold text-primary">{formatPrice(car.dailyPrice)}</span>
           <span className="text-secondary text-label-sm"> {t.booking.perDay}</span>
         </div>
 
@@ -269,7 +276,7 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
               <span className="flex items-center gap-2 shrink-0">
                 {selectedDelivery.cost === 0
                   ? <span className="text-[11px] font-black text-tertiary bg-tertiary-fixed/40 px-2 py-0.5 rounded-full">{t.booking.deliveryFree}</span>
-                  : <span className="text-[12px] font-bold text-slate-600">+{gel(selectedDelivery.cost)}</span>
+                  : <span className="text-[12px] font-bold text-slate-600">+{formatPrice(selectedDelivery.cost)}</span>
                 }
                 <span className={`material-symbols-outlined text-[16px] text-slate-400 transition-transform ${deliveryOpen ? 'rotate-180' : ''}`}>expand_more</span>
               </span>
@@ -293,7 +300,7 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
                     <span className="shrink-0">
                       {opt.cost === 0
                         ? <span className="text-[11px] font-black text-tertiary bg-tertiary-fixed/40 px-2 py-0.5 rounded-full">{t.booking.deliveryFree}</span>
-                        : <span className="text-[12px] font-bold text-slate-500">+{gel(opt.cost)}</span>
+                        : <span className="text-[12px] font-bold text-slate-500">+{formatPrice(opt.cost)}</span>
                       }
                     </span>
                   </button>
@@ -323,17 +330,23 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
 
         {/* Price breakdown */}
         <div className="mt-5 space-y-2 border-t border-slate-100 pt-4 text-label-bold">
-          <Row l={`${gel(car.dailyPrice)} × ${days} ${days !== 1 ? t.booking.days : t.booking.day}`} r={gel(totals.base)} />
-          <Row l={t.booking.protection} r={gel(totals.insurance)} />
-          <Row l={t.booking.platformFee} r={gel(totals.platformFee)} />
+          <Row l={`${formatPrice(car.dailyPrice)} × ${days} ${days !== 1 ? t.booking.days : t.booking.day}`} r={formatPrice(totals.base)} />
+          <Row l={t.booking.protection} r={formatPrice(totals.insurance)} />
+          <Row l={t.booking.platformFee} r={formatPrice(totals.platformFee)} />
           {selectedDelivery.cost > 0 && (
-            <Row l={t.booking.deliveryCost} r={gel(selectedDelivery.cost)} />
+            <Row l={t.booking.deliveryCost} r={formatPrice(selectedDelivery.cost)} />
           )}
-          <Row l={t.booking.depositHold} r={gel(car.deposit ?? 250)} muted />
+          <Row l={t.booking.depositHold} r={formatPrice(car.deposit ?? 250)} muted />
           <div className="flex justify-between pt-3 border-t border-slate-100 text-h3 font-bold">
             <span>{t.booking.totalNow}</span>
-            <span className="text-primary">{gel(grandTotal)}</span>
+            <span className="text-primary">{formatPrice(grandTotal)}</span>
           </div>
+          {currency !== 'GEL' && (
+            <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+              <span className="material-symbols-outlined text-[12px]">info</span>
+              {t.booking.currencyDisclaimer}
+            </p>
+          )}
         </div>
 
         <div className="mt-4 flex items-start gap-3 rounded-xl border border-outline-variant/40 bg-surface-container-low px-3.5 py-3">
@@ -360,7 +373,7 @@ export function BookingWidget({ car, availableDates }: { car: any; availableDate
           {loading ? (
             <><span className="material-symbols-outlined animate-spin text-[18px]">autorenew</span>{t.booking.processing}</>
           ) : (
-            <><span className="material-symbols-outlined text-[18px]">lock</span>{t.booking.reserveBtn} — {gel(grandTotal)}</>
+            <><span className="material-symbols-outlined text-[18px]">lock</span>{t.booking.reserveBtn} — {formatPrice(grandTotal)}</>
           )}
         </button>
         <p className="mt-2 text-center text-label-sm text-secondary">{t.booking.depositNote}</p>

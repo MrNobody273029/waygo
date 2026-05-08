@@ -44,7 +44,7 @@ return (
         {featuredCars.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
             <span className="material-symbols-outlined text-[52px] text-slate-300">directions_car</span>
-            <p className="text-secondary text-label-bold">No cars listed yet — check back soon!</p>
+            <p className="text-secondary text-label-bold">{t.home.noCars}</p>
           </div>
         ) : (
           <>

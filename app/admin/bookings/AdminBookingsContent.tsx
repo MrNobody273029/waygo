@@ -50,7 +50,7 @@ export function AdminBookingsContent({ bookings }: { bookings: Booking[] }) {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
           <h1 className="text-[22px] md:text-3xl font-black text-slate-950">{t.admin.bookings}</h1>
-          <p className="mt-1 text-sm text-slate-500">{bookings.length} {t.admin.totalBookingsLabel} · {active} active · {cancelled} cancelled</p>
+          <p className="mt-1 text-sm text-slate-500">{bookings.length} {t.admin.totalBookingsLabel} · {active} {t.admin.activeBookingsLabel} · {cancelled} {t.admin.cancelledBookingsLabel}</p>
         </div>
       </div>
 
@@ -58,7 +58,7 @@ export function AdminBookingsContent({ bookings }: { bookings: Booking[] }) {
       <div className="flex flex-col sm:flex-row gap-3">
         <input
           type="text"
-          placeholder="Search by car or guest…"
+          placeholder={t.admin.searchBookings}
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-primary transition"
@@ -74,7 +74,7 @@ export function AdminBookingsContent({ bookings }: { bookings: Booking[] }) {
                   : 'border-slate-200 text-slate-600 hover:border-slate-400'
               }`}
             >
-              {s === 'all' ? 'All' : s.replace('_', ' ')}
+              {s === 'all' ? t.admin.filterAll : s.replace('_', ' ')}
             </button>
           ))}
         </div>
@@ -84,7 +84,7 @@ export function AdminBookingsContent({ bookings }: { bookings: Booking[] }) {
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-slate-400">
             <CalendarX size={40} className="mb-3" />
-            <p className="font-semibold">{search || statusFilter !== 'all' ? 'No bookings match your filters' : t.admin.noBookings}</p>
+            <p className="font-semibold">{search || statusFilter !== 'all' ? t.admin.noFilterBookings : t.admin.noBookings}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -132,7 +132,7 @@ export function AdminBookingsContent({ bookings }: { bookings: Booking[] }) {
                     <td className="px-6 py-4 text-xs text-slate-500">{new Date(b.createdAt).toLocaleDateString('en-GB')}</td>
                     <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
                       <Link href={`/admin/bookings/${b.id}`} className="text-xs font-bold text-primary hover:underline">
-                        View →
+                        {t.admin.viewBtn}
                       </Link>
                     </td>
                   </tr>
