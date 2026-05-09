@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { useLang } from '@/components/lang-provider';
 import { useEffect, useState } from 'react';
-import { LayoutDashboard, Users, CalendarDays, Car, LogOut, ExternalLink, ShieldCheck, Mail, CreditCard, Gavel, MessageCircle, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarDays, Car, LogOut, ExternalLink, ShieldCheck, Mail, CreditCard, Gavel, MessageCircle, BarChart3, Newspaper } from 'lucide-react';
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -49,6 +49,7 @@ useEffect(() => {
     { href: '/admin/emails',         icon: Mail,            label: t.admin.emails },
     { href: '/admin/support',        icon: MessageCircle,   label: t.admin.support, badge: supportCount },
     { href: '/admin/accounting',     icon: BarChart3,       label: t.admin.accounting },
+    { href: '/admin/blog',           icon: Newspaper,       label: t.blog.navLabel },
   ];
 
   function isActive(href: string, exact?: boolean) {

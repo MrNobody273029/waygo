@@ -84,6 +84,7 @@ export function Navbar() {
         {/* Center nav — pill group */}
         <div className="hidden md:flex items-center gap-1 rounded-2xl bg-slate-100/80 px-1.5 py-1.5">
           <NavPill href="/cars">{t.nav.cars}</NavPill>
+          <NavPill href="/blog">{t.blog.navLabel}</NavPill>
           {session && <NavPill href="/dashboard">{t.nav.dashboard}</NavPill>}
           {role === 'ADMIN' && (
             <NavPill href="/admin">
@@ -216,6 +217,7 @@ className="flex items-center gap-2.5 bg-white/90 border border-slate-200/80 shad
         <div className="md:hidden border-t border-slate-100 bg-white px-4 pb-4">
           <div className="mt-3 space-y-1">
             <MobileLink href="/cars" onClick={() => setMobileOpen(false)}>{t.nav.cars}</MobileLink>
+            <MobileLink href="/blog" onClick={() => setMobileOpen(false)}>{t.blog.navLabel}</MobileLink>
             {session ? (
               <>
                 <MobileLink href="/dashboard" onClick={() => setMobileOpen(false)}>{t.nav.dashboard}</MobileLink>
