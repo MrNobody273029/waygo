@@ -105,7 +105,7 @@ export function ReviewContent({ bookingId, role, status, car, dates, revieweeNam
   const isCompleted = status === 'completed';
 
   return (
-    <main className="min-h-screen bg-surface pt-[62px] md:pt-[73px] pb-20 flex items-start justify-center">
+    <main className="min-h-screen bg-surface pt-[62px] md:pt-[120px] pb-20 flex items-start justify-center">
       <div className="w-full max-w-lg px-4 py-10">
         <a href="/my-cars" className="inline-flex items-center gap-1.5 text-label-sm font-bold text-secondary hover:text-primary mb-8 transition-colors">
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>

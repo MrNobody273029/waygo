@@ -859,7 +859,7 @@ export default function BecomeHost() {
   }
 
   return (
-    <main className="pt-[62px] md:pt-[73px] min-h-screen bg-surface">
+    <main className="pt-[62px] md:pt-[120px] min-h-screen bg-surface">
       <TermsModal
         open={showTerms}
         onClose={() => setShowTerms(false)}

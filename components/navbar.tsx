@@ -46,7 +46,6 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [userOpen, setUserOpen] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
@@ -54,7 +53,6 @@ export function Navbar() {
   function handleLangSwitch(locale: Lang) {
     setLang(locale);
     setLangOpen(false);
-    setMobileOpen(false);
     router.push(getLocaleUrl(pathname, locale));
   }
 
@@ -98,8 +96,10 @@ export function Navbar() {
 
         {/* Right actions */}
         <div className="flex items-center gap-2">
-          {/* Currency switcher */}
-          <CurrencySwitcher variant="nav" />
+          {/* Currency switcher — desktop only (mobile has it in the bottom sheet) */}
+          <div className="hidden md:block">
+            <CurrencySwitcher variant="nav" />
+          </div>
 
           {/* Language dropdown */}
           <div ref={langRef} className="relative hidden md:block">
@@ -134,7 +134,7 @@ className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 bg-white/90 text-sla
           </div>
 
           {session ? (
-            <div ref={userRef} className="relative">
+            <div ref={userRef} className="relative hidden md:flex">
               <button
                 onClick={() => setUserOpen(!userOpen)}
 className="flex items-center gap-2.5 bg-white/90 border border-slate-200/80 shadow-sm rounded-full pl-2 pr-4 py-1.5 hover:bg-white transition-all cursor-pointer"
@@ -202,83 +202,9 @@ className="flex items-center gap-2.5 bg-white/90 border border-slate-200/80 shad
             </div>
           )}
 
-          {/* Mobile hamburger */}
-          <button
-            className="p-2 md:hidden text-slate-500 hover:text-primary transition-colors cursor-pointer"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            <span className="material-symbols-outlined">{mobileOpen ? 'close' : 'menu'}</span>
-          </button>
         </div>
       </div>
-
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-slate-100 bg-white px-4 pb-4">
-          <div className="mt-3 space-y-1">
-            <MobileLink href="/cars" onClick={() => setMobileOpen(false)}>{t.nav.cars}</MobileLink>
-            <MobileLink href="/blog" onClick={() => setMobileOpen(false)}>{t.blog.navLabel}</MobileLink>
-            {session ? (
-              <>
-                <MobileLink href="/dashboard" onClick={() => setMobileOpen(false)}>{t.nav.dashboard}</MobileLink>
-                {role === 'ADMIN' && (
-                  <MobileLink href="/admin" onClick={() => setMobileOpen(false)}>{t.nav.admin}</MobileLink>
-                )}
-                <button
-                  onClick={async () => { setMobileOpen(false); await signOut({ redirect: false }); window.location.href = '/'; }}
-                  className="w-full text-left rounded-xl px-4 py-2.5 text-label-bold font-semibold text-error hover:bg-error-container/30 transition cursor-pointer"
-                >
-                  {t.nav.signOut}
-                </button>
-              </>
-            ) : (
-              <>
-                <MobileLink href="/login" onClick={() => setMobileOpen(false)}>{t.nav.login}</MobileLink>
-                <MobileLink href="/register" onClick={() => setMobileOpen(false)}>{t.nav.register}</MobileLink>
-              </>
-            )}
-            {/* Mobile currency selector */}
-            <div className="pt-2 border-t border-slate-100 mt-2">
-              <p className="px-4 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">{t.booking.currencyLabel}</p>
-              <div className="px-4 pb-2">
-                <CurrencySwitcher variant="mobile" onSelect={() => setMobileOpen(false)} />
-              </div>
-            </div>
-
-            {/* Mobile language selector */}
-            <div className="pt-2 border-t border-slate-100 mt-2">
-              <p className="px-4 py-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Language</p>
-              {LANG_OPTIONS.map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => handleLangSwitch(opt.value)}
-                  className={`w-full text-left rounded-xl px-4 py-2.5 text-label-bold font-semibold transition flex items-center gap-2 cursor-pointer ${
-                    lang === opt.value ? 'text-primary bg-primary-fixed/30' : 'text-slate-500 hover:bg-slate-50'
-                  }`}
-                >
-                  <span className="w-6 text-center text-[11px] font-black uppercase">{opt.value}</span>
-                  {opt.label}
-                  {lang === opt.value && (
-                    <span className="material-symbols-outlined ml-auto text-[16px] text-primary">check</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </nav>
   );
 }
 
-function MobileLink({ href, children, onClick }: { href: string; children: React.ReactNode; onClick: () => void }) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className="block rounded-xl px-4 py-2.5 text-label-bold font-semibold text-slate-700 hover:bg-slate-50 transition"
-    >
-      {children}
-    </Link>
-  );
-}

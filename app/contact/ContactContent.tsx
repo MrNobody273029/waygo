@@ -6,7 +6,7 @@ export function ContactContent() {
   const { t } = useLang();
 
   return (
-    <main className="pt-[62px] md:pt-[73px] min-h-screen bg-surface pb-16">
+    <main className="pt-[62px] md:pt-[120px] min-h-screen bg-surface pb-16">
       <div className="bg-primary py-10 px-4">
         <div className="mx-auto max-w-3xl">
           <nav className="text-sm text-white/70 mb-3">

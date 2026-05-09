@@ -232,7 +232,7 @@ export default function RegisterPage() {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row pt-[62px] md:pt-[73px]">
+    <div className="flex min-h-screen flex-col md:flex-row pt-[62px] md:pt-[120px]">
       {/* Left panel */}
       <div className="hidden md:flex md:w-[40%] flex-col justify-between bg-on-background p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#1d4ed820,_transparent_60%),radial-gradient(ellipse_at_bottom_left,_#00624220,_transparent_60%)]" />

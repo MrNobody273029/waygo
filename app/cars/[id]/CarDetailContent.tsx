@@ -70,7 +70,7 @@ export function CarDetailContent({ car, availableDates }: { car: Car; availableD
   ];
 
   return (
-    <main className="pt-[62px] md:pt-[73px] bg-surface min-h-screen">
+    <main className="pt-[62px] md:pt-[120px] bg-surface min-h-screen">
       <div className="max-w-screen-2xl mx-auto px-4 md:px-12 py-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-label-sm text-secondary mb-4">

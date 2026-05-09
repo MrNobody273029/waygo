@@ -214,7 +214,7 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center pt-[62px] md:pt-[73px] bg-surface px-4">
+    <div className="flex min-h-screen items-center justify-center pt-[62px] md:pt-[120px] bg-surface px-4">
       <div className="w-full max-w-md">
         <Link href="/" className="mb-8 flex items-center justify-center">
           <span className="text-2xl font-black text-on-background">WAYGO<span className="text-primary">.ge</span></span>

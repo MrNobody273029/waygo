@@ -516,7 +516,7 @@ export function EditCarContent({ car }: { car: CarData }) {
   }
 
   return (
-    <main className="pt-[62px] md:pt-[73px] min-h-screen bg-surface">
+    <main className="pt-[62px] md:pt-[120px] min-h-screen bg-surface">
       <div className="mx-auto max-w-5xl px-4 md:px-12 py-6 md:py-12">
         <div className="mb-5 md:mb-8">
           <div className="flex items-center gap-3 mb-2">

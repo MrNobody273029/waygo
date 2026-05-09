@@ -321,7 +321,7 @@ export function MyCarsContent({
         );
       })()}
 
-      <main className="pt-[62px] md:pt-[73px] min-h-screen bg-surface pb-20">
+      <main className="pt-[62px] md:pt-[120px] min-h-screen bg-surface pb-20">
         <div className="mx-auto max-w-screen-xl px-4 md:px-12 py-10">
           <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
             <div>

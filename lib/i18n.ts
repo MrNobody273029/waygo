@@ -289,6 +289,9 @@ export const translations = {
       bookings: 'Bookings',
       verify: 'Verify',
       profile: 'Profile',
+      dashboard: 'Dashboard',
+      blog: 'Blog',
+      more: 'More',
     },
     myCars: {
       title: 'My Listings',
@@ -1249,6 +1252,9 @@ export const translations = {
       bookings: 'ჯავშნები',
       verify: 'ვერიფიკაცია',
       profile: 'პროფილი',
+      dashboard: 'დეშბორდი',
+      blog: 'ბლოგი',
+      more: 'მეტი',
     },
     myCars: {
       title: 'ჩემი განცხადებები',
@@ -2209,6 +2215,9 @@ export const translations = {
       bookings: 'Брони',
       verify: 'Верификация',
       profile: 'Профиль',
+      dashboard: 'Кабинет',
+      blog: 'Блог',
+      more: 'Ещё',
     },
     myCars: {
       title: 'Мои объявления',

@@ -50,7 +50,7 @@ export default async function BatumiAirportPage() {
         ...(cars.length > 0 ? [jsonLdItemList(cars.map(c => ({ url: absoluteUrl(`/cars/${c.id}`) })))] : []),
       ]} />
 
-      <main className="pt-[62px] md:pt-[73px] min-h-screen bg-surface pb-16">
+      <main className="pt-[62px] md:pt-[120px] min-h-screen bg-surface pb-16">
         <div className="bg-primary py-10 px-4">
           <div className="mx-auto max-w-5xl">
             <p className="text-sm text-white/70 mb-3">

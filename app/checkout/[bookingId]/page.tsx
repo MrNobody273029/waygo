@@ -9,7 +9,7 @@ export default function Checkout() {
   const bookingId = params.bookingId as string;
 
   return (
-    <main className="pt-[62px] md:pt-[73px] min-h-screen bg-surface flex items-center justify-center px-4 py-16">
+    <main className="pt-[62px] md:pt-[120px] min-h-screen bg-surface flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-2xl">
         <div className="rounded-2xl border border-outline-variant/40 bg-white p-8 shadow-card text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-tertiary-fixed/40">

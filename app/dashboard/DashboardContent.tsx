@@ -76,7 +76,7 @@ export function DashboardContent({ name, email, bookings, totalSpent, upcomingTr
     <>
     <KYCModal open={showKYC} onClose={() => setShowKYC(false)} onSuccess={() => setShowKYC(false)} verificationType="guest" rejectionComment={verificationRejectionComment} />
     <VerificationPendingPopup open={showPending} onClose={() => setShowPending(false)} />
-    <main className="min-h-screen bg-surface pt-[62px] md:pt-[73px] pb-20 md:pb-0">
+    <main className="min-h-screen bg-surface pt-[62px] md:pt-[120px] pb-20 md:pb-0">
       <div className="mx-auto max-w-screen-xl px-4 md:px-12 py-10">
         {/* Header */}
         <div className="mb-6 md:mb-10 flex items-center justify-between">

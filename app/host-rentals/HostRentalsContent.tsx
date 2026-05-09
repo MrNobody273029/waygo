@@ -488,7 +488,7 @@ export function HostRentalsContent({ pendingRequests: initialRequests, activeRen
   };
 
   return (
-    <main className="min-h-screen bg-surface pt-[62px] md:pt-[73px] pb-20 md:pb-0">
+    <main className="min-h-screen bg-surface pt-[62px] md:pt-[120px] pb-20 md:pb-0">
       <div className="mx-auto max-w-screen-xl px-4 md:px-12 py-10">
 
         {/* Header */}

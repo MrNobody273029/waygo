@@ -89,7 +89,7 @@ export function BlogPostContent({ post, related }: { post: Post; related: Relate
   };
 
   return (
-    <main className="min-h-screen bg-surface pt-24 pb-20">
+    <main className="min-h-screen bg-surface pt-[62px] md:pt-[120px] pb-20">
       {/* Hero cover */}
       {post.coverImage && (
         <div className="relative h-[420px] md:h-[520px] w-full overflow-hidden mb-0">

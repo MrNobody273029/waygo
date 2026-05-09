@@ -217,7 +217,7 @@ export function CarsContent({
   const pillInactive = 'border-outline-variant text-secondary hover:border-primary/50 hover:text-on-background';
 
   return (
-    <main className="pt-[62px] md:pt-[73px] min-h-screen bg-surface">
+    <main className="pt-[62px] md:pt-[120px] min-h-screen bg-surface">
       <KYCModal
         open={showKYC}
         onClose={handleKYCClose}

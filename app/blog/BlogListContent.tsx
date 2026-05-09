@@ -182,7 +182,7 @@ export function BlogListContent({ posts, categories }: { posts: Post[]; categori
   });
 
   return (
-    <main className="min-h-screen bg-surface pt-28 pb-20">
+    <main className="min-h-screen bg-surface pt-[62px] md:pt-[120px] pb-20">
       <div className="max-w-6xl mx-auto px-4 md:px-8">
 
         {/* Header */}

@@ -8,7 +8,7 @@ export default function TermsPage() {
   const l = (lang as TermsLang) in termsContent.title ? (lang as TermsLang) : 'en';
 
   return (
-    <main className="pt-[62px] md:pt-[73px] min-h-screen bg-surface pb-20">
+    <main className="pt-[62px] md:pt-[120px] min-h-screen bg-surface pb-20">
       <div className="mx-auto max-w-2xl px-4 md:px-6 py-10 md:py-16">
         <div className="mb-8">
           <h1 className="text-h1 font-extrabold text-on-background">{termsContent.title[l]}</h1>
