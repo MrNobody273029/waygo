@@ -41,6 +41,8 @@ export interface BookingEmailData {
   displayCurrency?: 'USD' | 'EUR';
   displayTotal?: number;
   exchangeRateUsed?: number;
+  /** 6-char pickup verification code, shown only on approval email */
+  confirmationCode?: string;
 }
 
 export interface HostRequestEmailData {
@@ -168,6 +170,8 @@ const GS = {
     pickupH: 'მანქანის აყვანისას', pickupBody: 'გახსენით ჯავშანი დეშბორდიდან. გადაიღეთ ფოტოები წინა, უკანა, ორივე გვერდიდან და სალონიდან. ატვირთეთ და მხოლოდ შემდეგ დააჭირეთ <strong>"მანქანა აყვანილია"</strong>.',
     returnH: 'მანქანის დაბრუნებისას', returnBody: 'ბრუნვამდე გადაიღეთ ფოტოები, ატვირთეთ და დააჭირეთ <strong>"მანქანა დაბრუნებულია"</strong>.',
     photoWarn: 'ფოტოების გარეშე WAYGO.ge ვერ დაიცავს თქვენ გაურკვეველ სიტუაციებში. <strong>ფოტოები = თქვენი უფლებების დაცვა.</strong>',
+    codeLabel: '🔑 მანქანის აყვანის კოდი',
+    codeNote: 'ეს კოდი გაეჩვენეთ ჰოსტს მანქანის ჩაბარებისას. კოდი ასევე ჩანს თქვენს დეშბორდზე.',
     ctaBooking: 'ჩემი ჯავშნის ნახვა',
     ctaFind: 'სხვა მანქანა ნახე',
     ctaNote: 'თუ ავტორიზებული არ ხარ, ჯერ შესვლის გვერდი გამოჩნდება.',
@@ -206,6 +210,8 @@ const GS = {
     pickupH: 'При получении автомобиля', pickupBody: 'Откройте бронирование в личном кабинете. Сфотографируйте автомобиль со всех сторон. Загрузите фото и нажмите <strong>«Автомобиль получен»</strong>.',
     returnH: 'При возврате автомобиля', returnBody: 'Перед возвратом сделайте фотографии, загрузите и нажмите <strong>«Автомобиль возвращён»</strong>.',
     photoWarn: 'Без фотографий WAYGO.ge не сможет защитить вас в спорных ситуациях. <strong>Фотографии = защита ваших прав.</strong>',
+    codeLabel: '🔑 Код получения автомобиля',
+    codeNote: 'Покажите этот код хозяину при получении автомобиля. Код также виден в вашем личном кабинете.',
     ctaBooking: 'Посмотреть бронирование',
     ctaFind: 'Найти другой автомобиль',
     ctaNote: 'Если вы не авторизованы, сначала появится страница входа.',
@@ -244,6 +250,8 @@ const GS = {
     pickupH: 'When picking up the car', pickupBody: 'Open this booking in your dashboard. Photograph the car from all angles. Upload the photos, then press <strong>"Car Picked Up"</strong>.',
     returnH: 'When returning the car', returnBody: 'Before handing over the keys, take the same photos, upload them, and press <strong>"Car Returned"</strong>.',
     photoWarn: 'Without photos, WAYGO.ge cannot protect you in disputed situations. <strong>Photos = protection of your rights.</strong>',
+    codeLabel: '🔑 Pickup Verification Code',
+    codeNote: 'Show this code to the host when picking up the car. The code is also visible in your dashboard.',
     ctaBooking: 'View My Booking',
     ctaFind: 'Browse Other Cars',
     ctaNote: 'If not logged in, you will be redirected to sign in first.',
@@ -313,7 +321,7 @@ function buildGuestSection(
 ): string {
   const s = GS[lang];
   const { booking, car, totals, days, insurancePlan, grandTotal, siteUrl,
-          displayCurrency, displayTotal } = data;
+          displayCurrency, displayTotal, confirmationCode } = data;
   const dailyPrice = days > 0 ? Math.round(totals.base / days) : totals.base;
   const dailyIns   = totals.insurance > 0 && days > 0 ? Math.round(totals.insurance / days) : 0;
   const bookingUrl = `${siteUrl}/bookings/${booking.id}`;
@@ -409,6 +417,17 @@ function buildGuestSection(
     <p style="font-size:13px;color:#1e40af;font-weight:700;margin:0 0 3px;">🛡️ ${s.sIns}: ${planLabel}</p>
     <p style="font-size:12px;color:#3b82f6;margin:0;">${s.deduct(totals.deductible)}</p>
   </div>
+
+  ${type === 'approved' && confirmationCode ? `
+  <!-- Confirmation Code (only on approval) -->
+  <div style="background:#0f172a;border-radius:16px;padding:28px 24px;margin-bottom:28px;text-align:center;">
+    <p style="font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#94a3b8;margin:0 0 14px;">${s.codeLabel}</p>
+    <div style="display:inline-block;background:#1e40af;border-radius:12px;padding:14px 32px;margin-bottom:14px;">
+      <span style="font-size:42px;font-weight:900;color:#ffffff;letter-spacing:10px;font-family:monospace;">${confirmationCode}</span>
+    </div>
+    <p style="font-size:12px;color:#94a3b8;margin:0;line-height:1.6;">${s.codeNote}</p>
+  </div>
+  ` : ''}
 
   ${type === 'approved' ? `
   <!-- Photo Instructions (only on approval) -->

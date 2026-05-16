@@ -26,6 +26,11 @@ const schema = z.object({
   exchangeRateUsed: z.number().optional(),
 });
 
+function generateConfirmationCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
 function dateRange(start: string, end: string): string[] {
   const dates: string[] = [];
   const cur = new Date(start);
@@ -103,6 +108,7 @@ export async function POST(req: Request) {
         deliveryAddress: input.deliveryAddress ?? null,
         status: 'awaiting_host',
         hostApprovalDeadline,
+        confirmationCode: generateConfirmationCode(),
         platformFeeGel: totals.platformFee,
         displayCurrency: input.displayCurrency ?? 'GEL',
         displayTotal: input.displayTotal ?? grandTotal,

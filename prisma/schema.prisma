@@ -189,6 +189,7 @@ model Booking {
   cancellationOtpCode     String?
   cancellationOtpExpiry   DateTime?
   cancelPenaltyTier       String?
+  confirmationCode        String?
   insurancePolicy  InsurancePolicy?
   transactions     Transaction[]
   conditionReports ConditionReport[]

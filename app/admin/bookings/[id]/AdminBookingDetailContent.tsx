@@ -24,6 +24,7 @@ type Booking = {
   deliveryType: string; deliveryCost: number; deliveryAddress: string | null;
   status: string; createdAt: string; cancelledAt: string | null;
   hostApprovalDeadline: string | null;
+  confirmationCode: string | null;
   guest: Guest;
   transactions: Transaction[];
   conditionReports: ConditionReport[];
@@ -150,6 +151,20 @@ export function AdminBookingDetailContent({ booking }: { booking: Booking }) {
             </div>
           ))}
         </div>
+
+        {/* Confirmation code */}
+        {booking.confirmationCode && (
+          <div className="mt-4 pt-4 border-t flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px] text-slate-400">key</span>
+              <span className="text-xs text-slate-500">Pickup Code</span>
+            </div>
+            <span className="font-mono text-2xl font-black tracking-[6px] text-slate-900">{booking.confirmationCode}</span>
+            <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${['pending','confirmed','return_review','completed'].includes(booking.status) ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+              {['pending','confirmed','return_review','completed'].includes(booking.status) ? 'Active' : 'Inactive'}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_320px]">

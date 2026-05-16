@@ -32,7 +32,7 @@ export default async function MyCarsPage() {
     }
   });
 
-  const [cars, profile, pendingBookings] = await Promise.all([
+  const [cars, profile, pendingBookings, activeBookings] = await Promise.all([
     prisma.car.findMany({
       where: { ownerId: userId },
       select: {
@@ -75,6 +75,25 @@ export default async function MyCarsPage() {
       },
       orderBy: { createdAt: 'asc' },
     }),
+    prisma.booking.findMany({
+      where: {
+        status: { in: ['pending', 'confirmed', 'return_review'] },
+        car: { ownerId: userId },
+      },
+      select: {
+        id: true,
+        carBrand: true,
+        carModel: true,
+        carYear: true,
+        startDate: true,
+        endDate: true,
+        totalPrice: true,
+        status: true,
+        confirmationCode: true,
+        guest: { select: { fullName: true, phone: true } },
+      },
+      orderBy: { startDate: 'asc' },
+    }),
   ]);
 
   const carIds = cars.map(c => c.id);
@@ -104,6 +123,20 @@ export default async function MyCarsPage() {
 
   const carsWithTrips = cars.map(c => ({ ...c, trips: tripsMap[c.id] ?? 0 }));
 
+  const activeRentals = activeBookings.map(b => ({
+    id: b.id,
+    carBrand: b.carBrand,
+    carModel: b.carModel,
+    carYear: b.carYear,
+    startDate: b.startDate.toISOString(),
+    endDate: b.endDate.toISOString(),
+    totalPrice: b.totalPrice,
+    status: b.status,
+    confirmationCode: b.confirmationCode ?? null,
+    guestName: b.guest.fullName,
+    guestPhone: b.guest.phone ?? null,
+  }));
+
   return (
     <MyCarsContent
       cars={carsWithTrips as any}
@@ -114,6 +147,7 @@ export default async function MyCarsPage() {
       hostSelfieUrl={profile?.hostSelfieUrl ?? null}
       hostVerificationRejectionComment={profile?.hostVerificationRejectionComment ?? null}
       pendingRequests={pendingRequests}
+      activeRentals={activeRentals}
       isPremiumHost={profile?.isPremiumHost ?? false}
     />
   );

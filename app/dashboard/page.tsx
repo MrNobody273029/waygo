@@ -39,6 +39,7 @@ export default async function DashboardPage() {
             endDate: true,
             totalPrice: true,
             status: true,
+            confirmationCode: true,
           },
         },
       },
@@ -53,6 +54,7 @@ export default async function DashboardPage() {
     dates: `${b.startDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} – ${b.endDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`,
     status: b.status,
     amount: b.totalPrice,
+    confirmationCode: b.confirmationCode ?? null,
   }));
 
   const totalSpent = bookings

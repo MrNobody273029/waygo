@@ -89,6 +89,7 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
       insurancePlan: insurancePolicy.planType as 'basic' | 'standard' | 'premium',
       grandTotal: booking.totalPrice,
       siteUrl: SITE_URL,
+      confirmationCode: booking.confirmationCode ?? undefined,
     };
 
     const { html, subject } = bookingApprovedEmail(emailData);

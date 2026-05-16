@@ -21,9 +21,132 @@ const COUNTRIES = [
   { code: 'OTHER', en: 'Other', ka: 'სხვა', ru: 'Другое' },
 ];
 
+// All country dial codes sorted by numeric code ascending
+const PHONE_CODES: { dial: string; name: string }[] = [
+  { dial: '+1',   name: 'USA / Canada (+1)' },
+  { dial: '+7',   name: 'Russia / Kazakhstan (+7)' },
+  { dial: '+20',  name: 'Egypt (+20)' },
+  { dial: '+27',  name: 'South Africa (+27)' },
+  { dial: '+30',  name: 'Greece (+30)' },
+  { dial: '+31',  name: 'Netherlands (+31)' },
+  { dial: '+32',  name: 'Belgium (+32)' },
+  { dial: '+33',  name: 'France (+33)' },
+  { dial: '+34',  name: 'Spain (+34)' },
+  { dial: '+36',  name: 'Hungary (+36)' },
+  { dial: '+39',  name: 'Italy (+39)' },
+  { dial: '+40',  name: 'Romania (+40)' },
+  { dial: '+41',  name: 'Switzerland (+41)' },
+  { dial: '+43',  name: 'Austria (+43)' },
+  { dial: '+44',  name: 'United Kingdom (+44)' },
+  { dial: '+45',  name: 'Denmark (+45)' },
+  { dial: '+46',  name: 'Sweden (+46)' },
+  { dial: '+47',  name: 'Norway (+47)' },
+  { dial: '+48',  name: 'Poland (+48)' },
+  { dial: '+49',  name: 'Germany (+49)' },
+  { dial: '+51',  name: 'Peru (+51)' },
+  { dial: '+52',  name: 'Mexico (+52)' },
+  { dial: '+54',  name: 'Argentina (+54)' },
+  { dial: '+55',  name: 'Brazil (+55)' },
+  { dial: '+56',  name: 'Chile (+56)' },
+  { dial: '+57',  name: 'Colombia (+57)' },
+  { dial: '+58',  name: 'Venezuela (+58)' },
+  { dial: '+60',  name: 'Malaysia (+60)' },
+  { dial: '+61',  name: 'Australia (+61)' },
+  { dial: '+62',  name: 'Indonesia (+62)' },
+  { dial: '+63',  name: 'Philippines (+63)' },
+  { dial: '+64',  name: 'New Zealand (+64)' },
+  { dial: '+65',  name: 'Singapore (+65)' },
+  { dial: '+66',  name: 'Thailand (+66)' },
+  { dial: '+81',  name: 'Japan (+81)' },
+  { dial: '+82',  name: 'South Korea (+82)' },
+  { dial: '+84',  name: 'Vietnam (+84)' },
+  { dial: '+86',  name: 'China (+86)' },
+  { dial: '+90',  name: 'Turkey (+90)' },
+  { dial: '+91',  name: 'India (+91)' },
+  { dial: '+92',  name: 'Pakistan (+92)' },
+  { dial: '+93',  name: 'Afghanistan (+93)' },
+  { dial: '+94',  name: 'Sri Lanka (+94)' },
+  { dial: '+95',  name: 'Myanmar (+95)' },
+  { dial: '+98',  name: 'Iran (+98)' },
+  { dial: '+212', name: 'Morocco (+212)' },
+  { dial: '+213', name: 'Algeria (+213)' },
+  { dial: '+216', name: 'Tunisia (+216)' },
+  { dial: '+218', name: 'Libya (+218)' },
+  { dial: '+234', name: 'Nigeria (+234)' },
+  { dial: '+254', name: 'Kenya (+254)' },
+  { dial: '+256', name: 'Uganda (+256)' },
+  { dial: '+260', name: 'Zambia (+260)' },
+  { dial: '+263', name: 'Zimbabwe (+263)' },
+  { dial: '+351', name: 'Portugal (+351)' },
+  { dial: '+352', name: 'Luxembourg (+352)' },
+  { dial: '+353', name: 'Ireland (+353)' },
+  { dial: '+354', name: 'Iceland (+354)' },
+  { dial: '+355', name: 'Albania (+355)' },
+  { dial: '+356', name: 'Malta (+356)' },
+  { dial: '+357', name: 'Cyprus (+357)' },
+  { dial: '+358', name: 'Finland (+358)' },
+  { dial: '+359', name: 'Bulgaria (+359)' },
+  { dial: '+370', name: 'Lithuania (+370)' },
+  { dial: '+371', name: 'Latvia (+371)' },
+  { dial: '+372', name: 'Estonia (+372)' },
+  { dial: '+373', name: 'Moldova (+373)' },
+  { dial: '+374', name: 'Armenia (+374)' },
+  { dial: '+375', name: 'Belarus (+375)' },
+  { dial: '+380', name: 'Ukraine (+380)' },
+  { dial: '+381', name: 'Serbia (+381)' },
+  { dial: '+382', name: 'Montenegro (+382)' },
+  { dial: '+385', name: 'Croatia (+385)' },
+  { dial: '+386', name: 'Slovenia (+386)' },
+  { dial: '+387', name: 'Bosnia (+387)' },
+  { dial: '+389', name: 'North Macedonia (+389)' },
+  { dial: '+420', name: 'Czech Republic (+420)' },
+  { dial: '+421', name: 'Slovakia (+421)' },
+  { dial: '+502', name: 'Guatemala (+502)' },
+  { dial: '+503', name: 'El Salvador (+503)' },
+  { dial: '+504', name: 'Honduras (+504)' },
+  { dial: '+505', name: 'Nicaragua (+505)' },
+  { dial: '+506', name: 'Costa Rica (+506)' },
+  { dial: '+507', name: 'Panama (+507)' },
+  { dial: '+591', name: 'Bolivia (+591)' },
+  { dial: '+593', name: 'Ecuador (+593)' },
+  { dial: '+595', name: 'Paraguay (+595)' },
+  { dial: '+598', name: 'Uruguay (+598)' },
+  { dial: '+673', name: 'Brunei (+673)' },
+  { dial: '+852', name: 'Hong Kong (+852)' },
+  { dial: '+853', name: 'Macau (+853)' },
+  { dial: '+855', name: 'Cambodia (+855)' },
+  { dial: '+856', name: 'Laos (+856)' },
+  { dial: '+880', name: 'Bangladesh (+880)' },
+  { dial: '+886', name: 'Taiwan (+886)' },
+  { dial: '+960', name: 'Maldives (+960)' },
+  { dial: '+961', name: 'Lebanon (+961)' },
+  { dial: '+962', name: 'Jordan (+962)' },
+  { dial: '+963', name: 'Syria (+963)' },
+  { dial: '+964', name: 'Iraq (+964)' },
+  { dial: '+965', name: 'Kuwait (+965)' },
+  { dial: '+966', name: 'Saudi Arabia (+966)' },
+  { dial: '+967', name: 'Yemen (+967)' },
+  { dial: '+968', name: 'Oman (+968)' },
+  { dial: '+970', name: 'Palestine (+970)' },
+  { dial: '+971', name: 'UAE (+971)' },
+  { dial: '+972', name: 'Israel (+972)' },
+  { dial: '+973', name: 'Bahrain (+973)' },
+  { dial: '+974', name: 'Qatar (+974)' },
+  { dial: '+975', name: 'Bhutan (+975)' },
+  { dial: '+976', name: 'Mongolia (+976)' },
+  { dial: '+977', name: 'Nepal (+977)' },
+  { dial: '+992', name: 'Tajikistan (+992)' },
+  { dial: '+993', name: 'Turkmenistan (+993)' },
+  { dial: '+994', name: 'Azerbaijan (+994)' },
+  { dial: '+995', name: 'Georgia (+995)' },
+  { dial: '+996', name: 'Kyrgyzstan (+996)' },
+  { dial: '+998', name: 'Uzbekistan (+998)' },
+];
+
 type FormState = {
   fullName: string;
   email: string;
+  phoneCode: string;
   phone: string;
   idNumber: string;
   country: string;
@@ -104,6 +227,7 @@ export default function RegisterPage() {
   const [form, setForm] = useState<FormState>({
     fullName: '',
     email: '',
+    phoneCode: '+995',
     phone: '',
     idNumber: '',
     country: 'GE',
@@ -145,7 +269,7 @@ export default function RegisterPage() {
         body: JSON.stringify({
           fullName: form.fullName,
           email: form.email,
-          phone: form.phone,
+          phone: form.phoneCode + form.phone.replace(/\D/g, ''),
           idNumber: form.idNumber,
           country: form.country,
           birthDate: form.birthDate,
@@ -287,7 +411,27 @@ export default function RegisterPage() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label={t.auth.phone}>
-                    <input type="tel" value={form.phone} onChange={set('phone')} required className={ic} placeholder="+995 5XX XXX XXX" autoComplete="tel" />
+                    <div className="flex gap-2">
+                      <select
+                        value={form.phoneCode}
+                        onChange={e => setForm(f => ({ ...f, phoneCode: e.target.value }))}
+                        className="h-12 rounded-xl border-2 border-outline-variant bg-white px-2 text-[13px] font-semibold text-on-background outline-none focus:border-primary transition shrink-0 w-[110px]"
+                      >
+                        {PHONE_CODES.map(p => (
+                          <option key={p.dial} value={p.dial}>{p.dial}</option>
+                        ))}
+                      </select>
+                      <input
+                        type="tel"
+                        value={form.phone}
+                        onChange={e => setForm(f => ({ ...f, phone: e.target.value.replace(/\D/g, '') }))}
+                        required
+                        className={ic}
+                        placeholder="555 123 456"
+                        autoComplete="tel-national"
+                        inputMode="numeric"
+                      />
+                    </div>
                   </Field>
                   <Field label={t.auth.country}>
                     <select value={form.country} onChange={set('country')} className={ic}>

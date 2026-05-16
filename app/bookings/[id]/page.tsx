@@ -28,6 +28,7 @@ export default async function BookingDetailPage({ params }: { params: { id: stri
       deliveryAddress: true,
       status: true,
       createdAt: true,
+      confirmationCode: true,
       conditionReports: {
         select: { id: true, phase: true, photoUrls: true, createdAt: true },
         orderBy: { createdAt: 'asc' },
@@ -45,10 +46,11 @@ export default async function BookingDetailPage({ params }: { params: { id: stri
     select: { rating: true, comment: true },
   });
 
-  const hostProfile = booking.status === 'completed'
+  const SHOW_HOST_CONTACT_STATUSES = ['pending', 'confirmed', 'return_review', 'completed', 'disputed'];
+  const hostProfile = SHOW_HOST_CONTACT_STATUSES.includes(booking.status)
     ? await prisma.profile.findFirst({
         where: { cars: { some: { bookings: { some: { id: params.id } } } } },
-        select: { fullName: true, rating: true, reviewCount: true },
+        select: { fullName: true, rating: true, reviewCount: true, phone: true },
       })
     : null;
 
@@ -56,7 +58,7 @@ export default async function BookingDetailPage({ params }: { params: { id: stri
     <BookingDetailContent
       guestEmail={guestEmail}
       existingReview={existingReview ?? null}
-      hostProfile={hostProfile ?? null}
+      hostProfile={hostProfile ? { fullName: hostProfile.fullName, rating: hostProfile.rating, reviewCount: hostProfile.reviewCount, phone: hostProfile.phone ?? null } : null}
       booking={{
         id: booking.id,
         carBrand: booking.carBrand,
@@ -71,6 +73,7 @@ export default async function BookingDetailPage({ params }: { params: { id: stri
         deliveryAddress: booking.deliveryAddress ?? null,
         status: booking.status,
         createdAt: booking.createdAt.toISOString(),
+        confirmationCode: booking.confirmationCode ?? null,
         conditionReports: booking.conditionReports.map(r => ({
           id: r.id,
           phase: r.phase,

@@ -11,6 +11,7 @@ interface Booking {
   dates: string;
   status: string;
   amount: number;
+  confirmationCode: string | null;
 }
 
 interface Props {
@@ -132,6 +133,7 @@ export function DashboardContent({ name, email, bookings, totalSpent, upcomingTr
               <div className="divide-y divide-slate-50">
                 {bookings.map(b => {
                   const s = statusStyle[b.status] ?? statusStyle.pending;
+                  const showCode = b.confirmationCode && ['pending', 'confirmed', 'return_review', 'completed'].includes(b.status);
                   return (
                     <a key={b.id} href={`/bookings/${b.id}`} className="flex items-center gap-3 md:gap-4 px-4 md:px-6 py-4 hover:bg-surface-container-low transition-colors cursor-pointer active:bg-surface-container-low">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-container">
@@ -143,6 +145,12 @@ export function DashboardContent({ name, email, bookings, totalSpent, upcomingTr
                           <span className="material-symbols-outlined text-[14px]">calendar_today</span>
                           {b.dates}
                         </p>
+                        {showCode && (
+                          <p className="mt-1 flex items-center gap-1 text-[11px] font-bold text-primary">
+                            <span className="material-symbols-outlined text-[13px]">key</span>
+                            <span className="font-mono tracking-widest">{b.confirmationCode}</span>
+                          </p>
+                        )}
                       </div>
                       <div className="flex flex-col items-end gap-1.5 shrink-0">
                         <p className="font-extrabold text-label-bold text-on-background">{gel(b.amount)}</p>
